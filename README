@@ -1,0 +1,26 @@
+Mongregator - The Monitoring Aggregator
+=======================================
+
+Rational
+--------
+Over the years, many monitoring applications have been developed in
+OpenSource space. MRTG, Nagios, Cacti, Ganglia, Torrus or collectd to
+name just a few. Each of them comes with its own webinterface for exploring
+the information gathered by the particular System.
+
+Often the web interfaces have been developped several years ago and do not
+make much use of todays Web technologies.
+
+Deploying a monitoring system within a whole organization often requires a
+major effort.  Especiallly when it is to be integrated other parts of the
+infrastructure.
+
+Two scenarios seem to be prevail. Several different monitoring Systems are
+running in parlell or the local monitoring system is a heavily customized
+version of some open source system.  In both cases, the user experiance is
+often not ideal, up to the point where proprietary solutions are being
+considered due to their supperior flashiness and marketing literature.
+
+Mongregator is an aggregating frontend to a wide array of monitoring
+systems. Its plugin system provides an easy route to integrating several
+systems into a single instance of Mongragator.
