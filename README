@@ -1,26 +1,29 @@
 Mongregator - The Monitoring Aggregator
 =======================================
 
-Rational
---------
 Over the years, many monitoring applications have been developed in
-OpenSource space. MRTG, Nagios, Cacti, Ganglia, Torrus or collectd to
-name just a few. Each of them comes with its own webinterface for exploring
-the information gathered by the particular System.
+OpenSource space. MRTG, Nagios, Cacti, Ganglia, Torrus or collectd to name
+only a few. Each of them comes with its own web interface. Most of these web
+interfaces have been developed several years ago and do not make much use
+of today's Web technologies.
 
-Often the web interfaces have been developped several years ago and do not
-make much use of todays Web technologies.
+Deploying a monitoring system within a whole organization is quite an
+effort. Especially when it is to be integrated other parts of the
+infrastructure. This makes it quite difficult to from one monitoring product
+to another.
 
-Deploying a monitoring system within a whole organization often requires a
-major effort.  Especiallly when it is to be integrated other parts of the
-infrastructure.
-
-Two scenarios seem to be prevail. Several different monitoring Systems are
-running in parlell or the local monitoring system is a heavily customized
-version of some open source system.  In both cases, the user experiance is
+Two scenarios seem to be prevail. Several different monitoring systems are
+running in parallel or the local monitoring system is a heavily customized
+version of some open source system.  In both cases, the user experience is
 often not ideal, up to the point where proprietary solutions are being
-considered due to their supperior flashiness and marketing literature.
+considered due to the superior looks of their web interfaces and marketing
+literature.
 
-Mongregator is an aggregating frontend to a wide array of monitoring
-systems. Its plugin system provides an easy route to integrating several
-systems into a single instance of Mongragator.
+Mongregator to the rescue.
+
+Mongregator is an aggregating front end to a wide array of monitoring
+systems. Its plug-in system provides an easy route to integrating several
+systems into a single instance of Mongragator. Mongregator is very flexible.
+It provides integration abilities from direct RRD access iframe view of
+web pages.
+
