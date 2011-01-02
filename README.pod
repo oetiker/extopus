@@ -6,7 +6,7 @@ collectd to name only a few. Each of them comes with its own web interface.
 Most of these web interfaces have been developed several years ago and do
 not make much use of today's Web technologies.
 
-Deploying a monitoring system within a whole organization is quite an
+Deploying a monitoring system within a whole organization is a major
 effort. Especially when it is to be integrated with other parts of the
 infrastructure. This makes it quite difficult to move from one monitoring
 product to another.
