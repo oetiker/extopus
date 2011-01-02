@@ -20,11 +20,11 @@ There are two strategies for integrating an existing tool with Mongregator:
 
 =item *
 
-Write a tool L</"Plugin API"|specific plugin> for Mongragator and use whatever methods for interaction the tool already supports.
+Write a L<tool specific plugin|/"Plugin API"> for Mongragator and use whatever methods for interaction the tool already supports.
 
 =item *
 
-Add a JSON RPC Mongregator interface to your monitoring system for Mongregator to access directly using the Mongregator L</"Native Mongregator Integration"|native plugin>.
+Add a JSON RPC Mongregator interface to your monitoring system for Mongregator to access directly using the Mongregator L<native plugin|/"Native Mongregator Integration">.
 
 =back
 
