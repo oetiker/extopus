@@ -1,0 +1,9 @@
+=head1 Mongregator Architecture Overview
+
+=head2 Basic Idea
+
+=head2 Plugin API
+
+=head2 Native Mongregator Support
+
+=head2 Mongregator Web API
