@@ -20,17 +20,37 @@ There are two strategies for integrating an existing tool with Mongregator:
 
 =item *
 
-Write a L<tool specific plugin|/"Plugin API"> for Mongragator and use whatever methods for interaction the tool already supports.
+Write a L<tool specific plugin|/"Plugin API"> for Mongragator and use
+whatever methods for interaction the tool already supports.
 
 =item *
 
-Add a JSON RPC Mongregator interface to your monitoring system for Mongregator to access directly using the Mongregator L<native plugin|/"Native Mongregator Integration">.
+Add a JSON RPC Mongregator interface to your monitoring system for
+Mongregator to access directly using the Mongregator L<native
+plugin|/"Native Mongregator Integration">.
 
 =back
 
-=head2 Plugin API
+=head2 Data Model
+
+Mongregator views the world as a collection of information nodes. Each node
+has a number of properties. The properties are split into three namespaces:
+required, optional and informational. A node must provide at least the
+required properties. Mongregator will use information from optional
+properties to improve the user experience. Informational properties can
+contain any extra data you wish to display along with the node properties.
+
+Mongregator can show the nodes it knows as a list or as a tree. The tree
+view uses property values to build the tree. For performance reasons
+mongregator creates a persistant node cache which gets updated as new
+information becomes available.
 
 =head2 Native Mongregator Integration
+
+With native integration, a tool provides mo
+
+=head2 Plugin API
+
 
 =head2 Mongregator Web API
 
