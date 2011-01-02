@@ -1,9 +1,36 @@
-=head1 Mongregator Architecture Overview
+=head1 Mongregator Architectural Overview
 
-=head2 Basic Idea
+=head2 Concept
+
+Mongregator is an aggregating front end to a wide array of monitoring
+systems. Mongregator uses a modular architecture which allows for simple
+integration with other system.
+
+RRDtool has become a kind of common storage and presentation system for many
+monitoring systems. Mongregator has therefore rich support for rrdtool based
+data stores.
+
+Accessing a monitoring system from Mongregator can be as superficial as
+directly including a web page into a Mongregator iframe or it can be as deep
+as giving mongragator direct access to the rrd files.
+
+There are two strategies for integrating an existing tool with Mongregator:
+
+=over
+
+=item *
+
+Write a tool L</"Plugin API"|specific plugin> for Mongragator and use whatever methods for interaction the tool already supports.
+
+=item *
+
+Add a JSON RPC Mongregator interface to your monitoring system for Mongregator to access directly using the Mongregator L</"Native Mongregator Integration"|native plugin>.
+
+=back
 
 =head2 Plugin API
 
-=head2 Native Mongregator Support
+=head2 Native Mongregator Integration
 
 =head2 Mongregator Web API
+
