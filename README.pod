@@ -18,7 +18,7 @@ often not ideal, up to the point where proprietary solutions are being
 considered due to the superior looks of their web interfaces and marketing
 literature.
 
-I<Mongregator to the rescue>
+=head2 Mongregator to the rescue
 
 Mongregator is an aggregating front end to a wide array of monitoring
 systems. Its plug-in system provides an easy route to integrating several
