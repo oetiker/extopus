@@ -18,11 +18,10 @@ often not ideal, up to the point where proprietary solutions are being
 considered due to the superior looks of their web interfaces and marketing
 literature.
 
-=head2 Mongregator to the rescue
-
 Mongregator is an aggregating front end to a wide array of monitoring
 systems. Its plug-in system provides an easy route to integrating several
 systems into a single instance of Mongragator. Mongregator is very flexible.
 It provides integration abilities from direct RRD access iframe view of
 web pages.
 
+See the L<documentation/overview> for more information.
