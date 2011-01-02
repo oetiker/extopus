@@ -24,4 +24,4 @@ systems into a single instance of Mongragator. Mongregator is very flexible.
 It provides integration abilities from direct RRD access iframe view of
 web pages.
 
-See the L<documentation/overview> for more information.
+See the L<documentation::overview> for more information.
