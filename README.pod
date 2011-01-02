@@ -1,5 +1,4 @@
-Mongregator - The Monitoring Aggregator
-=======================================
+=head1 Mongregator - The Monitoring Aggregator
 
 Over the years, many monitoring applications have been developed in
 OpenSource space. MRTG, Nagios, Cacti, Ganglia, Torrus or collectd to name
@@ -19,7 +18,7 @@ often not ideal, up to the point where proprietary solutions are being
 considered due to the superior looks of their web interfaces and marketing
 literature.
 
-Mongregator to the rescue.
+I<Mongregator to the rescue>
 
 Mongregator is an aggregating front end to a wide array of monitoring
 systems. Its plug-in system provides an easy route to integrating several
