@@ -32,7 +32,7 @@ plugin|/"Native Mongregator Integration">.
 =item *
 
 Teach your Monitoring System to send its information to Mongregator via the
-L<Mongregator JSON RPC Interface/"Mongregator JSON RPC">.
+L<Mongregator JSON RPC Interface|/"Mongregator JSON RPC">.
 
 =back
 
