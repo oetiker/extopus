@@ -47,7 +47,7 @@ contain any extra data you wish to display along with the node properties.
 
 Mongregator can show the nodes it knows as a list or as a tree. The tree
 view uses property values to build the tree. For performance reasons
-mongregator creates a persistant node cache which gets updated as new
+Mongregator creates a persistant node cache which gets updated as new
 information becomes available.
 
 =head2 Integration
