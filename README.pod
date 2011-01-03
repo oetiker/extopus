@@ -1,4 +1,4 @@
-=head1 Mongregator - The Monitoring Aggregator
+=head1 Extopus - The Monitoring Aggregator
 
 Over the years, many monitoring applications have been developed in
 OpenSource space. MRTG, Nagios, Cacti, Ganglia, Torrus, OpenNMS, Munin or
@@ -18,9 +18,9 @@ often not ideal, up to the point where proprietary solutions are being
 considered due to the superior looks of their web interfaces and marketing
 literature.
 
-Mongregator is an aggregating front end to a wide array of monitoring
+Extopus is an aggregating front end to a wide array of monitoring
 systems. Its plug-in system provides an easy route to integrating several
-systems into a single instance of Mongragator. Mongregator is very flexible.
+systems into a single instance of Mongragator. Extopus is very flexible.
 It provides integration abilities from direct RRD access iframe view of
 web pages.
 
