@@ -14,7 +14,7 @@ Accessing a monitoring system from Mongregator can be as superficial as
 directly including a web page into a Mongregator iframe or it can be as deep
 as giving mongragator direct access to the rrd files or pulling  in tabular data.
 
-There are two strategies for integrating an existing tool with Mongregator:
+There are three strategies for integrating an existing tool with Mongregator:
 
 =over
 
@@ -25,9 +25,14 @@ whatever methods for interaction the tool already supports.
 
 =item *
 
-Add a JSON RPC Mongregator interface to your monitoring system for
+Add a JSON RPC interface to your monitoring system for
 Mongregator to access directly using the Mongregator L<native
 plugin|/"Native Mongregator Integration">.
+
+=item *
+
+Teach your Monitoring System to send its information to Mongregator via the
+L<Mongregator JSON RPC Interface/"Mongregator JSON RPC">.
 
 =back
 
@@ -58,6 +63,11 @@ and details about the data associated with a particular node.
 Instead of adding Mongregator support to a particular tool it is also
 possible to teach Mongregator how to talk to a tools existing interfaces.
 This is done by creating a tool specific plugin for Mongregator.
+
+=head3 Mongregator JSON RPC
+
+Monitoring Applications can push their information to Mongregator via a JSON
+RPC Webservice.
 
 =head2 Virtual Nodes
 
