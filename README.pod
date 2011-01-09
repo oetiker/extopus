@@ -21,7 +21,7 @@ literature.
 Extopus is an aggregating front end to a wide array of monitoring
 systems. Its plug-in system provides an easy route to integrating several
 systems into a single instance of Mongragator. Extopus is very flexible.
-It provides integration abilities from direct RRD access iframe view of
+It provides integration abilities from direct RRD access to iframe view of
 web pages.
 
 See the the documentation for for more information.

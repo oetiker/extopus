@@ -99,4 +99,3 @@ restrict users to high level views.
 Users can drag and drop widgets from individual node screens into a
 dashboard screens, assembling their personal control center.
 
-
