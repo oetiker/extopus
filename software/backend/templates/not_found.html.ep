@@ -1,0 +1,8 @@
+<!doctype html><html>
+    <head><title>Not Found</title></head>
+    <body>
+        The page you were requesting
+        "<%= $self->req->url->path || '/' %>"
+        could not be found.
+    </body>
+</html>

@@ -1,0 +1,80 @@
+{
+  "name"    : "extopus",
+
+  "include" :
+  [
+    {
+      "path" : "${QOOXDOO_PATH}/tool/data/config/application.json"
+    }
+  ],
+
+  "export" :
+  [
+    "api",
+    "build",
+    "clean",
+    "distclean",
+    "fix",
+    "info",
+    "inspector",
+    "lint",
+    "migration",
+    "pretty",
+    "profiling",
+    "source",
+    "source-all",
+    "test",
+    "test-source",
+    "translation"
+  ],
+
+  "let" :
+  {
+    "APPLICATION"  : "ep",
+    "QXTHEME"      : "ep.theme.Theme",
+    "API_EXCLUDE"  : ["qx.*"],
+    "LOCALES"      : [ "en", "de" ],
+    "CACHE"        : "./cache",
+    "ROOT"         : "."
+  },
+
+  // You only need to edit the remainder of this file, if you want to customize
+  // specific jobs, or add own job definitions.
+
+  "jobs" :
+  {
+    "build" :
+    {
+//      "copy-files": {
+//          "files" : [ "resource/excanvas.js" ]
+//       }
+     },
+     "pretty" :
+     {
+        "pretty-print" : 
+        {
+            "general" : 
+            {           
+               "indent-string"            : "    "
+            },
+            "comments" :
+            {
+                "trailing" :
+                {
+                    "keep-column"         : false,
+                    "padding"             : "* "
+                }
+            },
+            "blocks" :
+            {
+                "align-with-curlies"     :  false,
+                "open-curly" :
+                { 
+                    "newline-before"      : "n",
+                     "indent-before"        : false
+                }
+            }
+        }
+    }
+  }
+}
