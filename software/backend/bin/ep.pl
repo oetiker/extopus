@@ -5,7 +5,7 @@ use warnings;
 use v5.12.1;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use lib "$FindBin::Bin/../../../support/lib/perl";
+use lib "$FindBin::Bin/../../thirdparty/lib/perl";
 use Mojolicious::Commands;
 use ep::MojoApp;
 

@@ -2,7 +2,7 @@
 use 5.12.0;
 
 use FindBin;
-use lib $FindBin::Bin.'/../support/lib/perl';
+use lib $FindBin::Bin.'/../../thirdparty/lib/perl';
 
 use MongoDB;
 use MongoDB::OID;
@@ -20,15 +20,15 @@ $nodes->drop_indexes;
 
 for (@tree_keys){
     $tree{$_} = $db->get_collection('tk_'.$_);
-    $tree{$_}->ensure_index({k => 1},{unique => 1, save => 1});
+    $tree{$_}->ensure_index({k => 1},{unique => 1});
 }
 
-my @town = ('Olten','Bern','Tokyo','Berlin','London','Sidney');
-my @address = ('Center','Markweg','Plaza');
-my @floor = ('1','z','2','3');
-my @vendor = ('Cisco','Zyxel','Linksys');
-my @product = ('3945','p33k','1c4','REX');
-my @release = ('v1.2','v22','v1.10.2b.33','v0.2.3');
+my @town = ('Olten','Bern','Tokyo','Berlin','London','Sidney','Genf','Freiburg','Chur','Altdorf','Luzern','Wengen','Davos','New York','Moskau','Johannesburg','Pitsburg');
+my @address = ('Center','Markweg','Plaza','Top','Downstreet','Westside','Levi','Town Center','Worf','Albert','Park','Hillside','Old Town');
+my @floor = ('Floor 1','Floor 2','Floor 3','Floor 4','Floor 5','Floor 6');
+my @vendor = ('Cisco','Zyxel','Linksys','Juniper','3com','GKK','Ascom','Gfeller','Simens','Sanyo','Nokia','Sun','Oracle');
+my @product = ('c3945','p33k','d1c4','REX 4','A-3444','C-455','F-42885c','D48873','L32','A783');
+my @release = ('v1.2','v22','v1.10.2b.33','v0.2.3','v3','v982','v10.4.2b','9,4,2,11','2010.1','2008.23.32');
 
 my $eqid = 0;
 for (1..2000){
@@ -41,7 +41,7 @@ for (1..2000){
             vendor => $vendor[rand($#vendor+1)],
             product => $product[rand($#product+1)],
             release => $release[rand($#release+1)],
-            device => sprintf('d-%8d',$eqid++)
+            device => sprintf('d-%08d',$eqid++)
         );        
         for my $tk (@tree_keys){
             $tree{$tk}->insert({k=>$map{$tk}}) if $map{$tk};
