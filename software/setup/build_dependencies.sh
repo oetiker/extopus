@@ -49,8 +49,6 @@ PATCH_END
   scons --extrapathdyn=$PREFIX --prefix=$PREFIX --boost-version=1_45 --boost-compiler=gcc43 --cpppath=$PREFIX/include/boost-1_45 --sharedclient install
 fi
 
-export PERL=/usr/sepp/bin/perl-5.12.1
-
 perlmodule ExtUtils::CBuilder
 perlmodule ExtUtils::ParseXS
 perlmodule ExtUtils::Manifest
