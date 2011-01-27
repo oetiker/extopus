@@ -133,7 +133,7 @@ sub getNodeList {
     );
     if ($args->{sortColumn}){
         $queryAttr{sort_by} = {
-            "$args->{sortColumn}" => 1
+            "$args->{sortColumn}" => $args->{sortDesc} ? -1 : 1
         };
     }
     my $cursor = $self->{nodes}->query($self->_makeFilter($args->{filter}),\%queryAttr);
