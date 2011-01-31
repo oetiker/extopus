@@ -11,28 +11,25 @@
 qx.Class.define("ep.ui.EpTree", {
     extend : qx.ui.core.Widget,
 
-    construct : function(service) {
+    construct : function() {
         this.base(arguments);
-        this._setLayout(new qx.ui.layout.Grow());
-        this.setService(service);
-        this._armTree();
+        var grid = new qx.ui.layout.Grow();
+        this._setLayout(grid);
+        this._createChildControl('tree');
+
         this._addNodeKids();        
-        var tree =  this.getChildControl('tree');
-        tree.getDataRowRenderer().setHighlightFocusRow(false);
-        tree.set({
-            useTreeLines: true,
-            excludeFirstLevelTreeLines: true,
-            openCloseClickSelectsRow: true,
-            alwaysShowOpenCloseSymbol: true,
-            rowHeight: 20
-        });
-        tree.addListener("treeOpenWhileEmpty",this._addNodeKids,this);            
-        tree.addListener("cellClick",this._cellClickHandler,this);            
-        tree.addListener("treeClose",this._dropNode,this);            
     },
 
     properties: {
-        service: {}
+        search: {
+            nullable: true,
+            init: null
+        },
+       /** Appearance of the widget */
+        appearance : {
+            refine : true,
+            init   : "eptree"
+        }
     },
 
     members : {
@@ -49,15 +46,21 @@ qx.Class.define("ep.ui.EpTree", {
                 case "tree":
                     control = new qx.ui.treevirtual.TreeVirtual('Nodes',{
                         treeDataCellRenderer: new ep.ui.EpTreeDataCellRenderer()
-                    });                    
+                    }).set({
+                        useTreeLines: true,
+                        excludeFirstLevelTreeLines: true,
+                        openCloseClickSelectsRow: true,
+                        alwaysShowOpenCloseSymbol: true,
+                        rowHeight: 20
+                    });
                     this._add(control);
+                    control.getDataRowRenderer().setHighlightFocusRow(false);
+                    control.addListener("treeOpenWhileEmpty",this._addNodeKids,this);            
+                    control.addListener("cellClick",this._cellClickHandler,this);            
+                    control.addListener("treeClose",this._dropNode,this);            
                     break;
             }
-
             return control || this.base(arguments, id);
-        },
-        _armTree : function(){
-            var treeWidget = this.getChildControl('tree');
         },
         _addNodeKids : function(e){
             var nodeId = null;
@@ -76,18 +79,13 @@ qx.Class.define("ep.ui.EpTree", {
                     filter.unshift(tree.nodeGetLabel(walker));
                 }
             }
-            var rpc=this.getService();
+            var rpc=ep.data.Server.getInstance();
             var model = tree.getDataModel();
-            var loadingId = model.addLeaf(nodeId,this.tr('loading ...'));
             model.setData();            
             if (nodeId){
                 tree.nodeSetOpened(nodeId,true);
             }
-            /* show the loading element immediately */
-            qx.ui.core.queue.Manager.flush();
-            qx.html.Element.flush();
             rpc.callAsyncSmart(function(ret){
-               model.prune(loadingId,true);
                for (var i=0;i<ret.list.length;i++){
 
                    var newNodeId;
@@ -97,10 +95,9 @@ qx.Class.define("ep.ui.EpTree", {
                    else {
                        newNodeId = model.addLeaf(nodeId,ret.list[i]);
                    }
-                   //tree.nodeSetLabelStyle(newNodeId, "padding-top: 2px"); 
                 }
                 model.setData();
-            },'getTreeBranch',filter);
+            },'getTreeBranch',{filter: filter, search: this.getSearch()});
         },
         _dropNode : function(e){
             var tree = this.getChildControl('tree');
@@ -117,7 +114,7 @@ qx.Class.define("ep.ui.EpTree", {
             for (var walker = nodeId;walker;walker=tree.nodeGet(walker).parentNodeId){
                 filter.unshift(tree.nodeGetLabel(walker));
             } 
-            ep.data.NodeTableModel.getInstance().setFilter(filter);
+            //ep.data.NodeTableModel.getInstance().setFilter(filter);
             //tree.nodeToggleOpened(nodeId);
             //model.setData();
         }

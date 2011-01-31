@@ -33,6 +33,10 @@ qx.Class.define('ep.data.NodeTableModel', {
         filter : {
             nullable : true,
             apply    : '_applyFilter'
+        },
+        search : {
+            nullable : true,
+            apply    : '_applySearch'
         }
     },    
 
@@ -44,13 +48,13 @@ qx.Class.define('ep.data.NodeTableModel', {
             var rpc = ep.data.Server.getInstance();
             var that = this;
             var filter = this.getFilter();
-
+            var search = this.getSearch();
             rpc.callAsync(function(ret,exc) {
                 if (exc) {
                     ep.ui.MsgBox.getInstance().exc(exc);
                 }
                 that._onRowCountLoaded(ret);
-            }, 'getNodeCount', filter);
+            }, 'getNodeCount', {filter: filter, search: search});
         },
 
 
@@ -65,6 +69,17 @@ qx.Class.define('ep.data.NodeTableModel', {
                 this.reloadData();
             }
         },
+        /**
+         * Reload the table data when the tagId changes.
+         *
+         * @param newValue {Integer} New TagId
+         * @param oldValue {Integer} Old TagId
+         */
+        _applySearch : function(newValue, oldValue) {
+            if (newValue != oldValue){
+                this.reloadData();
+            }
+        },
 
 
         /**
@@ -75,11 +90,12 @@ qx.Class.define('ep.data.NodeTableModel', {
          */
         _loadRowData : function(firstRow, lastRow) {
             var filter = this.getFilter();
-
+            var search = this.getSearch();
             var rpcArgs = {
                 firstRow : firstRow,
                 lastRow  : lastRow,
-                filter   : filter
+                filter   : filter,
+                search   : search
             };
 
             if (!this.isSortAscending()) {

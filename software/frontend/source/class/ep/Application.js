@@ -31,13 +31,11 @@ qx.Class.define("ep.Application", {
                 qx.log.appender.Console;
             }
             var hsplit = new qx.ui.splitpane.Pane("horizontal").set({ decorator : null });
-
-            var rpc = ep.data.Server.getInstance();
-            hsplit.add(new ep.ui.EpTree(rpc),2);
-
+            var rpc=ep.data.Server.getInstance();
             rpc.callAsyncSmart(function(ret){
                 ep.data.NodeTableModel.getInstance().setColumns(ret); 
-                hsplit.add(new ep.ui.EpTable(),5);
+                hsplit.add(new ep.ui.EpNavigator(),5);
+                hsplit.add(new qx.ui.basic.Label('hello',10).set({allowGrowX: true}));
             },'getNodePropertyKeys');   
 
             this.getRoot().add(hsplit, {

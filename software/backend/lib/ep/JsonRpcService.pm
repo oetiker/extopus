@@ -43,8 +43,13 @@ Get the next level of branches  given the first few are already set.
 
 sub getTreeBranch {
     my $self = shift;
-    my $filter_values = shift;
+    my $args = shift;
+    my $filter_values = $args->{filter};
+    my $search = $args->{search};
     my @filter;
+    if ($search){
+        push @filter, '_S',_makeSearch($search);
+    }        
     my $level = 0;
     my @return;
     for (my $level=0;;$level++){
@@ -96,10 +101,20 @@ Get the number of nodes matching filter.
 
 =cut  
 
-sub _makeFilter {
+sub _makeSearch {
+    my $search_expression = shift;
+    my @keys = split /\s+/, lc($search_expression);
+    return { '$all' => \@keys }; 
+}
+
+sub _makeQuery {
     my $self = shift;
     my $filter_values = shift;
+    my $search_expression = shift;
     my %filter;
+    if ($search_expression){
+        $filter{_S} = _makeSearch($search_expression);
+    }
     for (my $level=0;;$level++){
         if ($filter_values->[$level]){
             my $key = $tree[$level] or die "Tree depth limited at $level";
@@ -108,13 +123,14 @@ sub _makeFilter {
         } else {
             return \%filter;
         }
-    }
+    }    
 }    
 
 
 sub getNodeCount {
     my $self = shift;
-    my $filter = $self->_makeFilter(shift);
+    my $args = shift;
+    my $filter = $self->_makeQuery($args->{filter},$args->{search});
     return $self->{nodes}->query($filter)->count();
 }
 
@@ -136,7 +152,7 @@ sub getNodeList {
             "$args->{sortColumn}" => $args->{sortDesc} ? -1 : 1
         };
     }
-    my $cursor = $self->{nodes}->query($self->_makeFilter($args->{filter}),\%queryAttr);
+    my $cursor = $self->{nodes}->query($self->_makeQuery($args->{filter},$args->{search}),\%queryAttr);
     my @data;
     while (my $node = $cursor->next){
         push @data, { map {$_ => $node->{$_} } @{$self->getNodePropertyKeys()} };        

@@ -15,7 +15,7 @@ sub startup {
         ep => new ep::JsonRpcService(),
     };
             
-    $r->route('/jsonrpc')->to(
+    $r->route('(*root)/jsonrpc')->to(
         class       => 'Jsonrpc',
         method      => 'dispatch',
         namespace   => 'MojoX::Dispatcher::Qooxdoo',        

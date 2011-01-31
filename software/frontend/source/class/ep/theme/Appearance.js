@@ -10,5 +10,12 @@
  */
 qx.Theme.define("ep.theme.Appearance", {
     extend      : qx.theme.modern.Appearance,
-    appearances : {}
+    appearances : {
+        'epnavigator/eptabview' : 'tabview',
+        'epnavigator/eptree' : 'treeview',
+        'epnavigator/epsearch' : 'eptable',
+        'eptree/tree': 'treeview',
+        'eptable/table': 'table',
+        'eptable/search-box': 'textfield'
+    }
 });
