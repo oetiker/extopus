@@ -6,6 +6,8 @@
 ************************************************************************ */
 
 /* ************************************************************************
+#asset(ep/*)
+#asset(ep/page/*)
 ************************************************************************ */
 
 qx.Class.define("ep.Application", {
@@ -35,7 +37,7 @@ qx.Class.define("ep.Application", {
             rpc.callAsyncSmart(function(ret){
                 ep.data.NodeTableModel.getInstance().setColumns(ret); 
                 hsplit.add(new ep.ui.EpNavigator(),5);
-                hsplit.add(new qx.ui.basic.Label('hello').set({allowGrowX: true}),10);
+                hsplit.add(new ep.ui.EpIframe("resource/ep/page.html"),10);
             },'getNodePropertyKeys');   
 
             this.getRoot().add(hsplit, {

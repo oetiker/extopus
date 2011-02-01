@@ -1,0 +1,503 @@
+/*
+   Torrus Renderer stylesheet.
+   Designed by BlueRobot.com
+   Modified by Ian Holsman <ian@holsman.net>
+   Optimised by Stanislav Sinyagin
+
+   $Id: torrus.css 812 2010-04-04 19:05:09Z ssinyagin $
+   */
+BODY {
+  background-color : white;
+  color : #333;
+  font-family : verdana, arial, helvetica, sans-serif;
+  font-size : 11px;
+  margin : 0;
+  padding-bottom : 0;
+  padding-left : 0;
+  padding-right : 0;
+  padding-top : 0;
+  voice-family : inherit, male;
+}
+
+H1, H2, H3, P {
+  background-color : inherit;
+  margin : 0 0 15px;
+  padding-bottom : 0;
+  padding-left : 0;
+  padding-right : 0;
+  padding-top : 0;
+}
+
+H1, H2 {
+  color : #ccc;
+}
+
+H1 {
+  font-size : 28px;
+  font-weight : 900;
+  line-height : 28px;
+}
+
+H2 {
+  font-size : 20px;
+  font-weight : 700;
+  line-height : 20px;
+}
+
+H3 {
+  color : #333;
+  font-size : 18px;
+  line-height : 18px;
+}
+
+P {
+  clear : both; /* needed for Opera 6.12 */
+  color : #333;
+  float : none;
+  font-size : 11px;
+  line-height : 20px;
+}
+
+A {
+  background-color : inherit;
+  color : #09c;
+  font-weight : 600;
+  text-decoration : none;
+}
+
+A:link, A:visited {
+  background-color : inherit;
+  color : #09c;
+}
+
+A:hover {
+  background-color : #eee;
+  color : inherit;
+}
+
+DIV.CurrentPath A:hover {
+  background-color : #ccc;
+  color : inherit;
+}
+
+
+*.Header {
+  background-color : #eee;
+  border-bottom : 1px solid black;
+  border-left : 0 solid black;
+  border-right : 0 solid black;
+  border-top : 1px solid black;
+  color : inherit;
+  margin : 1em 0 1em;
+  padding-bottom : 0;
+  padding-left : 20px;
+  padding-right : 0;
+  padding-top : 17px;
+}
+
+
+*.Header A:hover {
+  background-color : #ccc;
+  color : inherit;
+}
+
+DIV.LoginInfo {
+  position : absolute;
+  right : 1em;
+  top : 1.5em;
+  font-size : 9px;
+  text-align : right;
+}
+
+DIV.LoginInfo SPAN.UserName {
+  display : block;
+}
+
+DIV.LoginInfo SPAN.Logout {
+  display : block;
+}
+
+SPAN.Logout A {
+  font-size : 9px;
+}
+
+DIV.CurrentTime {
+  float: right;
+  font-size : 9px;
+  padding-right: 1em;
+  text-align: right;
+}
+
+*.Content, *.SingleColumnContent  {
+  display : block;
+  float : left;
+  margin-bottom : 20px;
+  margin-left : 0px;
+  margin-right : 0px;
+  margin-top : 0;
+  padding-bottom : 10px;
+  padding-left : 10px;
+  padding-right : 10px;
+  padding-top : 10px;
+}
+
+*.SingleColumnContent {
+  padding-right : 0px;
+  width : 100%;
+}
+
+*.Content {
+  padding-right : 0px;
+  width : 70%;
+}
+
+DIV.PathMenu {
+  background-color : #eee;
+  border-bottom : 1px dashed #999;
+  border-left : 1px dashed #999;
+  border-right : 1px dashed #999;
+  border-top : 1px dashed #999;
+  color : inherit;
+  float : left;
+  line-height : 17px;
+  margin-left : 5px;
+  padding-bottom : 10px;
+  padding-left : 10px;
+  padding-right : 10px;
+  padding-top : 10px;
+  position : relative;
+  min-width : 15%; /* does not work in IE6 */
+}
+
+SPAN.PathElement {
+  display : block;
+}
+
+SPAN.TreeName {
+  font-weight : bold;
+}
+
+*.PathMenu DIV.CurrentTree {
+  font-size : 10px;
+  overflow : hidden;
+  width : 150px; /* compensate unsupported min-width in IE6 */
+}
+
+*.PathMenuHeader {
+  font-size : 10px;
+}
+
+*.SingleColumnContent DIV.CurrentTree {
+  padding-bottom : 5px;
+}
+
+*.SingleColumnContent DIV.CurrentTree {
+  color : inherit;
+  font-size : 10px;
+}
+
+DIV.Legend {
+  background-color : #eee;
+  color : inherit;
+  clear : both;
+  float : none;
+  font-size : 10px;
+  margin-bottom : 10px;
+  position : relative;
+  width : 90%;
+}
+
+DIV.LegendRow {
+  clear : both;
+  float : none;
+  margin-bottom: 2px;
+}
+
+DIV.LegendRow SPAN.LegendName {
+  font-weight : bold;
+  text-align : left;
+  padding-right : 5px;
+}
+
+DIV.LegendRow SPAN.LegendValue {
+  text-align : left;
+}
+
+P.Variables SPAN.VariableName {
+  font-weight : bold;
+}
+
+DIV.Monitors {
+  clear : both;
+  float : none;
+  font-size : 10px;
+  margin-bottom : 10px;
+  position : relative;
+  width : 90%;
+}
+
+SPAN.MonitorName {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+
+DIV.Listing {
+  clear : both;
+  float : none;
+  font-size : 11px;
+  margin-bottom : 10px;
+  width : 90%;
+}
+
+*.ListRow, *.ListRowEven  {
+  clear : both;
+  margin-top : 3px;
+}
+
+*.ListRowEven {
+  background-color : #eee;
+}
+
+*.ListRowEven A:hover {
+  background-color : #ccc;
+  color : inherit;
+}
+
+DIV.Listing *.NodeName  {
+  display : block;
+  font-weight : bold;
+  padding-left : 10px;
+  text-align : left;
+}
+
+DIV.Listing *.NodeDescr, DIV.Listing *.TokensetDescr  {
+  display : block;
+  padding-left : 30px;
+}
+
+*.RecursiveListRow {
+  clear : both;
+  margin-top : 3px;
+  margin-left : 20px;
+  margin-right : 2px;
+  padding-bottom: 2px;
+  border: 1px solid #eee;
+}
+
+
+DIV.ShortGraph *.NodeDescr {
+  font-weight : 600;
+  padding-left : 10px;
+}
+
+DIV.Graph, DIV.ShortGraph  {
+  clear : left;
+  float : left;
+  margin-bottom : 10px;
+  margin-top : 15px; 
+  position : relative;
+  width : 100%;
+}
+
+
+DIV.ShortGraph *.NodeName, DIV.ShortGraph *.NodeDescr {
+  clear : both;
+  float : none;
+  font-size : 11px;
+  width : 100%;
+}
+
+DIV.ShortGraph IMG {
+  border-width : 0;
+  border-color : transparent;
+  clear : both;
+  float : left;
+}
+
+/* In tokenset display, short graphs are placed in two
+   columns: left and right */
+
+DIV.ShortLeft, DIV.ShortRight {
+  margin-bottom : 5px;
+  page-break-inside : avoid;
+  position : relative;
+  width : 50%;
+}
+
+DIV.ShortLeft {
+  clear : left;
+  float : left;
+}
+
+DIV.ShortRight {
+  clear : right;
+  float : right;
+}
+
+
+FORM.LoginForm {
+  color : #333;
+  font-size : 11px;
+  line-height : 20px;
+  width : 50%;
+}
+
+SPAN.LoginTitle {
+  float : left;
+  width : 20%;
+}
+
+SPAN.LoginInput INPUT {
+  width : 30%;
+}
+
+SPAN.LoginInput INPUT.Remember {
+  width : auto;
+}
+
+
+*.BottomShortcuts {
+  clear : both;
+  float : none;
+  font-size : 11px;
+  height : 15px;
+  margin : 25px 0 20px;
+  padding-bottom : 0;
+  padding-left : 0;
+  padding-right : 0;
+  padding-top : 0;
+  position : relative;
+}
+
+
+*.TopMenu {
+  font-size : 9px;
+  padding-left : 1em;
+}
+
+*.BottomMenu {
+  clear : both;
+  float : none;
+  font-size : 9px;
+  /* height : 15px; */
+  margin : 50px 0 0 0;
+  padding-bottom : 0;
+  padding-left : 1em;
+  padding-right : 0;
+  padding-top : 0;
+  width : 100%;  
+}
+
+
+
+*.TopMenu A, *.TopMenu A:link, *.TopMenu A:visited,
+*.BottomMenu A, *.BottomMenu A:link, *.BottomMenu A:visited {
+  color: #A1C3CB;
+  font-size : 9px;  
+}
+
+
+*.Footer {
+  background-color : #eee;
+  border-bottom : 1px solid black;
+  border-left : 0 solid black;
+  border-right : 0 solid black;
+  border-top : 1px solid black;
+  clear : both;
+  color : inherit;
+  float : none;
+  font-size : 10px;
+  height : 15px;
+  line-height : 12px;
+  margin : 0 0 10px;
+  padding-bottom : 0;
+  padding-left : 0;
+  padding-right : 1em;
+  padding-top : 0;
+  text-align : right;
+}
+
+*.Footer A {
+  font-size : 10px;
+}
+
+*.SiteInfo, *.TreeInfo {
+  padding-left : 5em;
+}
+
+*.HelpContent {
+  font-size: 12px;
+  line-height: 15px;
+  padding-bottom: 5px;
+  padding-left: 2em;
+  padding-right: 2em;
+  padding-top: 5px;
+}
+
+*.HelpContent P {
+  font-size: 12px;
+}
+
+*.HelpHeader {
+  color : #ccc;
+  font-size : 13px;
+  font-weight: 800;
+  margin : 10px 0 10px;
+}
+
+*.HelpFooter {
+  position: absolute;
+  bottom: 0;
+  margin : 0 0 10px;
+}
+
+*.HelpPathHeader {
+  font-weight: 700;
+  margin : 10px 0 10px;
+}
+
+*.HelpMessage {
+  padding-left: 2em;
+  padding-right: 2em;
+}
+
+*.SetDateDialog {
+  font-size : 9px;
+  padding-bottom : 0;
+  padding-left : 2em;
+  padding-right : 2em;
+  padding-top : 0;
+}
+
+*.SetDateDialog FORM {
+  display : inline;
+}
+
+*.SetDateDialog INPUT {
+  font-size : 9px;
+}
+
+
+*.SearchDialog {
+  font-size : 9px;
+  padding-bottom : 0;
+  padding-left : 2em;
+  padding-right : 2em;
+  padding-top : 0;
+}
+
+*.SearchDialog FORM {
+  display : inline;
+}
+
+*.SearchDialog INPUT {
+  font-size : 9px;
+}
+
+
+
+*.ErrorMessage {
+  color : red;
+  height : 15px;
+}
