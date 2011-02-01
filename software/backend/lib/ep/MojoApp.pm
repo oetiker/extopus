@@ -15,21 +15,21 @@ sub startup {
         ep => new ep::JsonRpcService(),
     };
             
-    $r->route('(*root)/jsonrpc')->to(
-        class       => 'Jsonrpc',
-        method      => 'dispatch',
-        namespace   => 'MojoX::Dispatcher::Qooxdoo',        
-        # our own properties
-        services    => $services,        
-        debug       => 0,        
-    );
-    
     $SIG{__WARN__} = sub {
         local $SIG{__WARN__};
         $self->log->info(shift);
     };
 
     if ($ENV{EP_SOURCE}){
+        $r->route('/source/jsonrpc')->to(
+            class       => 'Jsonrpc',
+            method      => 'dispatch',
+            namespace   => 'MojoX::Dispatcher::Qooxdoo',        
+            # our own properties
+            services    => $services,        
+            debug       => 1,        
+        );
+    
         $self->static->root($self->home->rel_dir('../frontend'));
         $r->get('/' => sub { shift->redirect_to('/source/') });
         $r->get('/source/' => sub { shift->render_static('/source/index.html') });
@@ -46,6 +46,14 @@ sub startup {
             }    
         );
     } else {
+        $r->route('/jsonrpc')->to(
+            class       => 'Jsonrpc',
+            method      => 'dispatch',
+            namespace   => 'MojoX::Dispatcher::Qooxdoo',        
+            # our own properties
+            services    => $services,        
+            debug       => 0,        
+        );
         $r->get( '/' => sub { shift->render_static('index.html') });
     }
 }
