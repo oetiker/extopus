@@ -74,17 +74,16 @@ qx.Class.define("ep.ui.EpTree", {
                 }
                 nodeId = node.nodeId;
                 props = node.userData;
-                qx.dev.Debug.debugObject(props,'Props');
+//              qx.dev.Debug.debugObject(props,'Props');
                 for (var walker = nodeId;walker;walker=tree.nodeGet(walker).parentNodeId){
                     filter.unshift(tree.nodeGetLabel(walker));
                 }
             }
             var rpc=ep.data.Server.getInstance();
             var model = tree.getDataModel();
-            model.setData();            
-            if (nodeId){
-                tree.nodeSetOpened(nodeId,true);
-            }
+            //if (nodeId){
+            //    tree.nodeSetOpened(nodeId,true);
+            //}
             rpc.callAsyncSmart(function(ret){
                for (var i=0;i<ret.list.length;i++){
 
@@ -110,13 +109,13 @@ qx.Class.define("ep.ui.EpTree", {
             var tree = this.getChildControl('tree');
             var model = tree.getDataModel();
             var nodeId = model.getNode(row);                
-            var filter = [];
-            for (var walker = nodeId;walker;walker=tree.nodeGet(walker).parentNodeId){
-                filter.unshift(tree.nodeGetLabel(walker));
-            } 
+            // var filter = [];
+            // for (var walker = nodeId;walker;walker=tree.nodeGet(walker).parentNodeId){
+            //    filter.unshift(tree.nodeGetLabel(walker));
+            // } 
             //ep.data.NodeTableModel.getInstance().setFilter(filter);
-            //tree.nodeToggleOpened(nodeId);
-            //model.setData();
+            tree.nodeToggleOpened(nodeId);
+            model.setData();
         }
     }
 });

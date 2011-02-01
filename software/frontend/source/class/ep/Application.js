@@ -35,7 +35,7 @@ qx.Class.define("ep.Application", {
             rpc.callAsyncSmart(function(ret){
                 ep.data.NodeTableModel.getInstance().setColumns(ret); 
                 hsplit.add(new ep.ui.EpNavigator(),5);
-                hsplit.add(new qx.ui.basic.Label('hello',10).set({allowGrowX: true}));
+                hsplit.add(new qx.ui.basic.Label('hello').set({allowGrowX: true}),10);
             },'getNodePropertyKeys');   
 
             this.getRoot().add(hsplit, {

@@ -11,10 +11,13 @@
 qx.Theme.define("ep.theme.Appearance", {
     extend      : qx.theme.modern.Appearance,
     appearances : {
+        'epnavigator' : 'widget',
         'epnavigator/eptabview' : 'tabview',
-        'epnavigator/eptree' : 'treeview',
+        'epnavigator/eptree' : 'eptree',
         'epnavigator/epsearch' : 'eptable',
-        'eptree/tree': 'treeview',
+        'eptree' : 'widget',
+        'eptree/tree': 'treevirtual',
+        'eptable' : 'widget',
         'eptable/table': 'table',
         'eptable/search-box': 'textfield'
     }

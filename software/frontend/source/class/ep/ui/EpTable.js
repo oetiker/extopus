@@ -12,7 +12,7 @@ qx.Class.define("ep.ui.EpTable", {
     extend : qx.ui.core.Widget,
     construct : function() {
         this.base(arguments);
-        var grid = new qx.ui.layout.Grid(0,0);
+        var grid = new qx.ui.layout.Grid(0,2);
         grid.setColumnFlex(0,1);
         grid.setRowFlex(1,1);
         this._setLayout(grid);
@@ -51,8 +51,6 @@ qx.Class.define("ep.ui.EpTable", {
         },
         _setSearch: function(e){
             var value = e.getData();
-            var tree = this.getChildControl('tree').getDataModel().clearData();
-            this._addNodeKids();
             ep.data.NodeTableModel.getInstance().setSearch(value);
         }
     }
