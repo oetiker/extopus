@@ -8,6 +8,6 @@
  * Using the standard decoration configuration
  */
 qx.Theme.define("ep.theme.Decoration", {
-    extend      : qx.theme.modern.Decoration,
+    extend      : qx.theme.simple.Decoration,
     decorations : {}
 });

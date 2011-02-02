@@ -9,7 +9,7 @@
  * Qooxdoo has no apperance overrides.
  */
 qx.Theme.define("ep.theme.Appearance", {
-    extend      : qx.theme.modern.Appearance,
+    extend      : qx.theme.simple.Appearance,
     appearances : {
         'epnavigator' : 'widget',
         'epnavigator/eptabview' : 'tabview',

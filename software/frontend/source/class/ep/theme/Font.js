@@ -8,7 +8,7 @@
  * Two custom fonts for ep. <code>hugeTitle</code> and <code>smallTitle</code>.
  */
 qx.Theme.define("ep.theme.Font", {
-    extend : qx.theme.modern.Font,
+    extend : qx.theme.simple.Font,
 
     fonts : {
         hugeTitle : {

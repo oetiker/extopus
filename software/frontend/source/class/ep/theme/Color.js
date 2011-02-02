@@ -9,7 +9,7 @@
 ************************************************************************ */
 
 qx.Theme.define("ep.theme.Color", {
-    extend : qx.theme.modern.Color,
+    extend : qx.theme.simple.Color,
 
     colors : {
         "table-pane"                : "#f8f8f8",
