@@ -56,7 +56,6 @@ qx.Class.define("ep.ui.EpTree", {
                     this._add(control);
                     control.getDataRowRenderer().setHighlightFocusRow(false);
                     control.addListener("treeOpenWhileEmpty",this._addNodeKids,this);            
-                    control.addListener("cellClick",this._cellClickHandler,this);            
                     control.addListener("treeClose",this._dropNode,this);            
                     break;
             }
@@ -102,19 +101,6 @@ qx.Class.define("ep.ui.EpTree", {
             var tree = this.getChildControl('tree');
             var model = tree.getDataModel();
             model.prune(e.getData().nodeId,false);
-            model.setData();
-        },
-        _cellClickHandler : function(e){
-            var row = e.getRow();
-            var tree = this.getChildControl('tree');
-            var model = tree.getDataModel();
-            var nodeId = model.getNode(row);                
-            // var filter = [];
-            // for (var walker = nodeId;walker;walker=tree.nodeGet(walker).parentNodeId){
-            //    filter.unshift(tree.nodeGetLabel(walker));
-            // } 
-            //ep.data.NodeTableModel.getInstance().setFilter(filter);
-            tree.nodeToggleOpened(nodeId);
             model.setData();
         }
     }
