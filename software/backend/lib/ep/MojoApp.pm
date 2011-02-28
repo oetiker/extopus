@@ -4,7 +4,7 @@ use warnings;
 
 use ep::JsonRpcService;
 
-use base 'Mojolicious';
+use Mojo::Base 'Mojolicious';
 
 sub startup {
     my $self = shift;
