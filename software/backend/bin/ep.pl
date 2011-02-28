@@ -1,11 +1,10 @@
-#!/usr/sepp/bin/perl-5.12.1 -w
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
-use v5.12.1;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use lib "$FindBin::Bin/../../thirdparty/lib/perl";
+use lib "$FindBin::Bin/../../thirdparty/lib/perl5";
 use Mojolicious::Commands;
 use ep::MojoApp;
 

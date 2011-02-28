@@ -1,7 +1,7 @@
 package ep::JsonRpcService;
 use strict;
 use ep::Exception qw(mkerror);
-use base qw(Mojo::Base);
+use Mojo::Base -base;
 use MongoDB;
 use Tie::IxHash;
 
@@ -34,7 +34,19 @@ sub new {
     return $self;
 }
 
+our %allow = (
+    getTreeBranch => 1,
+    getNodePropertyKeys => 1,
+    getNodeCount => 1,
+    getNodeList => 1
+);
 
+sub allow_rpc_access {
+    my $self = shift;
+    my $method = shift;
+    return $allow{$method}; 
+}
+   
 =head2 getTreeBranch([v1,v2,...])
 
 Get the next level of branches  given the first few are already set.
