@@ -1,12 +1,14 @@
 =head1 Extopus Overview
 
+by Tobias Oetiker, L<tobi@oetiker.ch>
+
 Extopus is an aggregating front end for monitoring systems.
 
 =head2 Data Model
 
 =head3 Nodes
 
-Extopus is built arround a notion of nodes. Each node has a set of
+Extopus is built around a notion of nodes. Each node has a set of
 properties associated with it, they fall into three categories:
 mandatory (xm_*), optional (xo_*) and user defined. Extopus can
 use common property values between nodes to build arbitrary tree
@@ -16,13 +18,13 @@ structures.
 
 =item xm_src
 
-the source of this node. This is an internal connection to a extopus plugin instance
-providing this information. The plugin may provide additional information at runtime.
+the source of this node. This is an internal connection to a Extopus plug-in instance
+providing this information. The plug-in may provide additional information at run-time.
 
 =item mx_id
 
-a node id which can be used to retrieve additional information about this node via the source plugin instance.
-The id is only unique within the scope of the plugin.
+a node id which can be used to retrieve additional information about this node via the source plug-in instance.
+The id is only unique within the scope of the plug-in.
 
 =item mx_expiry (epoch)
 
@@ -47,26 +49,26 @@ who does this node belong to, to be used in determining access privileges
 =back
 
 Additional site specific information can be associated with the node for
-use in plugins.
+use in plug-in.
 
-As a node is selected, extopus will ask the associated plugin for futher
-information about how to display details on the node. The plugin will then
-either access the linked backend monitoring system to grab additional
-information or it will pull the data from the extopus node database.
+As a node is selected, Extopus will ask the associated plug-in for further
+information about how to display details on the node. The plug-in will then
+either access the linked back end monitoring system to grab additional
+information or it will pull the data from the Extopus node database.
 
 =head3 Node Database
 
 All nodes are stored in a no-sql database (mongodb) with the ability to
-store arbitrary attributes for each node without requiering any schema changes.
+store arbitrary attributes for each node without requiring any schema changes.
 
-The database can gets populated via the plugins integrating the different
-backend systems. There are three ways of database population
+The database can gets populated via the plug-ins integrating the different
+back end systems. There are three ways of database population
 
 =over
 
 =item periodically
 
-plugins are asked for re-populating the database by a cron-like facility.
+plug-ins are asked for re-populating the database by a cron-like facility.
 
 =item push
 
@@ -74,11 +76,11 @@ external systems can push updates to the node database
 
 =item login event
 
-plugins poll data provider upon user login for appropriate nodes, this may
+plug-ins poll data provider upon user login for appropriate nodes, this may
 involve authenticating with the data provider to get access to appropriate
 information.
 
-The node database is no permanent data repository. Every node has an expiery
+The node database is no permanent data repository. Every node has an expiry
 property which will cause its own removal from the database.
 
 =back
@@ -86,11 +88,52 @@ property which will cause its own removal from the database.
 =head3 Access Control
 
 And authentication and authorization is governed by an authentication
-plugin. It governs which nodes are accessible to a user and within the nodes
+plug-in. It governs which nodes are accessible to a user and within the nodes
 which attributes are available. The access rules not only apply to the user,
-but also to other plugins. If a plugin was to draw node locations on a
+but also to other plug-ins. If a plug-in was to draw node locations on a
 google map, it would only get access to the nodes the user can access too.
 
 =head2 User Interface
 
-...
+There are three main elements to the user interface:
+
+=over
+
+=item Navigation Tree
+
+Using common attribute values between nodes, Extopus can build tree representations of the nodes, providing quick hierarchical access to the information.
+
+=item Node Search
+
+A google like full text search allows to find any node in the database quickly
+
+=item Information Display
+
+As a node gets selected, Extopus asks the associated plug-in instance for information to display. Extopus provides a range of different widgets for displaying information.
+
+=back
+
+=head2 Information Display Widgets
+
+Depending on the nature of information on display, Extopus sports a range of different widgets for displaying the information to the user.
+
+=head3 Iframe
+
+At the most basic level, output from other systems can be integrated within iframes, either fed directly from an external URL or proxied via the Extopus server.
+
+=head3 Tabular Data
+
+Tabular data can be displayed in a sortable and exportable table widget
+
+=head3 Live Charting
+
+Numeric data can be presented in charting widgets
+
+=head3 RRD Interactive
+
+Since RRD is widely used for storing time-series monitoring data, Extopus
+has special support producing interactive presentations of rrdtool charts
+given appropriate support from the respective back end system.
+
+
+
