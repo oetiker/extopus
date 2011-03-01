@@ -1,44 +1,96 @@
-=head1 Extopus Architectural Overview
+=head1 Extopus Overview
 
-=head2 Nodes
+Extopus is an aggregating front end for monitoring systems.
 
-Extopus is an aggregating front end to a wide array of monitoring
-systems.
+=head2 Data Model
+
+=head3 Nodes
 
 Extopus is built arround a notion of nodes. Each node has a set of
-properties. Some properties are mandatory, others are optional. Extopus can
-use common property values between nodes to build arbitrary tree structures.
+properties associated with it, they fall into three categories:
+mandatory (xm_*), optional (xo_*) and user defined. Extopus can
+use common property values between nodes to build arbitrary tree
+structures.
 
- {
-   location: 'New York',
-   customerId: 9388444,
-   sourceType: 'mrtg-34',
-   sourceLink: '/path/to/page.html',
-   deviceIp: '192.134.1.2',
-   accessId: 'oeGroup',
-   expireBy: 399848784
- }
+=over
 
-Each node can be associated with additional informational displays that get
-presented as the user selects the node. The information can be presented
-using a variety of display widgets provided by extopus (iframe, tabular with
-csv-download, graph).
+=item xm_src
 
-Extopus provides an object oriented plugin system for writing interfaces to
-existing monitoring tools, plugins can also access the output of other
-plugins for ultimate flexibility.
+the source of this node. This is an internal connection to a extopus plugin instance
+providing this information. The plugin may provide additional information at runtime.
 
-=head2 Access Control
+=item mx_id
 
-It may be desirable to restict system access to a sub-set of nodes, for a
-particular user. Access control plugins can impose arbitrary restrictions on
-which nodes become visible to users and other plugins.
+a node id which can be used to retrieve additional information about this node via the source plugin instance.
+The id is only unique within the scope of the plugin.
 
-=head2 Datastore
+=item mx_expiry (epoch)
 
-For performance reasons, all nodes are kept in the extopus database
-(mongodb). Node can get to the database via nightly polling jobs or also on
-demand upon special events (like the authentication of a user).
+when can this node be purged
 
-Every node in the datastore has an expiery property to make sure stale nodes can be removed automatically.
+=item mx_name
 
+some friendly name for the node
+
+=item mo_country, mo_state, mo_town, mo_zip, mo_street, mo_building, mo_floor, mo_room, mo_rack, mo_shelf, mo_long, mo_lat
+
+information about the physical location of the node
+
+=item mo_vendor, mo_model, mo_serial, mo_slot, mo_port
+
+information about the device this node is associated with
+
+=item mo_user, mo_groups[]
+
+who does this node belong to, to be used in determining access privileges
+
+=back
+
+Additional site specific information can be associated with the node for
+use in plugins.
+
+As a node is selected, extopus will ask the associated plugin for futher
+information about how to display details on the node. The plugin will then
+either access the linked backend monitoring system to grab additional
+information or it will pull the data from the extopus node database.
+
+=head3 Node Database
+
+All nodes are stored in a no-sql database (mongodb) with the ability to
+store arbitrary attributes for each node without requiering any schema changes.
+
+The database can gets populated via the plugins integrating the different
+backend systems. There are three ways of database population
+
+=over
+
+=item periodically
+
+plugins are asked for re-populating the database by a cron-like facility.
+
+=item push
+
+external systems can push updates to the node database
+
+=item login event
+
+plugins poll data provider upon user login for appropriate nodes, this may
+involve authenticating with the data provider to get access to appropriate
+information.
+
+The node database is no permanent data repository. Every node has an expiery
+property which will cause its own removal from the database.
+
+=back
+
+=head3 Access Control
+
+And authentication and authorization is governed by an authentication
+plugin. It governs which nodes are accessible to a user and within the nodes
+which attributes are available. The access rules not only apply to the user,
+but also to other plugins. If a plugin was to draw node locations on a
+google map, it would only get access to the nodes the user can access too.
+
+=head2 User Interface
+
+...
