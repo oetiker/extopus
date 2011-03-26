@@ -2,8 +2,9 @@ package ep::JsonRpcService;
 use strict;
 use ep::Exception qw(mkerror);
 use Mojo::Base -base;
-use MongoDB;
-use Tie::IxHash;
+use Mojo::UserAgent;
+use Mojo::JSON;
+use Mojo::URL;
 
 =head1 NAME
 
@@ -27,10 +28,7 @@ our @tree = qw(town address floor vendor product release device);
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    my $conn = MongoDB::Connection->new;
-    $self->{database} = $conn->get_database('extopus');
-    $self->{nodes} = $self->{database}->get_collection('nodes');
-    $self->{nodes}->ensure_index(Tie::IxHash->new( map { $_ => 1 } @tree));
+    $self->{ua} = Mojo::UserAgent->new;
     return $self;
 }
 
@@ -47,7 +45,7 @@ sub allow_rpc_access {
     return $allow{$method}; 
 }
    
-=head2 getTreeBranch([v1,v2,...])
+=head2 getTreeBranch({filter=>[v1,v2,...])
 
 Get the next level of branches  given the first few are already set.
 
@@ -56,45 +54,21 @@ Get the next level of branches  given the first few are already set.
 sub getTreeBranch {
     my $self = shift;
     my $args = shift;
-    my $filter_values = $args->{filter};
-    my $search = $args->{search};
-    my @filter;
-    if ($search){
-        push @filter, '_S',_makeSearch($search);
-    }        
-    my $level = 0;
+    my @filter = @{$args->{filter}};    
+    my $level = scalar @filter;
     my @return;
-    for (my $level=0;;$level++){
-        my $key = $tree[$level] or die "Tree depth at $level";
-        if ($filter_values->[$level]){
-            my $val = $filter_values->[$level];
-            push @filter, $key,$val;
-        }
-        else {
-            my $list = $self->{database}->get_collection('tk_'.$key);
-            my $q = $list->query({});    
-            if ($q->count() < 1000){
-                while (my $doc = $q->next){
-                    my $val = $doc->{k};        
-                    my $newfilt = {@filter,$key,$val};
-                    if ($self->{nodes}->find_one($newfilt)){       
-                        push @return, $val;
-                    }
-                }
-            }
-            else {
-                my $q = $self->{nodes}->query({@filter})->fields({"$key"=>1});
-                my %dedup;
-                while (my $doc = $q->next){
-                    my $val = $doc->{$key};
-                    next if $dedup{$val};
-                    $dedup{$val} = 1;
-                    push @return, $val;
-                }
-            }
-            return {list => [sort @return], typ=> ($level < $#tree) ? 'branch' : 'leaf' };
-        }       
-    }       
+    my $url = Mojo::URL->new('http://localhost:5984/extopus/_design/application/_view/tree');
+    my $json = Mojo::JSON->new;    
+    $url->query({
+        $level ? (
+            startkey => $json->encode(\@filter),
+            endkey => $json->encode([@filter,{}]),
+        ) : (),
+        group => $json->encode($json->true),
+        group_level => $json->encode($level+1)
+    });
+    my $data =  $self->{ua}->get($url->to_string)->res->json;
+    return {list => [ map { $_->{key}[$level] } @{$data->{rows}} ], typ=> ($level < $#tree) ? 'branch' : 'leaf' };
 }
 
 =head2 getNodePropertyKeys()
@@ -113,40 +87,17 @@ Get the number of nodes matching filter.
 
 =cut  
 
-sub _makeSearch {
-    my $search_expression = shift;
-    my @keys = split /\s+/, lc($search_expression);
-    return { '$all' => \@keys }; 
-}
-
-sub _makeQuery {
-    my $self = shift;
-    my $filter_values = shift;
-    my $search_expression = shift;
-    my %filter;
-    if ($search_expression){
-        $filter{_S} = _makeSearch($search_expression);
-    }
-    for (my $level=0;;$level++){
-        if ($filter_values->[$level]){
-            my $key = $tree[$level] or die "Tree depth limited at $level";
-            my $val = $filter_values->[$level];
-            $filter{$key} =$val;
-        } else {
-            return \%filter;
-        }
-    }    
-}    
-
-
 sub getNodeCount {
     my $self = shift;
-    my $args = shift;
-    my $filter = $self->_makeQuery($args->{filter},$args->{search});
-    return $self->{nodes}->query($filter)->count();
+    my $args = shift;    
+    my $url = Mojo::URL->new('http://localhost:5984/extopus');
+    #my $json = Mojo::JSON->new;
+    #$url->query({});
+    my $data =  $self->{ua}->get($url->to_string)->res->json;
+    return $data->{doc_count};
 }
 
-=head2 getNodeCount(filter)
+=head2 getNodeList(lastRow=>?,firstRow=>?,filter)
 
 Get the number of nodes matching filter.
 
@@ -155,21 +106,15 @@ Get the number of nodes matching filter.
 sub getNodeList {
     my $self = shift;
     my $args = shift;
-    my %queryAttr = (
-        limit => $args->{lastRow} - $args->{firstRow}+1,
+    my $url = Mojo::URL->new('http://localhost:5984/extopus/_all_docs');
+    my $json = Mojo::JSON->new;
+    $url->query({
+        include_docs=> $json->encode($json->true),
+        limit =>  $args->{lastRow} - $args->{firstRow}+1,
         skip => $args->{firstRow}
-    );
-    if ($args->{sortColumn}){
-        $queryAttr{sort_by} = {
-            "$args->{sortColumn}" => $args->{sortDesc} ? -1 : 1
-        };
-    }
-    my $cursor = $self->{nodes}->query($self->_makeQuery($args->{filter},$args->{search}),\%queryAttr);
-    my @data;
-    while (my $node = $cursor->next){
-        push @data, { map {$_ => $node->{$_} } @{$self->getNodePropertyKeys()} };        
-    }
-    return \@data;    
+    });
+    my $data =  $self->{ua}->get($url->to_string)->res->json;
+    return [map{$_->{doc}} @{$data->{rows}} ];    
 }
 
 

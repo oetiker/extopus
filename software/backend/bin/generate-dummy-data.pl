@@ -40,6 +40,7 @@ sub keyextract {
 }
 
 my $eqid = 0;
+my $id = 0;
 for (1..100){
     my @x;
     for (1..40){
@@ -57,7 +58,7 @@ for (1..100){
         }
         for (1..rand(16)+1){
             my $port = 'p'.$_;            
-            push @x, { %map, port=>$port, _S => keyextract(values(%map),$port) };
+            push @x, { %map, port=>$port, _id=pack("u", pack('L',$id++)) };
                         
         }
     }

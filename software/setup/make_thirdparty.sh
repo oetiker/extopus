@@ -19,3 +19,6 @@ cpanm	Mouse
 cpanm   Any::Moose
 cpanm   MongoDB
 cpanm   Tie::IxHash
+cpanm   AnyEvent::CouchDB
+cpanm   Store::CouchDB
+cpanm   CouchDB::Client
