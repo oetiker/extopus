@@ -1,0 +1,94 @@
+=head1 NAME
+
+Extopus Implementation Plan
+
+=head1 DESCRIPTION
+
+With the initial version of SIAM available the basic elements for extopus implementation are in place.
+
+=head2 Implementation Aproach
+
+To ensure implementation consistency and quality, development follows a few simple rules:
+
+=over
+
+=item 1.
+
+Select Task from Task List below. Discuss with PL.
+
+=item 2.
+
+Prepare Implementaiton Concept and Plan. Discuss with PL.
+
+=item 3.
+
+Document. Implement. Test. Send pull request to PL.
+
+=back
+
+=head1 WORK PACKAGES
+
+=head2 SIAM Importer
+
+Update data in extopus cache.
+
+=head2 SIAM Authenticator
+
+Upon user logon, determine which data should be accessible to the user.
+
+=head2 Postgresql Node Store
+
+Implement node store in postgresql with portability in mind.
+
+=head2 Implement Fulltext search
+
+Setup fulltext search. Make sure only accessible data is found.
+
+=head2 Torrus Proxy
+
+Implement HTTP proxy for accessing torrus instances via extopus backend
+
+=head2 Torrus IFrame integration
+
+Create Iframe display for Torrus output.
+
+=head2 Torrus Numerical Output
+
+Extract numerical data from rrd via torrus.
+
+=head2 RRD Widget
+
+Navigatable Chart Widget/Backend/Api for Extopus. With Pdf export.
+
+=head2 Tabular Data Display Widget
+
+Tabular data display widget/backend/api with csv and copy paste support.
+
+=head1 COPYRIGHT
+
+Copyright (c) 2011 by OETIKER+PARTNER AG. All rights reserved.
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=head1 AUTHOR
+
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>,
+
+=head1 HISTORY
+
+ 2011-04-010 to initial version
+
