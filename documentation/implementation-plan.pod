@@ -26,27 +26,23 @@ Document. Implement. Test. Send pull request to PL.
 
 =back
 
-=head1 WORK PACKAGES
+=head1 BACKEND WORK PACKAGES
 
-=head2 SIAM Importer
+=head2 ep::Driver::SIAM
 
-Update data in extopus cache.
+Load all data available to a specific user into the extopus backend cache L<ep::Cache>.
+See L<SIAM> for details on using SIAM.
 
-=head2 SIAM Authenticator
+=head2 ep::Cache
 
-Upon user logon, determine which data should be accessible to the user.
+See module skeleton for details L<ep::Cache>
 
-=head2 Postgresql Node Store
+=head2 ep::Proxy
 
-Implement node store in postgresql with portability in mind.
+Implement Mojo based HTTP proxy for accessing torrus htmls pages via extopus backend
+adjust any internal urls as necessary.
 
-=head2 Implement Fulltext search
-
-Setup fulltext search. Make sure only accessible data is found.
-
-=head2 Torrus Proxy
-
-Implement HTTP proxy for accessing torrus instances via extopus backend
+=head1 FRONTEND WORK PACKAGES
 
 =head2 Torrus IFrame integration
 
@@ -63,6 +59,17 @@ Navigatable Chart Widget/Backend/Api for Extopus. With Pdf export.
 =head2 Tabular Data Display Widget
 
 Tabular data display widget/backend/api with csv and copy paste support.
+
+=head1 TORRUS WORK PACKAGES
+
+=head2 Data Fetch
+
+Add data export template to torrus
+
+=head2 Configurable Charts
+
+In connection with the RRD Widget provide configurability for
+format, size, time of chart and graphv metadata.
 
 =head1 COPYRIGHT
 
@@ -90,5 +97,5 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>,
 
 =head1 HISTORY
 
- 2011-04-010 to initial version
+ 2011-04-07 to initial version
 
