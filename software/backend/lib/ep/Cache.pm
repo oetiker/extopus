@@ -14,7 +14,6 @@ ep::Cache - extopus data cache
         Location => [ qw(country state city address floor room) ],
         Customer => [ qw(customer country state city address) ]
     },
-    fullText => [ qw(country city address product room ip) ],     
  );
 
  $es->add({
@@ -24,7 +23,7 @@ ep::Cache - extopus data cache
 
  my @nodeIds = $es->search('expression',start,limit);
  
- my @branches = $es->getTree($treeName,[qw(key1 key2)]);
+ my @branches = $es->getBranches($treeName,$parent);
  # [ [ name, nodeid ], ... ]
 
  my @treeNames = $es->getTreeNames();
@@ -35,19 +34,22 @@ ep::Cache - extopus data cache
 
 Provide node Cache services to Extopus.
 
-=over
-
 =cut
 
 use strict;
 use warnings;
+use DBI;
 use Mojo::Base -base;
+use Mojo::JSON;
 
 has cacheKey    => sub { 'instance'.int(rand(1000000)) };
+has cacheRoot   => '/tmp/';
 has trees       => sub { {} };
 has fullText    => sub { [] };
+has json        => sub { Mojo::JSON->new() };
+has 'dbh';
 
-=item B<new>(I<config>)
+=head2 B<new>(I<config>)
 
 Create an ep::nodeCache object.
 
@@ -69,7 +71,151 @@ An array pointer to the keys used in the fulltext search
 
 =cut
 
+sub new {
+    my $self =  shift->SUPER::new(@_);
+    my $path = $self->cacheRoot.'/'.$self->cacheKey;
+    my $new = -r $path;
+    my $dbh = DBI->connect_cached("dbi:SQLites:dbname=$path","",{
+         RaiseError => 1,
+         PrintError => 0,
+         AutoCommit => 1,
+         ShowErrorStatement => 1,
+    });
+    $dbh->("PRAGMA synchronous = 0");
+    $self->dbh($dbh);  
+    if ($new){  
+        for my $tree (%{$self->trees}){
+            my $treeBranches = $dbh->quote_identifier("branches_$tree");
+            my $treeLeaves = $dbh->quote_identifier("leaves_$tree");
+            $dbh->do("CREATE TABLE AS $treeBranches ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
+            $dbh->do("CREATE INDEX ".$dbh->quote_identifier("branche_".$tree."_parent_idx")." ON $treeBranches ( parent,name ) ");
+            $dbh->do("CREATE TABLE AS $treeLeaves ( node INTEGER, parent INTEGER )");
+            $dbh->do("CREATE INDEX ".$dbh->quote_identifier("leaves_".$tree."_parent_idx")." ON $treeLeaves ( parent ) ");
+        }
+        $dbh->do("CREATE VIRTUAL TABLE node USING fts4(data TEXT)");
+    }
+}
+
+=head2 getTreeNames()
+
+returns a arrayref to the tree names
+
+=cut
+
+sub getTreeNames {
+    my $self = shift;
+    return [ keys %{$self->trees} ];
+}
+
+=head2 add({...})
+
+Store a node in the database.
+
+=cut
+
+sub add {
+    my $self = shift;
+    my $nodeData = shift;
+    my $dbh = $self->dbh;
+    $dbh->do("INSERT INTO node (data) VALUES(?)",{},$self->json->encode($nodeData));
+    my $nodeId = $dbh->last_insert_id("","","","");
+    $self->addTreeNode($nodeId,$nodeData);
+}
+
+=head2 addTreeNode(nodeId,nodeData)
+
+Update all appropriate trees with information from the node.
+
+=cut
+
+sub addTreeNode {
+    my $self = shift;
+    my $nodeId = shift;
+    my $node = shift;
+    my $dbh = $self->dbh;
+    for my $treeName (keys %{$self->trees}){          
+        my $treeBranches = $dbh->quote_identifier("branches_".$treeName); 
+        my $parent = 0;
+        for my $keyName (@{$self->trees->{$treeName}}){        
+            my $value = $node->{$keyName};
+            last unless defined $value;
+            my $id = $dbh->selectrow_array("SELECT id FROM $treeBranches WHERE name = ? AND parent = ?",{},$value,$parent);
+            if (not $id){
+                $dbh->do("INSERT INTO $treeBranches (name, parent) VALUES(?,?)",{},$value,$parent);
+                $id = $dbh->last_insert_id("","","","");
+            }
+            $parent = $id;
+        }
+        my $treeLeaves = $dbh->quote_identifier("leaves_".$treeName);
+        $dbh->do("INSERT INTO $treeLeaves (node, parent) VALUES(?,?)",{},$nodeId,$parent);
+    }
+}
+
+
+=head2 search($expression,$offset,$limit)
+
+Return nodeIds of documents matching the given search term
+
+=cut
+
+sub search {
+    my $self = shift;
+    my $expression = shift;
+    my $offset = shift || 0;
+    my $limit = shift || 100;
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare("SELECT docid FROM node WHERE data MATCH ? LIMIT ? OFFSET ?");
+    $sth->execute($expression,$offset,$limit);
+    return [ map {$_->[0]} @{$sth->fetchall_arrayref([0])} ];
+}
+
+=head2 getBranches($treeName,$parent)
+
+Return the data makeing up the branch starting off parent.
+
+ { nodes => [ id1, id2, ... ]
+   branches => [ [ id1, name1 ], [id2, name2 ], ... ] }
+
+=cut
+
+sub getBranches {
+    my $self = shift;
+    my $treeName = shift;
+    my $parent = shift;
+    my $dbh = $self->dbh;
+    my $sth;
+
+    my $treeBranches = $dbh->quote_identifier("branches_".$treeName);
+    $sth = $dbh->prepare("SELECT id, name FROM $treeBranches WHERE parent = ?");
+    $sth->execute($parent);
+    my $branches = $sth->fetchall_arrayref([]);
+
+    my $treeLeaves = $dbh->quote_identifier("leaves_".$treeName);
+    $sth = $dbh->prepare("SELECT node FROM $treeLeaves WHERE parent = ?");
+    $sth->execute($parent);
+    my $nodes = [ map {$_->[0]} @{$sth->fetchall_arrayref([0])} ];
+    return {
+        nodes => $nodes,
+        branches => $branches
+    }     
+}
+
+=head2 getNode($nodeId)
+
+Retrieve a node
+
+=cut
+
+sub getNode {
+    my $self = shift;
+    my $nodeId = shift;
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare("SELECT data FROM node WHERE docid = ?");
+    return $self->json->decode($sth->fetchrow_arrayref($nodeId)->[0]);    
+}
+
 1;
+
 __END__
 
 =back
