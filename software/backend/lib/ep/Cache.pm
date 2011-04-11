@@ -40,13 +40,13 @@ use strict;
 use warnings;
 use DBI;
 use Mojo::Base -base;
-use Mojo::JSON;
+use Mojo::JSON::Any;
 
 has cacheKey    => sub { 'instance'.int(rand(1000000)) };
 has cacheRoot   => '/tmp/';
 has trees       => sub { {} };
 has fullText    => sub { [] };
-has json        => sub { Mojo::JSON->new() };
+has json        => sub { Mojo::JSON::Any->new };
 has 'dbh';
 
 =head2 B<new>(I<config>)
@@ -73,29 +73,31 @@ An array pointer to the keys used in the fulltext search
 
 sub new {
     my $self =  shift->SUPER::new(@_);
-    my $path = $self->cacheRoot.'/'.$self->cacheKey;
-    my $new = -r $path;
-    my $dbh = DBI->connect_cached("dbi:SQLites:dbname=$path","",{
+    my $path = $self->cacheRoot.'/'.$self->cacheKey.'.sqlite';
+    my $new = not -r $path;
+    my $dbh = DBI->connect_cached("dbi:SQLite:dbname=$path","","",{
          RaiseError => 1,
-         PrintError => 0,
+         PrintError => 1,
          AutoCommit => 1,
          ShowErrorStatement => 1,
     });
-    $dbh->("PRAGMA synchronous = 0");
+    $dbh->do("PRAGMA synchronous = 0");
     $self->dbh($dbh);  
     if ($new){  
         for my $tree (%{$self->trees}){
             my $treeBranches = $dbh->quote_identifier("branches_$tree");
             my $treeLeaves = $dbh->quote_identifier("leaves_$tree");
-            $dbh->do("CREATE TABLE AS $treeBranches ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
-            $dbh->do("CREATE INDEX ".$dbh->quote_identifier("branche_".$tree."_parent_idx")." ON $treeBranches ( parent,name ) ");
-            $dbh->do("CREATE TABLE AS $treeLeaves ( node INTEGER, parent INTEGER )");
-            $dbh->do("CREATE INDEX ".$dbh->quote_identifier("leaves_".$tree."_parent_idx")." ON $treeLeaves ( parent ) ");
+            $dbh->do("CREATE TABLE $treeBranches ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
+            $dbh->do("CREATE INDEX ".$dbh->quote_identifier("branche_".$tree."_parent_idx")." ON $treeBranches ( parent,name )");
+            $dbh->do("CREATE TABLE $treeLeaves ( node INTEGER, parent INTEGER )");
+            $dbh->do("CREATE INDEX ".$dbh->quote_identifier("leaves_".$tree."_parent_idx")." ON $treeLeaves ( parent )");
         }
-        $dbh->do("CREATE VIRTUAL TABLE node USING fts4(data TEXT)");
+        $dbh->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
     }
+    $self->{treeCache} = {};
+    return $self;
 }
-
+ 
 =head2 getTreeNames()
 
 returns a arrayref to the tree names
@@ -117,7 +119,7 @@ sub add {
     my $self = shift;
     my $nodeData = shift;
     my $dbh = $self->dbh;
-    $dbh->do("INSERT INTO node (data) VALUES(?)",{},$self->json->encode($nodeData));
+    $dbh->do("INSERT INTO node (data) VALUES (?)",{},$self->json->encode($nodeData));
     my $nodeId = $dbh->last_insert_id("","","","");
     $self->addTreeNode($nodeId,$nodeData);
 }
@@ -132,14 +134,22 @@ sub addTreeNode {
     my $self = shift;
     my $nodeId = shift;
     my $node = shift;
-    my $dbh = $self->dbh;
+    my $dbh = $self->dbh;    
     for my $treeName (keys %{$self->trees}){          
+        my $cache = $self->{treeCache}{$treeName} ||= {};
         my $treeBranches = $dbh->quote_identifier("branches_".$treeName); 
         my $parent = 0;
         for my $keyName (@{$self->trees->{$treeName}}){        
             my $value = $node->{$keyName};
             last unless defined $value;
-            my $id = $dbh->selectrow_array("SELECT id FROM $treeBranches WHERE name = ? AND parent = ?",{},$value,$parent);
+            my $id;
+            if ($cache->{$value.":".$parent}){
+               $id = $cache->{$value.":".$parent};
+            }
+            else {
+                $cache->{$value.":".$parent} = $id = $dbh->selectrow_array("SELECT id FROM $treeBranches WHERE name = ? AND parent = ?",{},$value,$parent);
+                
+            }
             if (not $id){
                 $dbh->do("INSERT INTO $treeBranches (name, parent) VALUES(?,?)",{},$value,$parent);
                 $id = $dbh->last_insert_id("","","","");
