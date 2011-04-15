@@ -21,14 +21,11 @@ ep::Cache - extopus data cache
     ...
  });
 
- my @nodeIds = $es->search('expression',start,limit);
+ $es->getNodes('expression',offset,limit);
  
- my @branches = $es->getBranches($treeName,$parent);
- # [ [ name, nodeid ], ... ]
+ $es->getBranches($parent);
 
- my @treeNames = $es->getTreeNames();
-
- my $node = $es->getNode($nodeId);
+ $es->getNode($nodeId);
 
 =head1 DESCRIPTION
 
@@ -44,9 +41,9 @@ use Mojo::JSON::Any;
 
 has cacheKey    => sub { 'instance'.int(rand(1000000)) };
 has cacheRoot   => '/tmp/';
+has mainKeys    => sub { [] };
 has trees       => sub { {} };
-has fullText    => sub { [] };
-has json        => sub { Mojo::JSON::Any->new };
+has json        => sub {Mojo::JSON::Any->new};
 has 'dbh';
 
 =head2 B<new>(I<config>)
@@ -55,6 +52,10 @@ Create an ep::nodeCache object.
 
 =over
 
+=item B<cacheRoot>
+
+Directory to store the cache databases.
+
 =item B<cacheKey>
 
 An identifier for this cache ... probably the name of the current user. If a cache under this name already exists it gets attached.
@@ -62,12 +63,6 @@ An identifier for this cache ... probably the name of the current user. If a cac
 =item B<trees>
 
 A hash pointer for a list of tree building configurations.
-
-=item B<fullText>
-
-An array pointer to the keys used in the fulltext search
-
-=back
 
 =cut
 
@@ -84,14 +79,10 @@ sub new {
     $dbh->do("PRAGMA synchronous = 0");
     $self->dbh($dbh);  
     if ($new){  
-        for my $tree (%{$self->trees}){
-            my $treeBranches = $dbh->quote_identifier("branches_$tree");
-            my $treeLeaves = $dbh->quote_identifier("leaves_$tree");
-            $dbh->do("CREATE TABLE $treeBranches ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
-            $dbh->do("CREATE INDEX ".$dbh->quote_identifier("branche_".$tree."_parent_idx")." ON $treeBranches ( parent,name )");
-            $dbh->do("CREATE TABLE $treeLeaves ( node INTEGER, parent INTEGER )");
-            $dbh->do("CREATE INDEX ".$dbh->quote_identifier("leaves_".$tree."_parent_idx")." ON $treeLeaves ( parent )");
-        }
+        $dbh->do("CREATE TABLE branch ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
+        $dbh->do("CREATE INDEX branch_idx ON branch ( parent,name )");
+        $dbh->do("CREATE TABLE leaf ( parent INTEGER, node INTEGER)");
+        $dbh->do("CREATE INDEX leaf_idx ON leaf (parent )");
         $dbh->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
     }
     $self->{treeCache} = {};
@@ -135,77 +126,94 @@ sub addTreeNode {
     my $nodeId = shift;
     my $node = shift;
     my $dbh = $self->dbh;    
+    my $cache = $self->{treeCache};
     for my $treeName (keys %{$self->trees}){          
-        my $cache = $self->{treeCache}{$treeName} ||= {};
-        my $treeBranches = $dbh->quote_identifier("branches_".$treeName); 
         my $parent = 0;
-        for my $keyName (@{$self->trees->{$treeName}}){        
-            my $value = $node->{$keyName};
+        for my $keyName ('root',@{$self->trees->{$treeName}}){                
+            my $value = $keyName eq 'root' ? $treeName : $node->{$keyName};
             last unless defined $value;
             my $id;
-            if ($cache->{$value.":".$parent}){
-               $id = $cache->{$value.":".$parent};
+            if ($cache->{$parent}{$value}){
+               $id = $cache->{$parent}{$value};
             }
             else {
-                $cache->{$value.":".$parent} = $id = $dbh->selectrow_array("SELECT id FROM $treeBranches WHERE name = ? AND parent = ?",{},$value,$parent);
+                $cache->{$parent}{$value} = $id = $dbh->selectrow_array("SELECT id FROM branch WHERE name = ? AND parent = ?",{},$value,$parent);
                 
             }
             if (not $id){
-                $dbh->do("INSERT INTO $treeBranches (name, parent) VALUES(?,?)",{},$value,$parent);
+                $dbh->do("INSERT INTO branch (name, parent) VALUES(?,?)",{},$value,$parent);
                 $id = $dbh->last_insert_id("","","","");
             }
             $parent = $id;
         }
-        my $treeLeaves = $dbh->quote_identifier("leaves_".$treeName);
-        $dbh->do("INSERT INTO $treeLeaves (node, parent) VALUES(?,?)",{},$nodeId,$parent);
+        $dbh->do("INSERT INTO leaf (node, parent) VALUES(?,?)",{},$nodeId,$parent);
     }
 }
 
 
-=head2 search($expression,$offset,$limit)
+=head2 getNodeCount($expression)
 
-Return nodeIds of documents matching the given search term
+how many nodes match the given expression
 
 =cut
 
-sub search {
+sub getNodeCount {
     my $self = shift;
     my $expression = shift;
-    my $offset = shift || 0;
-    my $limit = shift || 100;
     my $dbh = $self->dbh;
-    my $sth = $dbh->prepare("SELECT docid FROM node WHERE data MATCH ? LIMIT ? OFFSET ?");
-    $sth->execute($expression,$offset,$limit);
-    return [ map {$_->[0]} @{$sth->fetchall_arrayref([0])} ];
+    return (($dbh->selectrow_array("SELECT count(docid) FROM node WHERE data MATCH ?",{},$expression))[0]);
 }
 
-=head2 getBranches($treeName,$parent)
+    
+=head2 getNodes($expression,$limit,$offset)
+
+Return nodes matching the given search term
+
+=cut
+
+sub getNodes {
+    my $self = shift;
+    my $expression = shift;
+    my $limit = shift || 100;
+    my $offset = shift || 0;
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare("SELECT docid,data FROM node WHERE data MATCH ? LIMIT ? OFFSET ?");
+    $sth->execute($expression,$limit,$offset);
+    my $json = $self->json;
+    my @return;
+    while (my $row = $sth->fetchrow_hashref){
+        my $data = $json->decode($row->{data});
+        my $entry = { map { $_ => $data->{$_ } } @{$self->mainKeys}};
+        $entry->{__docid} = $row->{docid};
+        push @return, $entry;
+    }
+    return \@return;
+}
+
+=head2 getBranch($parent)
 
 Return the data makeing up the branch starting off parent.
 
- { nodes => [ id1, id2, ... ]
+ { leaves => [ id1, id2, ... ]
    branches => [ [ id1, name1 ], [id2, name2 ], ... ] }
 
 =cut
 
-sub getBranches {
+sub getBranch {
     my $self = shift;
-    my $treeName = shift;
     my $parent = shift;
     my $dbh = $self->dbh;
     my $sth;
 
-    my $treeBranches = $dbh->quote_identifier("branches_".$treeName);
-    $sth = $dbh->prepare("SELECT id, name FROM $treeBranches WHERE parent = ?");
+    $sth = $dbh->prepare("SELECT id, name FROM branch WHERE parent = ?");
     $sth->execute($parent);
     my $branches = $sth->fetchall_arrayref([]);
 
-    my $treeLeaves = $dbh->quote_identifier("leaves_".$treeName);
-    $sth = $dbh->prepare("SELECT node FROM $treeLeaves WHERE parent = ?");
+    $sth = $dbh->prepare("SELECT node FROM leaf WHERE parent = ?");
     $sth->execute($parent);
-    my $nodes = [ map {$_->[0]} @{$sth->fetchall_arrayref([0])} ];
+    my $leaves = [ map {$_->[0]} @{$sth->fetchall_arrayref([0])} ];
     return {
-        nodes => $nodes,
+        leaves => $leaves,
         branches => $branches
     }     
 }

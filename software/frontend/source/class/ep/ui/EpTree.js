@@ -63,39 +63,31 @@ qx.Class.define("ep.ui.EpTree", {
         },
         _addNodeKids : function(e){
             var nodeId = null;
+            var backendNodeId = 0;
             var tree = this.getChildControl('tree');
-            var filter = [];
-            var props;
             if (e){
                 var node = e.getData();
                 if (node.type == qx.ui.treevirtual.MTreePrimitive.Type.LEAF){
+                    // do something with the leaf
                     return;
                 }
                 nodeId = node.nodeId;
-                props = node.userData;
-//              qx.dev.Debug.debugObject(props,'Props');
-                for (var walker = nodeId;walker;walker=tree.nodeGet(walker).parentNodeId){
-                    filter.unshift(tree.nodeGetLabel(walker));
-                }
+                backendNodeId = node.backendNodeId;
             }
             var rpc=ep.data.Server.getInstance();
             var model = tree.getDataModel();
-            //if (nodeId){
-            //    tree.nodeSetOpened(nodeId,true);
-            //}
+            var treeData = model.getData();
             rpc.callAsyncSmart(function(ret){
-               for (var i=0;i<ret.list.length;i++){
-
-                   var newNodeId;
-                   if (ret.typ == 'branch'){
-                       newNodeId = model.addBranch(nodeId,ret.list[i],false);
-                   }
-                   else {
-                       newNodeId = model.addLeaf(nodeId,ret.list[i]);
-                   }
-                }
+                ret.branches.map(function(branch){
+                    var newNodeId = model.addBranch(nodeId,branch[1],false);
+                    treeData[newNodeId]['backendNodeId'] = branch[0];
+                });                    
+                ret.leaves.map(function(backendNodeId){
+                    var newNodeId = model.addLeaf(nodeId,'n-'+String(backendNodeId));
+                    treeData[newNodeId]['backendNodeId'] = backendNodeId;
+                });
                 model.setData();
-            },'getTreeBranch',{filter: filter, search: this.getSearch()});
+            },'getBranch',backendNodeId);
         },
         _dropNode : function(e){
             var tree = this.getChildControl('tree');

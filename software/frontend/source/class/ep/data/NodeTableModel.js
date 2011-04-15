@@ -22,7 +22,6 @@ qx.Class.define('ep.data.NodeTableModel', {
     construct : function(columns) {
         this.base(arguments);
         var trans = qx.locale.Manager;
-        this.setFilter([]);
     },
 
     properties : {
@@ -30,10 +29,6 @@ qx.Class.define('ep.data.NodeTableModel', {
          * when set to null all records show
          * when set to 'none' no records get selected
          */
-        filter : {
-            nullable : true,
-            apply    : '_applyFilter'
-        },
         search : {
             nullable : true,
             apply    : '_applySearch'
@@ -47,28 +42,16 @@ qx.Class.define('ep.data.NodeTableModel', {
         _loadRowCount : function() {
             var rpc = ep.data.Server.getInstance();
             var that = this;
-            var filter = this.getFilter();
             var search = this.getSearch();
             rpc.callAsync(function(ret,exc) {
                 if (exc) {
                     ep.ui.MsgBox.getInstance().exc(exc);
                 }
                 that._onRowCountLoaded(ret);
-            }, 'getNodeCount', {filter: filter, search: search});
+            }, 'getNodeCount', search);
         },
 
 
-        /**
-         * Reload the table data when the tagId changes.
-         *
-         * @param newValue {Integer} New TagId
-         * @param oldValue {Integer} Old TagId
-         */
-        _applyFilter : function(newValue, oldValue) {
-            if (newValue != oldValue){
-                this.reloadData();
-            }
-        },
         /**
          * Reload the table data when the tagId changes.
          *
@@ -89,35 +72,12 @@ qx.Class.define('ep.data.NodeTableModel', {
          * @param lastRow {Integer} last row to load
          */
         _loadRowData : function(firstRow, lastRow) {
-            var filter = this.getFilter();
-            var search = this.getSearch();
-            var rpcArgs = {
-                firstRow : firstRow,
-                lastRow  : lastRow,
-                filter   : filter,
-                search   : search
-            };
-
-            if (!this.isSortAscending()) {
-                rpcArgs.sortDesc = true;
-            }
-
-            var sc = this.getSortColumnIndex();
-
-            if (sc >= 0) {
-                rpcArgs.sortColumn = this.getColumnId(sc);
-            }
-
             var rpc = ep.data.Server.getInstance();
             var that = this;
-
-            rpc.callAsync(function(ret,exc) {
-                if (exc) {
-                    ep.ui.MsgBox.getInstance().exc(exc);
-                }
+            rpc.callAsyncSmart(function(ret) {
                 that._onRowDataLoaded(ret);
             },
-            'getNodeList', rpcArgs);
+            'getNodes', this.getSearch(),lastRow-firstRow,firstRow);
         }
     }
 });

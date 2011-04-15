@@ -15,7 +15,10 @@ sub startup {
 
     $self->plugin('qooxdoo_jsonrpc',{
         services => {
-            ep => new ep::JsonRpcService()
+            ep => new ep::JsonRpcService(
+                cacheRoot => '/scratch',
+                mainKeys => [qw(town address device port)],
+            ),
         }
     });           
 }
