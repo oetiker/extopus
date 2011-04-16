@@ -46,7 +46,11 @@ qx.Class.define('ep.data.NodeTableModel', {
             rpc.callAsync(function(ret,exc) {
                 if (exc) {
                     ep.ui.MsgBox.getInstance().exc(exc);
+                    ret = 0;
                 }
+                // call this even when we had issues from 
+                // remote. without it the remote table gets its
+                // undies in a twist.
                 that._onRowCountLoaded(ret);
             }, 'getNodeCount', search);
         },
@@ -74,10 +78,17 @@ qx.Class.define('ep.data.NodeTableModel', {
         _loadRowData : function(firstRow, lastRow) {
             var rpc = ep.data.Server.getInstance();
             var that = this;
-            rpc.callAsyncSmart(function(ret) {
+            rpc.callAsync(function(ret,exc) {
+                if (exc) {
+                    ep.ui.MsgBox.getInstance().exc(exc);
+                    ret = {};
+                }
+                // call this even when we had issues from 
+                // remote. without it the remote table gets its
+                // undies in a twist.
                 that._onRowDataLoaded(ret);
             },
-            'getNodes', this.getSearch(),lastRow-firstRow,firstRow);
+            'getNodes', this.getSearch(),lastRow-firstRow+1,firstRow);
         }
     }
 });
