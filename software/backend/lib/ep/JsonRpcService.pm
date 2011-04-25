@@ -36,19 +36,27 @@ our %allow = (
     getNode => 1,
 );
 
+has 'cfg';
+has 'inventory';
+has 'mojo_session';
 has 'cache';
-has 'cacheRoot';
 has 'mainKeys';
 
 sub allow_rpc_access {
     my $self = shift;
     my $method = shift;
-    $self->cache(ep::Cache->new(
-        cacheRoot => $self->cacheRoot,
-#        cacheKey => $self->mojo_stash('mojo.session')->{'cacheKey'},
-        cacheKey => 'sqlite-test-tobi',
-        mainKeys => $self->mainKeys,   
-    ));
+    my $user = $self->mojo_session->{'epUser'};
+    die mkerror(3993,q{Which user are you talking about?}) unless defined $user;
+    my $cache = ep::Cache->new(
+        cacheRoot => $self->cfg->{cache_dir},
+        cacheKey => $user,
+    );
+    $self->cache($cache);
+    $self->inventory->user($user);
+    if (! $cache->populated ){
+        $self->inventory->walkInventory(sub{$cache->add(shift)});
+        $cache->populated(1);
+    }
     return $allow{$method}; 
 }
    

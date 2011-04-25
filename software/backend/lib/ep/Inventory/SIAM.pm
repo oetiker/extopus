@@ -22,6 +22,7 @@ use SIAM;
 has 'cfg';
 has 'user';
 has 'siam';
+has 'log';
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -62,9 +63,14 @@ sub walkInventory {
     my $self = shift;
     my $callback = shift;
     my $siam = $self->siam;    
-    my $user = $siam->get_user($self->user);
-    my $contracts = $siam->get_contracts_by_user_privilege($user, 'ViewContract');
+    $self->log->debug('loading nodes for '.$self->user);
     $siam->connect();
+    my $user = $siam->get_user($self->user) or do {
+        $self->log->debug($self->cfg->{driver}.' has no information on '.$self->user);
+        return;
+    };
+    my $contracts = $siam->get_contracts_by_user_privilege($user, 'ViewContract');
+    my $count = 0;
     for my $cntr ( @{$contracts} ){
         for my $srv ( @{$cntr->get_services} ){
             for my $unit ( @{$srv->get_service_units} ){
@@ -75,11 +81,13 @@ sub walkInventory {
                         %{$unit->attributes},
                         %{$data->attributes},
                     });
+                    $count++;
                 }
             }
         }
     }
     $siam->disconnect();
+    $self->log->debug('loaded '.$count.' nodes');
 }
 
 1;

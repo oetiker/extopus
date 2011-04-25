@@ -44,6 +44,7 @@ has cacheRoot   => '/tmp/';
 has mainKeys    => sub { [] };
 has trees       => sub { {} };
 has json        => sub {Mojo::JSON::Any->new};
+has populated   => 0;
 has 'dbh';
 
 =head2 B<new>(I<config>)
@@ -84,6 +85,8 @@ sub new {
         $dbh->do("CREATE TABLE leaf ( parent INTEGER, node INTEGER)");
         $dbh->do("CREATE INDEX leaf_idx ON leaf (parent )");
         $dbh->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
+    } else {
+        $self->populated(1);
     }
     $self->{treeCache} = {};
     return $self;

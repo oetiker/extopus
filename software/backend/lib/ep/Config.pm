@@ -125,7 +125,7 @@ ${E}head1 SYNOPSIS
  username = ...
  password = ...
   
- *** CONNECTOR: torrus ***
+ *** URLSCHEME: torrus ***
  module=torrus
 
 ${E}head1 DESCRIPTION
@@ -148,7 +148,7 @@ sub _make_parser {
     my $self = shift;
     my $E = '=';
     my $grammar = {
-        _sections => [ qw{GENERAL /(INVENTORY|CONNECTOR):.+\S/}],
+        _sections => [ qw{GENERAL /(INVENTORY|URLSCHEME):.+\S/}],
         _mandatory => [qw(GENERAL)],
         GENERAL => {
             _doc => 'Global configuration settings for Extopus',
@@ -158,7 +158,7 @@ sub _make_parser {
             mojo_secret => { _doc => 'secret for signing mojo cookies' },
             log_file => { _doc => 'write a log file to this location'},
         },
-        '/(INVENTORY|CONNECTOR):.+\S/' => {
+        '/(INVENTORY|URLSCHEME):.+\S/' => {
             _doc => 'Instanciate an inventory object',
             _vars => [ '/[a-z]\S+/' ],
             _sections => [ '/[A-Z]\S+/' ],
