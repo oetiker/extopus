@@ -16,8 +16,8 @@ export PREFIX=$1
 
 . `dirname $0`/module_builder.inc
 
-R="-Wl,-rpath -Wl,"
-export LDFLAGS=${R}$PREFIX/lib64
+#R="-Wl,-rpath -Wl,"
+#export LDFLAGS=${R}$PREFIX/lib64
 
 simplebuild ftp://xmlsoft.org/libxml2/ libxml2-2.7.8.tar.gz
 
@@ -25,7 +25,6 @@ if prepare http://download.oracle.com/berkeley-db/ db-4.8.30.tar.gz ; then
     cd build_unix
     ../dist/configure \
         "--prefix=${PREFIX}" \
-        "--exec-prefix=${EPREFIX}" \
         '--enable-compat185' \
         '--enable-cxx'        
     make
