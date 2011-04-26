@@ -19,14 +19,12 @@ export PREFIX=$1
 #R="-Wl,-rpath -Wl,"
 #export LDFLAGS=${R}$PREFIX/lib64
 
-simplebuild ftp://xmlsoft.org/libxml2/ libxml2-2.7.8.tar.gz
+simplebuild ftp://xmlsoft.org/libxml2/ libxml2-2.7.8.tar.gz --without-python
 
 if prepare http://download.oracle.com/berkeley-db/ db-4.8.30.tar.gz ; then
     cd build_unix
     ../dist/configure \
-        "--prefix=${PREFIX}" \
-        '--enable-compat185' \
-        '--enable-cxx'        
+        "--prefix=${PREFIX}"
     make
     make install
     touch $WORKDIR/db-4.8.30.tar.gz.ok
