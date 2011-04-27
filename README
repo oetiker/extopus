@@ -1,0 +1,23 @@
+Simple Dependency Build Scripts
+-------------------------------
+
+You want to install tool X and find that it needs library Y and perl
+module Z. If you are lucky, Y and Z are available as packages for your
+OS and you can install them. But often, X requires the latest version of Y
+and Z is so obscure it only exists on CPAN. Enters sdbs:
+
+ build_x_deps.sh:
+
+ #!/bin/bash
+ . `dirname $0`/sdbs.inc
+ simplebuild http://www.X.com/downloads/ Y-23.tar.gz
+ perlmodule Y
+
+By default the script will build and install everything in ../thirdparty
+relative to its own location. You can call the script with an argument
+if you want the installation to go somewhere else.
+
+Enjoy!
+
+Tobi Oetiker <tobi@oetiker.ch>
+
