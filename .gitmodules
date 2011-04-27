@@ -1,0 +1,3 @@
+[submodule "software/setup"]
+	path = software/setup
+	url = git@github.com:oetiker/sdbs.git
