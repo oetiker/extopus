@@ -8,63 +8,69 @@
 /**
  * The window for the browser side representation of a plugin instance.
  */
-qx.Class.define("ep.ui.EpTree", {
+qx.Class.define("ep.ui.TreeView", {
     extend : qx.ui.core.Widget,
 
     construct : function() {
         this.base(arguments);
-        var grid = new qx.ui.layout.Grow();
-        this._setLayout(grid);
-        this._createChildControl('tree');
-
+        this._setLayout(new qx.ui.layout.Grow());
+        this.__hPane = new qx.ui.splitpane.Pane("horizontal");
+        this._add(this.__hPane);
+        this.__vPane = new qx.ui.splitpane.Pane("vertical");
+        this._createTree();
+        this.__hPane.add(this.__vPane,3);
+        this.__tableColumns = [ 'Location', 'Value', 'Test' ];
+        this._createTable();
+        this._createView();
         this._addNodeKids();        
     },
 
     properties: {
-        search: {
-            nullable: true,
-            init: null
-        },
-       /** Appearance of the widget */
-        appearance : {
-            refine : true,
-            init   : "eptree"
-        }
+        tree: {},
+        table: {},
+        view: {}
     },
-
     members : {
+        __tableColumns: null,
+        __hPane: null,
+        __vPane: null,
         /**
          * get the kids ready
          *
          * @param id {var} TODOC
          * @return {var} TODOC
-         */
-        _createChildControlImpl : function(id) {
-            var control;
-            switch(id)
-            {
-                case "tree":
-                    control = new qx.ui.treevirtual.TreeVirtual('Nodes',{
-                        treeDataCellRenderer: new ep.ui.EpTreeDataCellRenderer()
-                    }).set({
-                        useTreeLines: true,
-                        excludeFirstLevelTreeLines: true,
-                        openCloseClickSelectsRow: true,
-                        alwaysShowOpenCloseSymbol: true,
-                        rowHeight: 20
-                    });
-                    this._add(control);
-                    control.getDataRowRenderer().setHighlightFocusRow(false);
-                    control.addListener("treeOpenWhileEmpty",this._addNodeKids,this);            
-                    control.addListener("treeClose",this._dropNode,this);            
-                    break;
-            }
-            return control || this.base(arguments, id);
+         */        
+        _createTree: function(){
+            var control = new qx.ui.treevirtual.TreeVirtual('Nodes',{
+                treeDataCellRenderer: new ep.ui.TreeDataCellRenderer()
+            }).set({
+                excludeFirstLevelTreeLines: true,
+                openCloseClickSelectsRow: true,
+                alwaysShowOpenCloseSymbol: true,
+                rowHeight: 20
+            });
+            this.__hPane.add(control,1);       
+            control.getDataRowRenderer().setHighlightFocusRow(false);
+            control.addListener("treeOpenWhileEmpty",this._addNodeKids,this);            
+            control.addListener("treeClose",this._dropNode,this);            
+            this.setTree(control);
+        },
+        _createTable: function(){
+            var tm = new qx.ui.table.model.Simple();
+            tm.setColumns(this.__tableColumns);
+            var control = new ep.ui.Table(tm);
+            this.__vPane.add(control,1);
+            this.setTable(control);
+        },
+        _createView: function(){
+            var control = new ep.ui.View();
+            this.__vPane.add(control,3);
+            this.setView(control);
         },
         _addNodeKids : function(e){
             var nodeId = null;
             var backendNodeId = 0;
-            var tree = this.getChildControl('tree');
+            var tree = this.getTree();
             if (e){
                 var node = e.getData();
                 if (node.type == qx.ui.treevirtual.MTreePrimitive.Type.LEAF){
@@ -90,7 +96,7 @@ qx.Class.define("ep.ui.EpTree", {
             },'getBranch',backendNodeId);
         },
         _dropNode : function(e){
-            var tree = this.getChildControl('tree');
+            var tree = this.getTree();
             var model = tree.getDataModel();
             model.prune(e.getData().nodeId,false);
             model.setData();

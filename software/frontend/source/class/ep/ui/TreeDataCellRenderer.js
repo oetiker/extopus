@@ -12,7 +12,7 @@
  * A data cell renderer for the tree column of a simple tree using modified
  * placement for the icon and indicator elements.
  */
-qx.Class.define("ep.ui.EpTreeDataCellRenderer",
+qx.Class.define("ep.ui.TreeDataCellRenderer",
 {
   extend : qx.ui.treevirtual.SimpleTreeDataCellRenderer,
 

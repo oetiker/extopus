@@ -8,9 +8,9 @@
 /**
  * Show page from monitoring System.
  */
-qx.Class.define("ep.ui.EpIframe", {
-    extend : qx.ui.embed.ThemedIframe,
-    construct : function(url) {
-        this.base(arguments,url);
+qx.Class.define("ep.ui.View", {
+    extend : qx.ui.embed.Iframe,
+    construct : function() {
+        this.base(arguments,"resource/ep/page.html");
     }
 });

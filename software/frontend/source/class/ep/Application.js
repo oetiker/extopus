@@ -21,31 +21,23 @@ qx.Class.define("ep.Application", {
          */
         main : function() {
             // Call super class
-            var HOME = 'http://www.extopus.org/v/#VERSION#';
             this.base(arguments);
             qx.Class.include(qx.ui.treevirtual.TreeVirtual,
                              qx.ui.treevirtual.MNode);
             // Enable logging in debug variant
-            if (qx.core.Variant.isSet("qx.debug", "on")) {
+            if (qx.core.Environment.get("qx.debug")) {
                 // support native logging capabilities, e.g. Firebug for Firefox
                 qx.log.appender.Native;
                 // support additional cross-browser console. Press F7 to toggle visibility
                 qx.log.appender.Console;
             }
-            var hsplit = new qx.ui.splitpane.Pane("horizontal").set({ decorator : null });
-            var rpc=ep.data.Server.getInstance();
-            rpc.callAsyncSmart(function(ret){
-                ep.data.NodeTableModel.getInstance().setColumns(ret); 
-                hsplit.add(new ep.ui.EpNavigator(),5);
-                hsplit.add(new ep.ui.EpIframe("resource/ep/page.html"),10);
-            },'getNodePropertyKeys');   
-
-            this.getRoot().add(hsplit, {
+            var root = this.getRoot();
+            root.add(ep.ui.Desktop.getInstance(),{
                 left   : 0,
                 top    : 0,
                 right  : 0,
                 bottom : 0
-            });
+            });       
         }
     }
 });

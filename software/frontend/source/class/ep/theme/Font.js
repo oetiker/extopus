@@ -11,18 +11,5 @@ qx.Theme.define("ep.theme.Font", {
     extend : qx.theme.simple.Font,
 
     fonts : {
-        hugeTitle : {
-            size       : 130,
-            lineHeight : 1.0,
-            family     : qx.bom.client.Platform.MAC ? [ "Lucida Grande" ] : qx.bom.client.System.WINVISTA ? [ "Segoe UI", "Candara" ] : [ "Tahoma", "Liberation Sans", "Arial" ],
-            bold       : true
-        },
-
-        smallTitle : {
-            size       : 20,
-            lineHeight : 1.0,
-            family     : qx.bom.client.Platform.MAC ? [ "Lucida Grande" ] : qx.bom.client.System.WINVISTA ? [ "Segoe UI", "Candara" ] : [ "Tahoma", "Liberation Sans", "Arial" ],
-            bold       : true
-        }
     }
 });
