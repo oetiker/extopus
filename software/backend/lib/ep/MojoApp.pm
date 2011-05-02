@@ -23,8 +23,14 @@ has 'cfg' => sub {
 sub startup {
     my $self = shift;
 
-    $self->secret($self->cfg->{GENERAL}{mojo_secret});
-
+    my $gcfg = $self->cfg->{GENERAL};
+    $self->secret($gcfg->{mojo_secret});
+    if ($self->app->mode ne 'development'){
+        $self->log->path($gcfg->{log_file});
+    }
+    if ($gcfg->{log_level}){    
+        $self->log->level($gcfg->{log_level});
+    }
     my $routes = $self->routes;
 
     # run /setUser/oetiker to launch the application for a particular user
