@@ -32,7 +32,7 @@ qx.Class.define("ep.ui.TreeView", {
     properties: {
         tree: {},
         table: {},
-        view: {},        
+        view: {}
     },
     members : {
         __tableColumns: null,
