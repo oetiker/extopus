@@ -47,9 +47,9 @@ sub startup {
 #   my $urlScheme = ep::UrlScheme->new(cfg=>$self->cfg);
 
     my $service = ep::JsonRpcService->new(
-        cfg => $self->cfg->{GENERAL},
+        cfg => $self->cfg,
         inventory => $inventory,
-        mainKeys => [qw(svc.product_name svcunit.type svcunit.name svcunit.location svcdata.type object.id)],
+        log => $self->log,
     );
 
     $self->plugin('qooxdoo_jsonrpc',{

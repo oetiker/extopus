@@ -10,7 +10,7 @@ ep::Cache - extopus data cache
 
  my $es = ep::Cache->new(
     cacheKey => 'unique name for the store',
-    trees => {
+    tree => {
         Location => [ qw(country state city address floor room) ],
         Customer => [ qw(customer country state city address) ]
     },
@@ -23,9 +23,7 @@ ep::Cache - extopus data cache
 
  $es->getNodes('expression',offset,limit);
  
- $es->getBranches($parent);
-
- $es->getNode($nodeId);
+ $es->getBranch($parent);
 
 =head1 DESCRIPTION
 
@@ -38,13 +36,16 @@ use warnings;
 use DBI;
 use Mojo::Base -base;
 use Mojo::JSON::Any;
+use Data::Dumper;
 
 has cacheKey    => sub { 'instance'.int(rand(1000000)) };
 has cacheRoot   => '/tmp/';
-has mainKeys    => sub { [] };
-has trees       => sub { {} };
+has tree       => sub { {} };
 has json        => sub {Mojo::JSON::Any->new};
 has populated   => 0;
+has searchCols  => sub {[]};
+has treeCols    => sub {[]};
+
 has 'dbh';
 
 =head2 B<new>(I<config>)
@@ -61,7 +62,7 @@ Directory to store the cache databases.
 
 An identifier for this cache ... probably the name of the current user. If a cache under this name already exists it gets attached.
 
-=item B<trees>
+=item B<tree>
 
 A hash pointer for a list of tree building configurations.
 
@@ -89,20 +90,10 @@ sub new {
         $self->populated(1);
     }
     $self->{treeCache} = {};
+    $self->{nodeId} = 0;
     return $self;
 }
  
-=head2 getTreeNames()
-
-returns a arrayref to the tree names
-
-=cut
-
-sub getTreeNames {
-    my $self = shift;
-    return [ keys %{$self->trees} ];
-}
-
 =head2 add({...})
 
 Store a node in the database.
@@ -113,14 +104,15 @@ sub add {
     my $self = shift;
     my $nodeData = shift;
     my $dbh = $self->dbh;
-    $dbh->do("INSERT INTO node (data) VALUES (?)",{},$self->json->encode($nodeData));
-    my $nodeId = $dbh->last_insert_id("","","","");
-    $self->addTreeNode($nodeId,$nodeData);
+    $dbh->do("INSERT INTO node (rowid,data) VALUES (?,?)",{},++$self->{nodeId},$self->json->encode($nodeData));
+    # should use $dbh->last_insert_id("","","",""); but it seems not to work with FTS3 tables :-(
+    # glad we are doing the adding in one go so getting the number is pretty simple
+    $self->addTreeNode($self->{nodeId},$nodeData);
 }
 
 =head2 addTreeNode(nodeId,nodeData)
 
-Update all appropriate trees with information from the node.
+Update tree with information from the node.
 
 =cut
 
@@ -130,9 +122,9 @@ sub addTreeNode {
     my $node = shift;
     my $dbh = $self->dbh;    
     my $cache = $self->{treeCache};
-    for my $treeName (keys %{$self->trees}){          
+    for my $treeName (keys %{$self->tree}){          
         my $parent = 0;
-        for my $keyName ('root',@{$self->trees->{$treeName}}){                
+        for my $keyName ('root',@{$self->tree->{$treeName}}){                
             my $value = $keyName eq 'root' ? $treeName : $node->{$keyName};
             last unless defined $value;
             my $id;
@@ -141,15 +133,17 @@ sub addTreeNode {
             }
             else {
                 $cache->{$parent}{$value} = $id = $dbh->selectrow_array("SELECT id FROM branch WHERE name = ? AND parent = ?",{},$value,$parent);
-                
             }
             if (not $id){
                 $dbh->do("INSERT INTO branch (name, parent) VALUES(?,?)",{},$value,$parent);
                 $id = $dbh->last_insert_id("","","","");
+                $cache->{$parent}{$value} = $id;
+#                warn "   $keyName ($id): $parent\n";
             }
             $parent = $id;
         }
         $dbh->do("INSERT INTO leaf (node, parent) VALUES(?,?)",{},$nodeId,$parent);
+#        warn "   $parent -> $nodeId\n";
     }
 }
 
@@ -176,7 +170,7 @@ Return nodes matching the given search term
 
 sub getNodes {
     my $self = shift;
-    my $expression = shift;
+    my $expression = shift;    
     my $limit = shift || 100;
     my $offset = shift || 0;
     my $dbh = $self->dbh;
@@ -186,7 +180,7 @@ sub getNodes {
     my @return;
     while (my $row = $sth->fetchrow_hashref){
         my $data = $json->decode($row->{data});
-        my $entry = { map { $_ => $data->{$_ } } @{$self->mainKeys}};
+        my $entry = { map { $_ => $data->{$_} } @{$self->searchCols} };
         $entry->{__docid} = $row->{docid};
         push @return, $entry;
     }
@@ -212,27 +206,18 @@ sub getBranch {
     $sth->execute($parent);
     my $branches = $sth->fetchall_arrayref([]);
 
-    $sth = $dbh->prepare("SELECT node FROM leaf WHERE parent = ?");
+    $sth = $dbh->prepare("SELECT data FROM node JOIN leaf ON node.docid = leaf.node AND leaf.parent = ?");
     $sth->execute($parent);
-    my $leaves = [ map {$_->[0]} @{$sth->fetchall_arrayref([0])} ];
+    my @leaves;
+    while (my $row = ($sth->fetchrow_array())[0]){  
+        my $data = $self->json->decode($row);    
+        push @leaves, [ map { $data->{$_} } @{$self->treeCols} ];
+    }
+
     return {
-        leaves => $leaves,
-        branches => $branches
+        branches => $branches,
+        leaves => \@leaves,
     }     
-}
-
-=head2 getNode($nodeId)
-
-Retrieve a node
-
-=cut
-
-sub getNode {
-    my $self = shift;
-    my $nodeId = shift;
-    my $dbh = $self->dbh;
-    my $sth = $dbh->prepare("SELECT data FROM node WHERE docid = ?");
-    return $self->json->decode($sth->fetchrow_arrayref($nodeId)->[0]);    
 }
 
 1;

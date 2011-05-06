@@ -114,18 +114,47 @@ ${E}head1 SYNOPSIS
 
  *** GENERAL ***
  cache_dir = /scratch/extopus
- mojo_secret = MyCookieSecret
+ mojo_secret = Secret Cookie
  log_file = /tmp/dbtoria.log
- log_level = debug
+ 
+ *** ATTRIBUTES ***
+ prod = Product
+ country = Country
+ city = City
+ street = Street
+ number = No
+ cust = Customer
+ svc_type = Service
+ data = Data
+ data_type = Type
+ port = Port
+ inv_id = InvId
+
+ *** TREE ***
+ Location = country,city,street,no
+ Service = svc_type, data_type, inv_id
+
+ *** TABLES ***
+ search = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
+ tree = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
 
  *** INVENTORY: siam1 ***
  module=SIAM
- driver=Simple
- +Driver_Options
- dsn = ...
- username = ...
- password = ...
-  
+ driver=SIAM::Driver::XYC
+ yaml_cfg=/path_to/siam.yaml
+ +MAP
+ siam.svc.product_name = prod
+ xyc.svc.loc.country = country
+ xyc.svc.loc.city = city
+ xyc.svc.loc.address = street
+ xyc.svc.loc.building_number = number
+ siam.contract.customer_name = cust
+ siam.svc.type = svc_type
+ siam.svcdata.name = data
+ siam.svcdata.type = data_type
+ cablecom.port.shortname = port
+ siam.svc.inventory_id = inv_id
+
  *** URLSCHEME: torrus ***
  module=torrus
 
@@ -149,8 +178,8 @@ sub _make_parser {
     my $self = shift;
     my $E = '=';
     my $grammar = {
-        _sections => [ qw{GENERAL /(INVENTORY|URLSCHEME):.+\S/}],
-        _mandatory => [qw(GENERAL)],
+        _sections => [ qw{GENERAL /(INVENTORY|URLSCHEME):.+\S/ ATTRIBUTES TREE TABLES }],
+        _mandatory => [qw(GENERAL ATTRIBUTES TREE TABLES)],
         GENERAL => {
             _doc => 'Global configuration settings for Extopus',
             _vars => [ qw(cache_dir mojo_secret log_file log_level) ],
@@ -160,6 +189,34 @@ sub _make_parser {
             log_file => { _doc => 'write a log file to this location (unless in development mode)'},
             log_level => { _doc => 'what to write to the logfile'},
         },
+        ATTRIBUTES => {
+            _vars => [ '/[-_a-z0-9]+/' ],
+            '/[-_a-z0-9]+/' => {
+                _doc => 'List of known attributes with friendly names.',
+                _examples => 'city = City'
+            },            
+        },
+        TREE => {
+            _vars => [ '/[A-Za-z0-9]+/' ],
+            '/[A-Za-z0-9]+/' => {
+                _doc => 'Tree building attributes',
+                _examples => 'Location = country,city,street,no'
+            },
+            
+        },
+        TABLES => {
+            _vars => [ qw(search tree) ],
+            _mandatory => [ qw(search tree) ],
+            search => {
+                _doc => 'list of attributes for search results table',
+                _examples => 'search = prod, country, city, street, number'
+            },            
+            tree => {
+                _doc => 'list of attributes for tree nodes table',
+                _examples => 'tree = prod, country, city, street, number'
+            },            
+        },
+
         '/(INVENTORY|URLSCHEME):.+\S/' => {
             _doc => 'Instanciate an inventory object',
             _vars => [ '/[a-z]\S+/' ],

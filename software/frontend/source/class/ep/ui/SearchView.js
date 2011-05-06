@@ -19,10 +19,11 @@ qx.Class.define("ep.ui.SearchView", {
         var rpc=ep.data.Server.getInstance();
         var that = this;
         rpc.callAsyncSmart(function(ret){
-            ep.data.NodeTableModel.getInstance().setColumns(ret);
+            var tm = ep.data.NodeTableModel.getInstance();
+            tm.setColumns(ret.names,ret.ids);
             that._createTable();
             that._createView();
-        },'getNodePropertyKeys');
+        },'getTableColumnDef','search');
     },
     properties: {
         searchBox: {},

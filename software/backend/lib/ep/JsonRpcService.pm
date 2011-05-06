@@ -30,31 +30,39 @@ is this method accessible?
 
 our %allow = (
     getBranch => 1,
-    getNodePropertyKeys => 1,
     getNodeCount => 1,
     getNodes => 1,
     getNode => 1,
+    getTableColumnDef =>1,
 );
 
 has 'cfg';
 has 'inventory';
 has 'mojo_session';
 has 'cache';
-has 'mainKeys';
+has 'log';
 
 sub allow_rpc_access {
     my $self = shift;
     my $method = shift;
     my $user = $self->mojo_session->{'epUser'};
     die mkerror(3993,q{Which user are you talking about?}) unless defined $user;
+    my $cfg = $self->cfg;
     my $cache = ep::Cache->new(
-        cacheRoot => $self->cfg->{cache_dir},
+        cacheRoot => $cfg->{GENERAL}{cache_dir},
         cacheKey => $user,
+        treeCols => $self->getTableColumnDef('tree')->{ids},
+        searchCols => $self->getTableColumnDef('search')->{ids},
     );
     $self->cache($cache);
     $self->inventory->user($user);
     if (! $cache->populated ){
-        $self->inventory->walkInventory(sub{$cache->add(shift)});
+        $self->log->debug("loading nodes into $cfg->{GENERAL}{cache_dir} for $user");
+        my $tree = $cfg->{TREE};
+        $cache->tree({            
+            map { $_ => [ split /\s*,\s*/, $tree->{$_} ] } grep !/^_/, keys %$tree 
+        });
+        $self->inventory->walkInventory(sub { $cache->add(shift) });
         $cache->populated(1);
     }
     return $allow{$method}; 
@@ -71,15 +79,23 @@ sub getBranch {
     return $self->cache->getBranch(@_);
 }
 
-=head2 getNodePropertyKeys
+=head2 getTableColumnDef
 
-Which properties to show in search response
+Return table column definitions.
 
 =cut
 
-sub getNodePropertyKeys {
+sub getTableColumnDef {
     my $self = shift;
-    return $self->mainKeys;
+    my $table = shift;
+    my $cols = $self->cfg->{TABLES}{$table};
+    die mkerror(34884,"Table type '$table' is not known!") unless defined $cols;
+    my $attr = $self->cfg->{ATTRIBUTES};
+    my @cols = split /\s*,\s*/, $cols;
+    return {
+        ids => \@cols,
+        names => [ map { $attr->{$_} } @cols ]
+    };
 }
 
 =head2 getNodeCount(expression)
