@@ -28,10 +28,10 @@ has 'log';
 sub new {
     my $self = shift->SUPER::new(@_);
     my $cfg = $self->cfg;
-    my $siamCfg =  YAML::LoadFile($cfg->{yaml_cfg});
+    my $siamCfg =  YAML::LoadFile($cfg->{siam_cfg});
     $siamCfg->{Logger} = $self->log;
     $self->siam(SIAM->new($siamCfg));
-    $self->siam->set_log_manager($self->log);    
+    $self->siam->set_log_manager($self->log);
     return $self;
 }
 
@@ -47,12 +47,12 @@ sub walkInventory {
     my $siam = $self->siam;    
     $self->log->debug('loading nodes for '.$self->user);
     $siam->connect();
-#    my $user = $siam->get_user($self->user) or do {
-#        $self->log->debug($self->cfg->{driver}.' has no information on '.$self->user);
-#        return;
-#    };
-#    my $contracts = $siam->get_contracts_by_user_privilege($user, 'ViewContract');
-    my $contracts = $siam->get_all_contracts();
+    my $user = $siam->get_user($self->user) or do {
+        $self->log->debug($self->cfg->{driver}.' has no information on '.$self->user);
+        return;
+    };
+    my $contracts = $siam->get_contracts_by_user_privilege($user, 'ViewContract');
+    # my $contracts = $siam->get_all_contracts();
     my $count = 0;
     my $map = $self->cfg->{MAP};
     loading:
@@ -69,7 +69,6 @@ sub walkInventory {
                     my $data = { map { $map->{$_} => $raw_data->{$_} } grep !/^_/, keys %$map };
                     $storeCallback->($data);
                     $count++;
-#                   last loading  if $count > 50;
                 }
             }
         }

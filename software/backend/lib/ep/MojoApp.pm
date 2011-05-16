@@ -1,4 +1,24 @@
 package ep::MojoApp;
+
+=head1 NAME
+
+ep::MojoApp - the mojo application starting point
+
+=head1 SYNOPSIS
+
+ use ep::MojoApp;
+ use Mojolicious::Commands;
+
+ $ENV{MOJO_APP} = ep::MojoApp->new;
+ # Start commands
+ Mojolicious::Commands->start;
+
+=head1 DESCRIPTION
+
+Configure the mojo engine to run our application logic as webrequests arrive.
+
+=cut
+
 use strict;
 use warnings;
 
@@ -7,16 +27,17 @@ use MojoX::Dispatcher::Qooxdoo::Jsonrpc;
 use Mojolicious::Plugin::QooxdooJsonrpc;
 use Mojo::URL;
 
-use ep::JsonRpcService;
+use ep::RpcService;
 use ep::Config;
 use ep::Inventory;
+use ep::Visualizer;
 
 use Mojo::Base 'Mojolicious';
 
 has 'cfg' => sub {
     my $self = shift;
     my $conf = ep::Config->new( 
-        file=> $ENV{EXTOPUS_CONF} || $self->home->rel_file('etc/extopus.cfg')
+        file=> ( $ENV{EXTOPUS_CONF} || $self->home->rel_file('etc/extopus.cfg') )
     );
     return $conf->parse_config();
 };
@@ -75,15 +96,24 @@ sub startup {
         });
     });
 
+    my $inventory = ep::Inventory->new(
+        cfg=>$self->cfg,
+        log=>$self->log,
+        routes=>$self->routes,
+        secret=>$gcfg->{mojo_secret}
+    );
 
+    my $visualizer = ep::Visualizer->new(
+        cfg=>$self->cfg,
+        log=>$self->log,
+        routes=>$self->routes,
+        secret=>$gcfg->{mojo_secret}
+    );
 
-    my $inventory = ep::Inventory->new(cfg=>$self->cfg,log=>$self->app->log);
-
-#   my $urlScheme = ep::UrlScheme->new(cfg=>$self->cfg);
-
-    my $service = ep::JsonRpcService->new(
+    my $service = ep::RpcService->new(
         cfg => $self->cfg,
         inventory => $inventory,
+        visualizer => $visualizer,
         log => $self->log,
     );
 
@@ -96,3 +126,48 @@ sub startup {
 }
 
 1;
+
+__END__
+
+=back
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=head1 COPYRIGHT
+
+Copyright (c) 2011 by OETIKER+PARTNER AG. All rights reserved.
+
+=head1 AUTHOR
+
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+
+=head1 HISTORY
+
+ 2010-11-04 to 1.0 first version
+
+=cut
+
+# Emacs Configuration
+#
+# Local Variables:
+# mode: cperl
+# eval: (cperl-set-style "PerlStyle")
+# mode: flyspell
+# mode: flyspell-prog
+# End:
+#
+# vi: sw=4 et

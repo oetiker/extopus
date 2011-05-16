@@ -1,4 +1,4 @@
-package ep::JsonRpcService;
+package ep::RpcService;
 
 use strict;
 
@@ -9,7 +9,7 @@ use Mojo::Base -base;
 
 =head1 NAME
 
-ep::JsonRpcService - RPC services for ep
+ep::RpcService - RPC services for ep
 
 =head1 SYNOPSIS
 
@@ -38,6 +38,7 @@ our %allow = (
 
 has 'cfg';
 has 'inventory';
+has 'visualizer';
 has 'mojo_session';
 has 'cache';
 has 'log';
@@ -118,6 +119,19 @@ Get the nodes matching the given filter.
 sub getNodes {
     my $self = shift;
     return $self->cache->getNodes(@_);
+}
+
+=head2 getVisualizers(nodeId)
+
+return a list of visualizers ready to visualize the given node
+
+=cut
+
+sub getVizualizers {
+    my $self = shift;
+    my $nodeId = shift;
+    my $record = $self->cache->getNode($nodeId);
+    return $self->visualizer->getVisualizers($record);
 }
 
 1;

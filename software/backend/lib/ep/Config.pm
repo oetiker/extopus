@@ -140,7 +140,6 @@ ${E}head1 SYNOPSIS
 
  *** INVENTORY: siam1 ***
  module=SIAM
- driver=SIAM::Driver::XYC
  yaml_cfg=/path_to/siam.yaml
  +MAP
  siam.svc.product_name = prod
@@ -155,8 +154,8 @@ ${E}head1 SYNOPSIS
  cablecom.port.shortname = port
  siam.svc.inventory_id = inv_id
 
- *** URLSCHEME: torrus ***
- module=torrus
+ *** VISUALIZER: siam1 ***
+ module = TorrusIframe
 
 ${E}head1 DESCRIPTION
 
@@ -178,7 +177,7 @@ sub _make_parser {
     my $self = shift;
     my $E = '=';
     my $grammar = {
-        _sections => [ qw{GENERAL /(INVENTORY|URLSCHEME):.+\S/ ATTRIBUTES TREE TABLES }],
+        _sections => [ qw{GENERAL /INVENTORY:\s+\S+/ /VISUALIZER:\s+\S+/ ATTRIBUTES TREE TABLES }],
         _mandatory => [qw(GENERAL ATTRIBUTES TREE TABLES)],
         GENERAL => {
             _doc => 'Global configuration settings for Extopus',
@@ -217,15 +216,38 @@ sub _make_parser {
             },            
         },
 
-        '/(INVENTORY|URLSCHEME):.+\S/' => {
+        '/INVENTORY:\s+\S+/' => {
             _doc => 'Instanciate an inventory object',
-            _vars => [ '/[a-z]\S+/' ],
+            _vars => [ qw(module /[a-z]\S+/) ],
+            _mandatory => [ 'module' ],
+            module => {
+                _doc => 'The inventory module to load'
+            },
             _sections => [ '/[A-Z]\S+/' ],
             '/[a-z]\S+/' => {
                 _doc => 'Any key value settings appropriate for the instance at hand'
             },
             '/[A-Z]\S+/' => {
-                _doc => 'Grouped configuraiton options like SIAM Driver configuration',
+                _doc => 'Grouped configuraiton options for complex inventory driver configurations',
+                _vars => [ '/[a-z]\S+/' ],
+                '/[a-z]\S+/' => {             
+                    _doc => 'Any key value settings appropriate for the instance at hand'
+                }        
+            },
+        },
+        '/VISUALIZER:\s+\S+/' => {
+            _doc => 'Instanciate a visualizer object',
+            _vars => [ qw(module /[a-z]\S+/) ],
+            _mandatory => [ 'module' ],
+            _sections => [ '/[A-Z]\S+/' ],
+            module => {
+                _doc => 'The visualization module to load'
+            },
+            '/[a-z]\S+/' => {
+                _doc => 'Any key value settings appropriate for the instance at hand'
+            },
+            '/[A-Z]\S+/' => {
+                _doc => 'Grouped configuraiton for complex visualization modules',
                 _vars => [ '/[a-z]\S+/' ],
                 '/[a-z]\S+/' => {             
                     _doc => 'Any key value settings appropriate for the instance at hand'

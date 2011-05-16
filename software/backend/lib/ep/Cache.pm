@@ -187,6 +187,21 @@ sub getNodes {
     return \@return;
 }
 
+=head2 getNode($nodeId)
+
+Return node matching the given nodeId
+
+=cut
+
+sub getNode {
+    my $self = shift;
+    my $nodeId = shift;    
+    my $dbh = $self->dbh;
+    my @row = $dbh->selectrow_array("SELECT data FROM node WHERE docid = ?",{},$nodeId);
+    my $json = $self->json;
+    return $json->decode($row[0]);
+}
+
 =head2 getBranch($parent)
 
 Return the data makeing up the branch starting off parent.

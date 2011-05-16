@@ -25,6 +25,8 @@ has 'cfg';
 has 'drivers' => sub { [] };
 has 'user';
 has 'log';
+has 'routes';
+has 'secret';
 
 =head2 new
 
@@ -39,7 +41,7 @@ sub new {
         require 'ep/Inventory/'.$drvCfg->{module}.'.pm';
         do {
             no strict 'refs';
-            push @{$self->drivers}, "ep::Inventory::$drvCfg->{module}"->new(cfg=>$drvCfg,log=>$self->log);
+            push @{$self->drivers}, "ep::Inventory::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret});
 
         }
     }
