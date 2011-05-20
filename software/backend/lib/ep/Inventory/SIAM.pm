@@ -60,11 +60,13 @@ sub walkInventory {
         for my $srv ( @{$cntr->get_services} ){
             for my $unit ( @{$srv->get_service_units} ){
                 for my $data ( @{$unit->get_data_elements} ){
+                    my $device = $data->get_device();
                     my $raw_data = {
                         %{$cntr->attributes},
                         %{$srv->attributes},                        
                         %{$unit->attributes},
                         %{$data->attributes},
+                        %{$device->attributes}
                     };
                     my $data = { map { $map->{$_} => $raw_data->{$_} } grep !/^_/, keys %$map };
                     $storeCallback->($data);

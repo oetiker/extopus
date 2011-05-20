@@ -181,7 +181,7 @@ sub getNodes {
     while (my $row = $sth->fetchrow_hashref){
         my $data = $json->decode($row->{data});
         my $entry = { map { $_ => $data->{$_} } @{$self->searchCols} };
-        $entry->{__docid} = $row->{docid};
+        $entry->{__nodeId} = $row->{docid};
         push @return, $entry;
     }
     return \@return;
@@ -221,11 +221,12 @@ sub getBranch {
     $sth->execute($parent);
     my $branches = $sth->fetchall_arrayref([]);
 
-    $sth = $dbh->prepare("SELECT data FROM node JOIN leaf ON node.docid = leaf.node AND leaf.parent = ?");
+    $sth = $dbh->prepare("SELECT docid,data FROM node JOIN leaf ON node.docid = leaf.node AND leaf.parent = ?");
     $sth->execute($parent);
     my @leaves;
-    while (my $row = ($sth->fetchrow_array())[0]){  
+    while (my ($docid,$row) = $sth->fetchrow_array()){  
         my $data = $self->json->decode($row);    
+        $data->{__nodeId} = $docid;
         push @leaves, [ map { $data->{$_} } @{$self->treeCols} ];
     }
 

@@ -27,11 +27,11 @@ use warnings;
 
 use Mojo::Base 'ep::Visualizer::base';
 use Mojo::Util qw(hmac_md5_sum);
+use Mojo::URL;
 
 my $instance = 0;
 
 has 'hostauth';
-has 'scheme' => 'http';
 has 'view' => 'default-rrd-html';
 has 'root';
 
@@ -51,21 +51,25 @@ can we handle this type of record
 sub matchRecord {
     my $self = shift;
     my $rec = shift;
-    for (qw(torrus.nodeid torrus.server torrus.tree torrus.url-prefix)){
+    for (qw(torrus.nodeid torrus.tree-url)){
         return undef unless defined $rec->{$_};
     };
-    my $host = $rec->{'torrus.server'};
-    my $path = '/'.$rec->{'torrus.url-prefix'} . '/'. 'main';
-    $path =~ s{/+}{}g;
+    my $url = $rec->{'torrus.tree-url'};
     my $nodeid = $rec->{'torrus.nodeid'};
     my $view = $self->view;
-
-    my $url = $self->root.'/'.$self->calcHash($host,$path,$nodeid,$view).'/'.$host.$path
-              . '?nodeid='.$nodeid.'&view='.$view;
+    my $hash = $self->calcHash($url,$nodeid,$view);
+    my $src = Mojo::URL->new();
+    $src->path($self->root);
+    $src->query(
+          hash => $hash,
+          nodeid => $nodeid,
+          view => $view,
+          url => $url
+    );
     return {
         visualizer =>  'iframe',
         arguments => {
-            src => $url
+            src => '..'.$src->to_rel
         }
     };
 }
@@ -80,31 +84,31 @@ sub addProxyRoute {
     my $self = shift;
     my $routes = $self->routes;
 
-    $routes->get($self->root.'/(:px_hash)/(:px_host)/(*px_path)' => sub {
+    $routes->get( $self->root, sub {
         my $ctrl = shift;
-        my $hash =  $ctrl->stash('px_hash');
-        my $host =  $ctrl->stash('px_host');
-        my $path =  $ctrl->stash('px_path');
-        my $nodeid = $ctrl->req->params('nodeid');
-        my $view = $ctrl->req->params('view');
-        if ($hash ne $self->calcHash($host,$path,$nodeid,$view)){
+        my $req = $ctrl->req;
+        
+        my $hash =  $req->param('hash');
+        my $url = $req->param('url');
+        my $pxReq =  Mojo::URL->new($url);
+        my $nodeid = $req->param('nodeid');
+        my $view = $req->param('view');
+        my $newHash = $self->calcHash($url,$nodeid,$view);
+        if ($hash ne $newHash){
             $ctrl->render(
                  status => 401,
                  text => "Supplied hash ($hash) does not match our expectations",
             );
-            $self->log->warn("Request for $hash/$host/$path denied (non-matching hash)");
+            $self->log->warn("Request for $url?nodeid=$nodeid;view=$view denied ($hash ne $newHash)");
             return;
         }
-        my $url = Mojo::URL->new();
-        $url->scheme($self->scheme);
-        $url->host($host);
-        $url->path($path);
-        $url->query(nodeid=>$nodeid,view=>$view);
+        my $host = $pxReq->host;
+        $pxReq->query(nodeid=>$nodeid,view=>$view);
         if ($self->hostauth){
-            $url->query({hostauth=>$self->hostauth});
-        }
+            $pxReq->query({hostauth=>$self->hostauth});
+        }        
         $ctrl->render_later;
-        $ctrl->ua->get($url => sub {
+        $ctrl->ua->get($pxReq => sub {
             my ($self, $tx) = @_;
             if (my $res=$tx->success) {
                 if ($res->headers->content_type =~ m'text/html'i){
@@ -115,7 +119,7 @@ sub addProxyRoute {
             }
             else {     
                 my ($msg,$error) = $tx->error;
-                $ctrl->tx->res->headers->add('X-Remote-Status',$error.': '.$msg);
+                $ctrl->tx->res->headers->add('X-Remote-Status',($error||'???').': '.$msg);
                 $ctrl->render(
                     status => 500,
                     text => 'Failed to fetch data from backend'
@@ -142,9 +146,19 @@ sub signImgSrc {
     $dom->find('img[src]')->each( sub {
         my $attrs = shift->attrs;
         my $src = Mojo::URL->new($attrs->{src});
-        if ((not $src->host or $src->host eq $host) and $src->params('nodeid')){
-            my $hash = $self->calcHash($host,$src->path,$nodeid,$src->params('view'));
-            $attrs->{src} = $self->root.'/'.$hash.'/'.$host.$src->path. '?nodeid='.$nodeid.'&view='.$src->params('view');
+        if ((not $src->host or $src->host eq $host) and $src->query('nodeid')){
+            my $url = $src->scheme.'://'.$src->host.$src->path;
+            my $view = $src->query('view');
+            my $hash = $self->calcHash($url,$nodeid,$view);
+            my $newSrc = Mojo::URL->new();
+            $newSrc->path($self->root);
+            $newSrc->query(
+                hash => $hash,
+                nodeid => $nodeid,
+                view => $view,
+                url => $url 
+            );
+            $attrs->{src} = '..'.$newSrc->to_rel;
             $changed = 1;
         }
     });
@@ -159,7 +173,10 @@ Returns a hash for authenticating access to the ref
 
 sub calcHash {
     my $self = shift;
-    return hmac_md5_sum(join(':',@_),$self->secret);
+
+    my $hash = hmac_md5_sum(@_,$self->secret);
+    $self->log->debug("calcHash ".join(",",@_,$self->secret));
+    return $hash;
 }
 
 1;

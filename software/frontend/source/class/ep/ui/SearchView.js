@@ -49,12 +49,13 @@ qx.Class.define("ep.ui.SearchView", {
             this.setTable(control);
         },
         _createView: function(){
-            var control = new ep.ui.View();
+            var control = new ep.ui.View(this.getTable());
             this.__vPane.add(control,3);
             this.setView(control);
         },
         _setSearch: function(e){
             var value = e.getData();
+            this.getTable().getSelectionModel().resetSelection();
             ep.data.NodeTableModel.getInstance().setSearch(value);
         }
     }

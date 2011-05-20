@@ -69,7 +69,7 @@ qx.Class.define("ep.ui.TreeView", {
             this.setTable(control);
         },
         _createView: function(){
-            var control = new ep.ui.View();
+            var control = new ep.ui.View(this.getTable());
             this.__vPane.add(control,3);
             this.setView(control);
         },
@@ -90,7 +90,8 @@ qx.Class.define("ep.ui.TreeView", {
             var treeData = model.getData();
             var tm = this.getTable().getTableModel();
             var leafCache = this.__leafCache;
-            rpc.callAsyncSmart(function(ret){
+            this.getTable().getSelectionModel().resetSelection(); 
+                rpc.callAsyncSmart(function(ret){
                 ret.branches.map(function(branch){
                     var newNodeId = model.addBranch(nodeId,branch[1],false);
                     treeData[newNodeId]['backendNodeId'] = branch[0];

@@ -23,6 +23,9 @@ qx.Class.define("ep.ui.Table", {
         this.set({
             showCellFocusIndicator : false
         });
+        // hide the first column as it contains the internal
+        // id of the node
+        this.getTableColumnModel().setColumnVisible(0,false);
         this.getDataRowRenderer().setHighlightFocusRow(false);
     }
 

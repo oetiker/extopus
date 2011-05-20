@@ -34,6 +34,7 @@ our %allow = (
     getNodes => 1,
     getNode => 1,
     getTableColumnDef =>1,
+    getVisualizers => 1,
 );
 
 has 'cfg';
@@ -94,8 +95,8 @@ sub getTableColumnDef {
     my $attr = $self->cfg->{ATTRIBUTES};
     my @cols = split /\s*,\s*/, $cols;
     return {
-        ids => \@cols,
-        names => [ map { $attr->{$_} } @cols ]
+        ids => ['__nodeId', @cols],
+        names => [ 'NodeId', map { $attr->{$_} } @cols ]
     };
 }
 
@@ -127,7 +128,7 @@ return a list of visualizers ready to visualize the given node
 
 =cut
 
-sub getVizualizers {
+sub getVisualizers {
     my $self = shift;
     my $nodeId = shift;
     my $record = $self->cache->getNode($nodeId);
