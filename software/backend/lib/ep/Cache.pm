@@ -78,17 +78,19 @@ sub new {
          AutoCommit => 1,
          ShowErrorStatement => 1,
     });
-    $dbh->do("PRAGMA synchronous = 0");
     $self->dbh($dbh);  
     if ($new){  
+        $dbh->begin_work;
         $dbh->do("CREATE TABLE branch ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
         $dbh->do("CREATE INDEX branch_idx ON branch ( parent,name )");
         $dbh->do("CREATE TABLE leaf ( parent INTEGER, node INTEGER)");
         $dbh->do("CREATE INDEX leaf_idx ON leaf (parent )");
         $dbh->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
+        $dbh->commit;
     } else {
         $self->populated(1);
     }
+    $dbh->do("PRAGMA synchronous = 0");
     $self->{treeCache} = {};
     $self->{nodeId} = 0;
     return $self;
