@@ -109,27 +109,23 @@ sub addProxyRoute {
         if ($self->hostauth){
             $pxReq->query({hostauth=>$self->hostauth});
         }        
-        $ctrl->render_later;
-        my $me = $self;
         $self->log->debug("Fetching ".$pxReq->to_string);
-        $ctrl->ua->get($pxReq => sub {
-            my ($self, $tx) = @_;
-            if (my $res=$tx->success) {
-                if ($res->headers->content_type =~ m'text/html'i){
-                    $me->signImgSrc($baseUrl,$res);
-                }
-                $ctrl->tx->res($res);
-                $ctrl->rendered;
+        my $tx = $ctrl->ua->get($pxReq);
+        if (my $res=$tx->success) {
+           if ($res->headers->content_type =~ m'text/html'i){
+               $self->signImgSrc($baseUrl,$res);
             }
-            else {     
-                my ($msg,$error) = $tx->error;
-                $ctrl->tx->res->headers->add('X-Remote-Status',($error||'???').': '.$msg);
-                $ctrl->render(
-                    status => 500,
-                    text => 'Failed to fetch data from backend'
-                );
-            }
-        });
+            $ctrl->tx->res($res);
+            $ctrl->rendered;
+        }
+        else {     
+            my ($msg,$error) = $tx->error;
+            $ctrl->tx->res->headers->add('X-Remote-Status',($error||'???').': '.$msg);
+            $ctrl->render(
+                status => 500,
+                text => 'Failed to fetch data from backend'
+            );
+        }
     });
 }
 
