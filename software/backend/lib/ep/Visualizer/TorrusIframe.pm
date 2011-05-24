@@ -32,7 +32,8 @@ use Mojo::URL;
 my $instance = 0;
 
 has 'hostauth';
-has 'view' => 'default-rrd-html';
+#has 'view' => 'expanded-dir-html';
+has view => 'iframe-rrd';
 has 'root';
 
 sub new {
@@ -55,6 +56,7 @@ sub matchRecord {
         return undef unless defined $rec->{$_};
     };
     my $url = $rec->{'torrus.tree-url'};
+    $url =~ s/psrtorrus/tsrtorrus/i;
     my $nodeid = $rec->{'torrus.nodeid'};
     my $view = $self->view;
     my $hash = $self->calcHash($url,$nodeid,$view);
@@ -90,7 +92,7 @@ sub addProxyRoute {
         
         my $hash =  $req->param('hash');
         my $url = $req->param('url');
-        my $pxReq =  Mojo::URL->new($url);
+        my $pxReq =  Mojo::URL->new($url);        
         my $nodeid = $req->param('nodeid');
         my $view = $req->param('view');
         my $newHash = $self->calcHash($url,$nodeid,$view);
@@ -102,17 +104,19 @@ sub addProxyRoute {
             $self->log->warn("Request for $url?nodeid=$nodeid;view=$view denied ($hash ne $newHash)");
             return;
         }
-        my $host = $pxReq->host;
+        my $baseUrl = $pxReq->to_string;
         $pxReq->query(nodeid=>$nodeid,view=>$view);
         if ($self->hostauth){
             $pxReq->query({hostauth=>$self->hostauth});
         }        
         $ctrl->render_later;
+        my $me = $self;
+        $self->log->debug("Fetching ".$pxReq->to_string);
         $ctrl->ua->get($pxReq => sub {
             my ($self, $tx) = @_;
             if (my $res=$tx->success) {
                 if ($res->headers->content_type =~ m'text/html'i){
-                    $self->signImgSrc($host,$res);
+                    $me->signImgSrc($baseUrl,$res);
                 }
                 $ctrl->tx->res($res);
                 $ctrl->rendered;
@@ -137,8 +141,7 @@ Sign all image urls pointing to our server.
 
 sub signImgSrc {
     my $self = shift;
-    my $host = shift;
-    my $nodeid = shift;
+    my $pageUrl = Mojo::URL->new(shift);
     my $res = shift;    
     my $dom = $res->dom;
     my $root = $self->root;
@@ -146,19 +149,34 @@ sub signImgSrc {
     $dom->find('img[src]')->each( sub {
         my $attrs = shift->attrs;
         my $src = Mojo::URL->new($attrs->{src});
-        if ((not $src->host or $src->host eq $host) and $src->query('nodeid')){
-            my $url = $src->scheme.'://'.$src->host.$src->path;
-            my $view = $src->query('view');
+        if (not $src->authority){
+            my $nodeid = $src->query->param('nodeid');
+            my $view = $src->query->param('view');
+
+            $src->query(Mojo::Parameters->new);
+            # first the scheme and then the authority (user:host:port)
+            $src->scheme($pageUrl->scheme);
+            $src->authority($pageUrl->authority);
+            if ($src->path !~ m|^/|){
+                $src->path($pageUrl->path.'/../'.$src->path);
+            }
+            my $url = $src->to_string;
             my $hash = $self->calcHash($url,$nodeid,$view);
+
             my $newSrc = Mojo::URL->new();
             $newSrc->path($self->root);
             $newSrc->query(
                 hash => $hash,
                 nodeid => $nodeid,
                 view => $view,
-                url => $url 
+                url => $url
             );
-            $attrs->{src} = '..'.$newSrc->to_rel;
+            if ($self->hostauth){
+                $newSrc->query({hostauth=>$self->hostauth});
+            }        
+            $self->log->debug('img[src] in '.$attrs->{src});
+            $attrs->{src} = $newSrc->to_string;
+            $self->log->debug('img[src] out '.$attrs->{src});
             $changed = 1;
         }
     });
@@ -173,9 +191,7 @@ Returns a hash for authenticating access to the ref
 
 sub calcHash {
     my $self = shift;
-
     my $hash = hmac_md5_sum(@_,$self->secret);
-    $self->log->debug("calcHash ".join(",",@_,$self->secret));
     return $hash;
 }
 
