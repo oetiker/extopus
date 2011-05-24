@@ -112,11 +112,20 @@ sub addProxyRoute {
         $self->log->debug("Fetching ".$pxReq->to_string);
         my $tx = $ctrl->ua->get($pxReq);
         if (my $res=$tx->success) {
+           my $body;
            if ($res->headers->content_type =~ m'text/html'i){
-               $self->signImgSrc($baseUrl,$res);
-            }
-            $ctrl->tx->res($res);
-            $ctrl->rendered;
+              my $dom = $res->dom;
+              $self->signImgSrc($baseUrl,$dom);
+              $body = $dom->to_xml;
+           }
+           else {
+              $body = $res->body;
+           }
+           my $rp = Mojo::Message::Response->new;
+           $rp->code(200);
+           $rp->headers->content_type('text/html');
+           $rp->body($body);
+           $ctrl->tx->res($rp);
         }
         else {     
             my ($msg,$error) = $tx->error;
@@ -138,10 +147,8 @@ Sign all image urls pointing to our server.
 sub signImgSrc {
     my $self = shift;
     my $pageUrl = Mojo::URL->new(shift);
-    my $res = shift;    
-    my $dom = $res->dom;
+    my $dom = shift;
     my $root = $self->root;
-    my $changed;
     $dom->find('img[src]')->each( sub {
         my $attrs = shift->attrs;
         my $src = Mojo::URL->new($attrs->{src});
@@ -173,10 +180,8 @@ sub signImgSrc {
             $self->log->debug('img[src] in '.$attrs->{src});
             $attrs->{src} = $newSrc->to_string;
             $self->log->debug('img[src] out '.$attrs->{src});
-            $changed = 1;
         }
     });
-    $res->body($dom->to_xml) if $changed;
 }
 
 =head2 calcHash(ref)
