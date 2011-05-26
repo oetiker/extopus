@@ -62,7 +62,7 @@ sub matchRecord {
     my $leaves = $self->getLeaves($url,$rec->{'torrus.nodeid'});
     my $view = $self->view;
     my @views;
-    for my $token (sort keys %$leaves){        
+    for my $token (sort { $leaves->{$b}{precedence} <=> $leaves->{$a}{precedence}} keys %$leaves){        
         my $leaf = $leaves->{$token};
         next unless ref $leaf; # skip emtpy leaves
         my $nodeid = $leaf->{nodeid};
@@ -101,7 +101,9 @@ sub getLeaves {
     $url->query(
         nodeid => $nodeid,
         view=> 'rpc',
-        RPCCALL => 'WALK_LEAVES');    
+        RPCCALL => 'WALK_LEAVES',
+        GET_PARAMS => 'precedence',
+    );    
     $self->log->error("getting ".$url->to_string);
     my $tx = Mojo::UserAgent->new->get($url);
     if (my $res=$tx->success) {

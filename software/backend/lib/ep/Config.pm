@@ -217,6 +217,7 @@ sub _make_parser {
         },
 
         '/INVENTORY:\s+\S+/' => {
+            _order => 1,
             _doc => 'Instanciate an inventory object',
             _vars => [ qw(module /[a-z]\S+/) ],
             _mandatory => [ 'module' ],
@@ -236,6 +237,7 @@ sub _make_parser {
             },
         },
         '/VISUALIZER:\s+\S+/' => {
+            _order => 1,
             _doc => 'Instanciate a visualizer object',
             _vars => [ qw(module /[a-z]\S+/) ],
             _mandatory => [ 'module' ],

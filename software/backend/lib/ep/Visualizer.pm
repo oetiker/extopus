@@ -22,7 +22,7 @@ The base class for inventory modules.
 use Mojo::Base -base;
 
 has 'cfg';
-has 'visualizers' => sub { {} };
+has 'visualizers' => sub { [] };
 has 'user';
 has 'log';
 has 'routes';
@@ -35,16 +35,17 @@ create new inventory instance
 =cut
 
 sub new {
-    my $self = shift->SUPER::new(@_);
-    for my $entry ( grep /^VISUALIZER:/, keys %{$self->cfg} ){
-        my $drvCfg = $self->cfg->{$entry};
+    my $self = shift->SUPER::new(@_);    
+    my $cfg = $self->cfg;
+
+    for my $entry ( sort { $cfg->{$a}{_order} <=> $cfg->{$b}{_order} } grep /^VISUALIZER:/, keys %{$self->cfg} ){
+        my $drvCfg = $cfg->{$entry};
         require 'ep/Visualizer/'.$drvCfg->{module}.'.pm';
         $entry =~ m/VISUALIZER:\s*(\S+)/ or die "Could not match $entry";
         my $key = $1;
         do {
             no strict 'refs';
-            $self->visualizers->{$key} = "ep::Visualizer::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,key=>$key });
-
+            push @{$self->visualizers}, "ep::Visualizer::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,key=>$key });
         }
     }
     return $self;
@@ -62,8 +63,8 @@ sub getVisualizers {
     my $record = shift;
     my $viz = $self->visualizers;
     my @matches;
-    for my $instance (keys %{$viz}){
-        push @matches, grep({ defined $_ }  $viz->{$instance}->matchRecord($record));
+    for my $instance (@$viz){
+        push @matches, grep({ defined $_ }  $instance->matchRecord($record));
     }
     return \@matches;
 }
