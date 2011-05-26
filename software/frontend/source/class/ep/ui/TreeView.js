@@ -91,21 +91,26 @@ qx.Class.define("ep.ui.TreeView", {
             var tm = this.getTable().getTableModel();
             var leafCache = this.__leafCache;
             this.getTable().getSelectionModel().resetSelection(); 
-                rpc.callAsyncSmart(function(ret){
+            var that = this;
+            rpc.callAsyncSmart(function(ret){
                 ret.branches.map(function(branch){
                     var newNodeId = model.addBranch(nodeId,branch[1],false);
                     treeData[newNodeId]['backendNodeId'] = branch[0];
                 });                    
                 model.setData();
                 leafCache[nodeId] = ret.leaves;
+                that.debug('first '+nodeId);
                 tm.setData(ret.leaves,true);
             },'getBranch',backendNodeId);
         },
         _setLeavesTable : function(e){
             var nodeId = e.getData()[0].nodeId;
-            this.debug(nodeId);
+            this.debug('second ' + nodeId);
             if (this.__leafCache[nodeId]){
-                this.getTable().getTableModel().setData(this.__leafCache[nodeId]);
+                this.getTable().getTableModel().setData(this.__leafCache[nodeId],true);
+            }
+            else {
+                this.getTable().getTableModel().setData([]);
             }
         },
         _dropNode : function(e){

@@ -28,6 +28,8 @@ use warnings;
 use Mojo::Base 'ep::Visualizer::base';
 use Mojo::Util qw(hmac_md5_sum);
 use Mojo::URL;
+use Mojo::JSON::Any;
+use Mojo::UserAgent;
 
 my $instance = 0;
 
@@ -35,6 +37,7 @@ has 'hostauth';
 #has 'view' => 'expanded-dir-html';
 has view => 'iframe-rrd';
 has 'root';
+has json        => sub {Mojo::JSON::Any->new};
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -56,24 +59,65 @@ sub matchRecord {
         return undef unless defined $rec->{$_};
     };
     my $url = $rec->{'torrus.tree-url'};
-    $url =~ s/psrtorrus/tsrtorrus/i;
-    my $nodeid = $rec->{'torrus.nodeid'};
+    my $leaves = $self->getLeaves($url,$rec->{'torrus.nodeid'});
     my $view = $self->view;
-    my $hash = $self->calcHash($url,$nodeid,$view);
-    my $src = Mojo::URL->new();
-    $src->path($self->root);
-    $src->query(
-          hash => $hash,
-          nodeid => $nodeid,
-          view => $view,
-          url => $url
-    );
-    return {
-        visualizer =>  'iframe',
-        arguments => {
-            src => '..'.$src->to_rel
+    my @views;
+    for my $token (sort keys %$leaves){        
+        my $leaf = $leaves->{$token};
+        my $nodeid = $leaf->{nodeid};
+        my $hash = $self->calcHash($url,$nodeid,$view);
+        $self->log->debug('adding '.$leaf->{comment},$leaf->{nodeid});
+        my $src = Mojo::URL->new();
+        $src->path($self->root);
+        $src->query(
+            hash => $hash,
+            nodeid => $nodeid,
+            view => $view,
+            url => $url
+        );
+        push @views, {
+            visualizer =>  'iframe',
+            arguments => {
+                src => '..'.$src->to_string,
+                title => $leaf->{comment},
+            }
         }
     };
+    return @views;
+}
+
+=head2 getLeaves(treeurl,nodeid)
+
+pull the list of leaves from torrus 
+
+=cut
+
+sub getLeaves {
+    my $self = shift;
+    my $tree_url = shift;
+    my $nodeid = shift;
+    my $url = Mojo::URL->new($tree_url);
+    $url->query(
+        nodeid => $nodeid,
+        view=> 'rpc',
+        RPCCALL => 'WALK_LEAVES');    
+    $self->log->error("getting ".$url->to_string);
+    my $tx = Mojo::UserAgent->new->get($url);
+    if (my $res=$tx->success) {
+        if ($res->headers->content_type =~ m'application/json'i){
+            my $ret = $self->json->decode($res->body);
+            if ($ret->{success}){
+                return $ret->{data};
+            }
+        }
+        else {
+            $self->log->error("expected torrus to return and application/json result");
+        }
+    }
+    else {
+        my ($msg,$error) = $tx->error;
+        $self->log->error("fetching ".$url->to_string.": $error: $msg");
+    }
 }
 
 =head2 addProxyRoute()
@@ -89,7 +133,6 @@ sub addProxyRoute {
     $routes->get( $self->root, sub {
         my $ctrl = shift;
         my $req = $ctrl->req;
-        
         my $hash =  $req->param('hash');
         my $url = $req->param('url');
         my $pxReq =  Mojo::URL->new($url);        
@@ -123,9 +166,10 @@ sub addProxyRoute {
            }
            my $rp = Mojo::Message::Response->new;
            $rp->code(200);
-           $rp->headers->content_type('text/html');
+           $rp->headers->content_type($res->headers->content_type);
            $rp->body($body);
            $ctrl->tx->res($rp);
+           $ctrl->rendered;
         }
         else {     
             my ($msg,$error) = $tx->error;

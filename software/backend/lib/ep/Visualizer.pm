@@ -43,7 +43,7 @@ sub new {
         my $key = $1;
         do {
             no strict 'refs';
-            $self->visualizers->{$key} = "ep::Visualizer::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret});
+            $self->visualizers->{$key} = "ep::Visualizer::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,key=>$key });
 
         }
     }
@@ -61,11 +61,11 @@ sub getVisualizers {
     my $self = shift;
     my $record = shift;
     my $viz = $self->visualizers;
-    my %matches;
+    my @matches;
     for my $instance (keys %{$viz}){
-        $matches{$instance} = $viz->{$instance}->matchRecord($record);
+        push @matches, grep({ defined $_ }  $viz->{$instance}->matchRecord($record));
     }
-    return \%matches;
+    return \@matches;
 }
 
 1;
