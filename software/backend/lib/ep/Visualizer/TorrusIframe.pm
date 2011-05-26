@@ -64,6 +64,7 @@ sub matchRecord {
     my @views;
     for my $token (sort keys %$leaves){        
         my $leaf = $leaves->{$token};
+        next unless ref $leaf; # skip emtpy leaves
         my $nodeid = $leaf->{nodeid};
         my $hash = $self->calcHash($url,$nodeid,$view);
         $self->log->debug('adding '.$leaf->{comment},$leaf->{nodeid});
