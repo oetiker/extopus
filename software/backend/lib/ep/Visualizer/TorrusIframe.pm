@@ -26,7 +26,7 @@ use strict;
 use warnings;
 
 use Mojo::Base 'ep::Visualizer::base';
-use Mojo::Util qw(hmac_md5_sum);
+use Mojo::Util qw(hmac_md5_sum url_unescape);
 use Mojo::URL;
 use Mojo::JSON::Any;
 use Mojo::UserAgent;
@@ -135,7 +135,7 @@ sub addProxyRoute {
         my $req = $ctrl->req;
         my $hash =  $req->param('hash');
         my $url = $req->param('url');
-        my $pxReq =  Mojo::URL->new($url);        
+        my $pxReq =  Mojo::URL->new($url);
         my $nodeid = $req->param('nodeid');
         my $view = $req->param('view');
         my $newHash = $self->calcHash($url,$nodeid,$view);
@@ -207,7 +207,7 @@ sub signImgSrc {
             if ($src->path !~ m|^/|){
                 $src->path($pageUrl->path.'/../'.$src->path);
             }
-            my $url = $src->to_string;
+            my $url = $src->to_abs;
             my $hash = $self->calcHash($url,$nodeid,$view);
 
             my $newSrc = Mojo::URL->new();
@@ -223,6 +223,9 @@ sub signImgSrc {
             }        
             $self->log->debug('img[src] in '.$attrs->{src});
             $attrs->{src} = $newSrc->to_string;
+            # I guess to to_xml method of the dom re-escapes the urls again ... 
+            # without this they end up being double escaped
+            url_unescape $attrs->{src};
             $self->log->debug('img[src] out '.$attrs->{src});
         }
     });
@@ -236,7 +239,8 @@ Returns a hash for authenticating access to the ref
 
 sub calcHash {
     my $self = shift;
-    my $hash = hmac_md5_sum(@_,$self->secret);
+    $self->log->debug('HASH '.join(',',@_));    
+    my $hash = hmac_md5_sum(join('::',@_),$self->secret);
     return $hash;
 }
 
