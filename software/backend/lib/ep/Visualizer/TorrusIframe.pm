@@ -77,10 +77,12 @@ sub matchRecord {
             view => $view,
             url => $url
         );
+        my $plain_src = $src->to_string;
+        url_unescape $plain_src;
         push @views, {
             visualizer =>  'iframe',
             arguments => {
-                src => '..'.$src->to_string,
+                src => '..'.$plain_src,
                 title => $leaf->{comment},
             }
         }
@@ -115,12 +117,14 @@ sub getLeaves {
             }
         }
         else {
+            $self->log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
             die mkerror(39944,"expected torrus to return and application/json result, but got ".$res->headers->content_type);
         }
     }
     else {
         my ($msg,$error) = $tx->error;
-        die mkerror(48877,"fetching ".$url->to_string.": ".($error || '???').": $msg");        
+        $self->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
+        die mkerror(48877,"fetching Leaves for $nodeid from torrus server: $msg ".($error ||''));        
     }
 }
 
