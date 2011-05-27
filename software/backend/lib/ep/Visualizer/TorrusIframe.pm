@@ -62,7 +62,7 @@ sub matchRecord {
     my $leaves = $self->getLeaves($url,$rec->{'torrus.nodeid'});
     my $view = $self->view;
     my @views;
-    for my $token (sort { $leaves->{$b}{precedence} <=> $leaves->{$a}{precedence}} keys %$leaves){        
+    for my $token (sort { ($leaves->{$b}{precedence} || 0) <=> ($leaves->{$a}{precedence} || 0) } keys %$leaves){        
         my $leaf = $leaves->{$token};
         next unless ref $leaf; # skip emtpy leaves
         my $nodeid = $leaf->{nodeid};
@@ -121,6 +121,8 @@ sub getLeaves {
         my ($msg,$error) = $tx->error;
         $self->log->error("fetching ".$url->to_string.": $error: $msg");
     }
+    # no data
+    return {};
 }
 
 =head2 addProxyRoute()
