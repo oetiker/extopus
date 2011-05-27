@@ -66,7 +66,7 @@ sub matchRecord {
     for my $token (sort { ($leaves->{$b}{precedence} || 0) <=> ($leaves->{$a}{precedence} || 0) } keys %$leaves){        
         my $leaf = $leaves->{$token};
         next unless ref $leaf; # skip emtpy leaves
-        my $nodeid = $leaf->{nodeid};
+        my $nodeid = $leaf->{nodeid} or next; # skip leaves without nodeid
         my $hash = $self->calcHash($url,$nodeid,$view);
         $self->log->debug('adding '.$leaf->{comment},$leaf->{nodeid});
         my $src = Mojo::URL->new();
