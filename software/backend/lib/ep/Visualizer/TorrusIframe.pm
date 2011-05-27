@@ -30,6 +30,7 @@ use Mojo::Util qw(hmac_md5_sum url_unescape);
 use Mojo::URL;
 use Mojo::JSON::Any;
 use Mojo::UserAgent;
+use ep::Exception qw(error);
 
 my $instance = 0;
 
@@ -114,15 +115,13 @@ sub getLeaves {
             }
         }
         else {
-            $self->log->error("expected torrus to return and application/json result");
+            die error(39944,"expected torrus to return and application/json result, but got ".$res->headers->content_type);
         }
     }
     else {
         my ($msg,$error) = $tx->error;
-        $self->log->error("fetching ".$url->to_string.": $error: $msg");
+        die error(48877,"fetching ".$url->to_string.": ".($error || '???').": $msg");        
     }
-    # no data
-    return {};
 }
 
 =head2 addProxyRoute()
