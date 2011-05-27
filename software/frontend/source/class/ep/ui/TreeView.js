@@ -89,6 +89,7 @@ qx.Class.define("ep.ui.TreeView", {
             var model = tree.getDataModel();
             var treeData = model.getData();
             var tm = this.getTable().getTableModel();
+            var sm = this.getTable().getSelectionModel();
             var leafCache = this.__leafCache;
             this.getTable().getSelectionModel().resetSelection(); 
             var that = this;
@@ -96,21 +97,24 @@ qx.Class.define("ep.ui.TreeView", {
                 ret.branches.map(function(branch){
                     var newNodeId = model.addBranch(nodeId,branch[1],false);
                     treeData[newNodeId]['backendNodeId'] = branch[0];
-                });                    
+                });            
                 model.setData();
                 leafCache[nodeId] = ret.leaves;
-                that.debug('first '+nodeId);
+                that.debug('first '+nodeId);                
                 tm.setData(ret.leaves,true);
+                sm.resetSelection();
             },'getBranch',backendNodeId);
         },
         _setLeavesTable : function(e){
             var nodeId = e.getData()[0].nodeId;
             this.debug('second ' + nodeId);
+            var table = this.getTable();
+            table.getSelectionModel().resetSelection();
             if (this.__leafCache[nodeId]){
-                this.getTable().getTableModel().setData(this.__leafCache[nodeId],true);
+                table.getTableModel().setData(this.__leafCache[nodeId],true);
             }
             else {
-                this.getTable().getTableModel().setData([]);
+                table.getTableModel().setData([]);
             }
         },
         _dropNode : function(e){
