@@ -54,7 +54,8 @@ sub startup {
         }
     }
     my $routes = $self->routes;
-
+    # session is valid for 7 days
+    $self->sessions->default_expiration(7*24*3600);
     # run /setUser/oetiker to launch the application for a particular user
     $routes->get('/setUser/(:user)' => sub {
         my $self = shift;
