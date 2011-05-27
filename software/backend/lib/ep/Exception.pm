@@ -6,7 +6,7 @@ ep::Exception - a simple exception class
 
 =head1 SYNOPSIS
 
- use ep::Exception qw(error);
+ use ep::Exception qw(mkerror);
 
  eval { die error(22,'Bad Error'); }
  if ($@){

@@ -30,7 +30,7 @@ use Mojo::Util qw(hmac_md5_sum url_unescape);
 use Mojo::URL;
 use Mojo::JSON::Any;
 use Mojo::UserAgent;
-use ep::Exception qw(error);
+use ep::Exception qw(mkerror);
 
 my $instance = 0;
 
@@ -105,7 +105,7 @@ sub getLeaves {
         RPCCALL => 'WALK_LEAVES',
         GET_PARAMS => 'precedence',
     );    
-    $self->log->error("getting ".$url->to_string);
+    $self->log->debug("getting ".$url->to_string);
     my $tx = Mojo::UserAgent->new->get($url);
     if (my $res=$tx->success) {
         if ($res->headers->content_type =~ m'application/json'i){
@@ -115,12 +115,12 @@ sub getLeaves {
             }
         }
         else {
-            die error(39944,"expected torrus to return and application/json result, but got ".$res->headers->content_type);
+            die mkerror(39944,"expected torrus to return and application/json result, but got ".$res->headers->content_type);
         }
     }
     else {
         my ($msg,$error) = $tx->error;
-        die error(48877,"fetching ".$url->to_string.": ".($error || '???').": $msg");        
+        die mkerror(48877,"fetching ".$url->to_string.": ".($error || '???').": $msg");        
     }
 }
 
