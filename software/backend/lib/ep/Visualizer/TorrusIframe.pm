@@ -114,6 +114,8 @@ sub getLeaves {
             my $ret = $self->json->decode($res->body);
             if ($ret->{success}){
                 return $ret->{data};
+            } else {
+                die mkerror(7534,$ret->{error} || "unknown error while fetching data from torrus");
             }
         }
         else {
