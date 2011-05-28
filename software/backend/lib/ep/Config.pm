@@ -130,9 +130,6 @@ ${E}head1 SYNOPSIS
  port = Port
  inv_id = InvId
 
- *** TREE ***
- Location = country,city,street,no
- Service = svc_type, data_type, inv_id
 
  *** TABLES ***
  search = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
@@ -141,6 +138,7 @@ ${E}head1 SYNOPSIS
  *** INVENTORY: siam1 ***
  module=SIAM
  yaml_cfg=/path_to/siam.yaml
+ 
  +MAP
  siam.svc.product_name = prod
  xyc.svc.loc.country = country
@@ -151,8 +149,13 @@ ${E}head1 SYNOPSIS
  siam.svc.type = svc_type
  siam.svcdata.name = data
  siam.svcdata.type = data_type
- cablecom.port.shortname = port
+ xyc.port.shortname = port
  siam.svc.inventory_id = inv_id
+ 
+ +TREE
+ 'Location',\$R{country}, \$R{city}, \$R{street}
+ \$R{cust},\$R{svc_type},\$R{data_type}
+
 
  *** VISUALIZER: siam1 ***
  module = TorrusIframe
@@ -177,8 +180,8 @@ sub _make_parser {
     my $self = shift;
     my $E = '=';
     my $grammar = {
-        _sections => [ qw{GENERAL /INVENTORY:\s+\S+/ /VISUALIZER:\s+\S+/ ATTRIBUTES TREE TABLES }],
-        _mandatory => [qw(GENERAL ATTRIBUTES TREE TABLES)],
+        _sections => [ qw{GENERAL /INVENTORY:\s+\S+/ /VISUALIZER:\s+\S+/ ATTRIBUTES TABLES }],
+        _mandatory => [qw(GENERAL ATTRIBUTES TABLES)],
         GENERAL => {
             _doc => 'Global configuration settings for Extopus',
             _vars => [ qw(cache_dir mojo_secret log_file log_level) ],
@@ -194,14 +197,6 @@ sub _make_parser {
                 _doc => 'List of known attributes with friendly names.',
                 _examples => 'city = City'
             },            
-        },
-        TREE => {
-            _vars => [ '/[A-Za-z0-9]+/' ],
-            '/[A-Za-z0-9]+/' => {
-                _doc => 'Tree building attributes',
-                _examples => 'Location = country,city,street,no'
-            },
-            
         },
         TABLES => {
             _vars => [ qw(search tree) ],
@@ -224,7 +219,7 @@ sub _make_parser {
             module => {
                 _doc => 'The inventory module to load'
             },
-            _sections => [ '/[A-Z]\S+/' ],
+            _sections => [ 'TREE', '/[A-Z]\S+/' ],
             '/[a-z]\S+/' => {
                 _doc => 'Any key value settings appropriate for the instance at hand'
             },
@@ -235,13 +230,36 @@ sub _make_parser {
                     _doc => 'Any key value settings appropriate for the instance at hand'
                 }        
             },
+            'TREE' => {
+                _doc => <<'DOC',
+Define the attributes to be added to the tree. By entering rows of comma separated
+attributes in perl notation. The data from the current record is accessible via the %R hash.
+DOC
+                _example => <<'EX',
+'Company Index',uc(substr($R{company},0,1)), uc(substr($R{company},1,1)),$R{company},$R{town},$R{street}
+'Services', $R{service_class}, $R{service_id}, $R{location}
+EX
+                _text => {
+                    _sub => sub { 
+                        my $rules = $_[0];
+                        my @t = split /\n/, $rules; 
+                        my $perl = 'sub { my %R = (%{$_[0]}); return [ '.join(',',map {"[ $_ ]"} @t).' ] }';
+                        # check and modify the _text in place ... sneaky ... 
+                        $_[0] = eval $perl;
+                        if ($@){
+                            return "Failed to compile $perl: $@ ";
+                        }
+                        undef;
+                    }
+                }
+            },
         },
         '/VISUALIZER:\s+\S+/' => {
             _order => 1,
             _doc => 'Instanciate a visualizer object',
             _vars => [ qw(module /[a-z]\S+/) ],
             _mandatory => [ 'module' ],
-            _sections => [ '/[A-Z]\S+/' ],
+            _sections => ['/[A-Z]\S+/' ],
             module => {
                 _doc => 'The visualization module to load'
             },
@@ -256,7 +274,6 @@ sub _make_parser {
                 }        
             },
         },
-
     };
     my $parser =  Config::Grammar->new ($grammar);
     return $parser;

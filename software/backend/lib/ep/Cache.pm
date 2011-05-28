@@ -10,9 +10,10 @@ ep::Cache - extopus data cache
 
  my $es = ep::Cache->new(
     cacheKey => 'unique name for the store',
-    tree => {
-        Location => [ qw(country state city address floor room) ],
-        Customer => [ qw(customer country state city address) ]
+    tree => sub { my %R = ( %$_[0] );
+            [ [ $R{country}, $R{state} ],
+              [ 'Index', uc(substr($R{customer},0,1)), $R{customer} ],
+            ] }
     },
  );
 
@@ -40,7 +41,7 @@ use Data::Dumper;
 
 has cacheKey    => sub { 'instance'.int(rand(1000000)) };
 has cacheRoot   => '/tmp/';
-has tree       => sub { {} };
+has tree       => sub { [] };
 has json        => sub {Mojo::JSON::Any->new};
 has populated   => 0;
 has searchCols  => sub {[]};
@@ -124,10 +125,10 @@ sub addTreeNode {
     my $node = shift;
     my $dbh = $self->dbh;    
     my $cache = $self->{treeCache};
-    for my $treeName (keys %{$self->tree}){          
+    my $treeData = $self->tree->($node);
+    for my $subTree (@{$treeData}){                  
         my $parent = 0;
-        for my $keyName ('root',@{$self->tree->{$treeName}}){                
-            my $value = $keyName eq 'root' ? $treeName : $node->{$keyName};
+        for my $value (@{$subTree}){
             last unless defined $value;
             my $id;
             if ($cache->{$parent}{$value}){

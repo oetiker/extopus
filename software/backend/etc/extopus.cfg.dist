@@ -1,15 +1,55 @@
 *** GENERAL ***
 cache_dir = /scratch/extopus
-mojo_secret = MyCookieSecret
-log_file = /tmp/dbtoria.log
+mojo_secret = my_secret
+log_file = /tmp/extopus-tobi.log
+
+*** ATTRIBUTES ***
+prod = Product
+country = Country
+city = City
+street = Street
+number = No
+cust = Customer
+svc_type = Service
+data = Data
+data_type = Type
+port = Port
+inv_id = SAP
+
+*** TABLES ***
+
+search = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
+tree = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
 
 *** INVENTORY: siam1 ***
 module=SIAM
-driver=SIAM::Driver::Simple
-datafile=driver-simple.data.yaml
-enterprise_name = Hello World Inc.
-enterprise_url = http://www.google.ch
-enterprise_logo_url = http://www.google.ch/images/logos/logo.png
+siam_cfg=/opt/extopus/etc/siam.yaml
 
-*** URLSCHEME: torrus ***
-module=torrus
++MAP
+siam.svc.product_name = prod
+xyc.svc.loc.country = country
+xyc.svc.loc.city = city
+xyc.svc.loc.address = street
+xyc.svc.loc.building_number = number
+siam.contract.customer_name = cust
+siam.svc.type = svc_type
+siam.svcdata.name = data
+siam.svcdata.type = data_type
+xyc.port.shortname = port
+siam.svc.inventory_id = inv_id
+torrus.tree-url = torrus.tree-url
+torrus.nodeid = torrus.nodeid
+
++TREE
+
+'Location',$R{country}, $R{city}, $R{street}
+$R{cust},$R{svc_type},$R{data_type}
+
+*** VISUALIZER: siam1 ***
+module=TorrusIframe
+
+*** VISUALIZER: siam2 ***
+module=Plain
+
+
+

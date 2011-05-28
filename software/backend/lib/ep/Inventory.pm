@@ -56,8 +56,15 @@ Walk all the configured inventories and add them to the cache.
 
 sub walkInventory {
     my $self = shift;
-    my $callback = shift;
-    for my $driver (@{$self->drivers}){
+    my $cache = shift;
+    my $callback = sub { $cache->add(shift) };
+    for my $driver (@{$self->drivers}){        
+        if ($driver->cfg->{TREE}){
+            $cache->tree($driver->cfg->{TREE}{_text});
+        }
+        else {
+            $cache->tree(sub{[]});
+        }
         $driver->user($self->user);
         $driver->walkInventory($callback);
     }

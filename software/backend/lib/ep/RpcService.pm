@@ -64,7 +64,7 @@ sub allow_rpc_access {
         $cache->tree({            
             map { $_ => [ split /\s*,\s*/, $tree->{$_} ] } grep !/^_/, keys %$tree 
         });
-        $self->inventory->walkInventory(sub { $cache->add(shift) });
+        $self->inventory->walkInventory($cache);
         $self->log->debug("nodes for $user loaded");
         $cache->populated(1);
     }
