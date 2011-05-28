@@ -5,28 +5,36 @@
    Utf8Check: äöü
 ************************************************************************ */
 
+/* ************************************************************************
+
+#asset(qx/icon/${qx.icontheme}/22/places/folder.png)
+#asset(qx/icon/${qx.icontheme}/22/mimetypes/office-spreadsheet.png)
+#asset(ep/loading22.gif)
+
+************************************************************************ */
+
 /**
  * The window for the browser side representation of a plugin instance.
  */
+
 qx.Class.define("ep.ui.TreeView", {
     extend : qx.ui.core.Widget,
 
     construct : function() {
         this.base(arguments);
         this._setLayout(new qx.ui.layout.Grow());
-        this.__hPane = new qx.ui.splitpane.Pane("horizontal");
-        this._add(this.__hPane);
-        this.__vPane = new qx.ui.splitpane.Pane("vertical");
-        this._createTree();
-        this.__hPane.add(this.__vPane,3);
+        var hPane = new qx.ui.splitpane.Pane("horizontal");
+        this._add(hPane);
+        var vPane = new qx.ui.splitpane.Pane("vertical");
         var rpc=ep.data.Server.getInstance();
         var that = this;
         rpc.callAsyncSmart(function(ret){
-            that._createTable(ret.names,ret.ids);
-            that._createView();
-            that._addNodeKids();        
+            vPane.add(that._createTable(ret.names,ret.ids),1);
+            hPane.add(that._createTree(),1);
+            hPane.add(vPane,3);
+            vPane.add(that._createView(),3);
         },'getTableColumnDef','tree');
-        this.__leafCache = {};
+//      this.__leafCache = {};
     },
 
     properties: {
@@ -35,10 +43,6 @@ qx.Class.define("ep.ui.TreeView", {
         view: {}
     },
     members : {
-        __tableColumns: null,
-        __hPane: null,
-        __vPane: null,
-        __leafCache: null,
         /**
          * get the kids ready
          *
@@ -46,84 +50,109 @@ qx.Class.define("ep.ui.TreeView", {
          * @return {var} TODOC
          */        
         _createTree: function(){
-            var control = new qx.ui.treevirtual.TreeVirtual('Nodes',{
-                treeDataCellRenderer: new ep.ui.TreeDataCellRenderer()
-            }).set({
-                excludeFirstLevelTreeLines: true,
-                openCloseClickSelectsRow: true,
-                alwaysShowOpenCloseSymbol: true,
-                rowHeight: 20
+            var root = qx.data.marshal.Json.createModel({
+                name: 'root',
+                kids: [],
+                leaves: null,
+                icon: 'default',
+                loaded: true,
+                nodeId: 0
+            },true);
+            this._addNodeKids(root);
+            var that = this;
+            var control = new qx.ui.tree.VirtualTree(root,'name','kids').set({
+                openMode: 'click',
+                hideRoot: true,
+                iconPath: 'icon',
+                iconOptions: {
+                    converter : function(value, model) {
+                        if (value == "default") {
+                            if (model.getKids != null) {
+                                return "icon/22/places/folder.png";
+                            } else {
+                                return "icon/22/mimetypes/office-document.png";
+                            }
+                        } else {
+                            return "ep/loading22.gif";
+                        }
+                    }
+                },
+                delegate: {
+                    bindItem : function(controller, item, index) {
+                        controller.bindDefaultProperties(item, index);
+                        controller.bindProperty("", "open", {
+                            converter : function(value, model, source, target) {
+                                var isOpen = target.isOpen();
+                                if (isOpen && !value.getLoaded()) {
+                                    that._addNodeKids(value);
+                                }
+                                return isOpen;
+                            }
+                        }, item, index);
+                    }
+                }
             });
-            this.__hPane.add(control,1);       
-            control.getDataRowRenderer().setHighlightFocusRow(false);
-            control.addListener("treeOpenWhileEmpty",this._addNodeKids,this);
-            control.addListener("changeSelection",this._setLeavesTable,this);                        
-            control.addListener("treeClose",this._dropNode,this);            
+
+//          control.addListener("treeOpenWhileEmpty",this._addNodeKids,this);
+            control.getSelection().addListener("change",this._setLeavesTable,this);    
+//          control.addListener("treeClose",this._dropNode,this);            
             this.setTree(control);
+            return control;
         },
+
+//        _handleLeaf: function(e){
+//            this.debug(e.getData());
+//        },
+
         _createTable: function(names,ids){
             var tm = new qx.ui.table.model.Simple();
             tm.setColumns(names,ids);
             var control = new ep.ui.Table(tm);
-            this.__vPane.add(control,1);
             this.setTable(control);
+            return control;
         },
         _createView: function(){
             var control = new ep.ui.View(this.getTable());
-            this.__vPane.add(control,3);
             this.setView(control);
+            return control;
         },
-        _addNodeKids : function(e){
-            var nodeId = null;
-            var backendNodeId = 0;
-            var tree = this.getTree();
-            if (e){
-                var node = e.getData();
-                if (node.type == qx.ui.treevirtual.MTreePrimitive.Type.LEAF){
-                    return;
-                }
-                nodeId = node.nodeId;
-                backendNodeId = node.backendNodeId;
-            }
+        _addNodeKids : function(node){
             var rpc=ep.data.Server.getInstance();
-            var model = tree.getDataModel();
-            var treeData = model.getData();
-            var tm = this.getTable().getTableModel();
-            var sm = this.getTable().getSelectionModel();
-            var leafCache = this.__leafCache;
-            this.getTable().getSelectionModel().resetSelection(); 
             var that = this;
             rpc.callAsyncSmart(function(ret){
-                ret.branches.map(function(branch){
-                    var newNodeId = model.addBranch(nodeId,branch[1],false);
-                    treeData[newNodeId]['backendNodeId'] = branch[0];
+                var kids = node.getKids();
+                kids.removeAll();
+                node.setLoaded(true);
+                ret.map(function(branch){                
+                    var newNode = {
+                        nodeId: branch[0],
+                        name: branch[1],
+                        icon: 'default',
+                        loaded: false,
+                        leaves: null
+                    };
+                    if (branch[2]){
+                        newNode.kids = [{
+                            name: 'Loading',
+                            icon: 'loading',
+                        }]
+                    };
+                    var kid = qx.data.marshal.Json.createModel(newNode, true);
+                    // keep the data array as a normal array and don't have it qooxdooified
+                    kid.setLeaves(branch[3]); 
+                    kids.push(kid);
                 });            
-                model.setData();
-                leafCache[nodeId] = ret.leaves;
-                that.debug('first '+nodeId);                
-                tm.setData(ret.leaves,true);
-                sm.resetSelection();
-            },'getBranch',backendNodeId);
+            },'getBranch',node.getNodeId());
         },
         _setLeavesTable : function(e){
-            var nodeId = e.getData()[0].nodeId;
-            this.debug('second ' + nodeId);
-            var table = this.getTable();
-            table.getSelectionModel().resetSelection();
-            if (this.__leafCache[nodeId]){
-                table.getTableModel().setData(this.__leafCache[nodeId],true);
+            var sel = this.getTree().getSelection();
+            if (sel.length > 0){
+                var table = this.getTable();
+                var tm = table.getTableModel();
+                var sm = table.getSelectionModel();
+                sm.resetSelection();
+                tm.setData(sel.getItem(0).getLeaves());
             }
-            else {
-                table.getTableModel().setData([]);
-            }
-        },
-        _dropNode : function(e){
-            var tree = this.getTree();
-            var model = tree.getDataModel();
-            var nodeId = e.getData().nodeId;
-            model.prune(nodeId,false);
-            delete this.__leafCache[nodeId];
-            model.setData();
         }
     }
 });

@@ -209,8 +209,8 @@ sub getNode {
 
 Return the data makeing up the branch starting off parent.
 
- { leaves => [ id1, id2, ... ]
-   branches => [ [ id1, name1 ], [id2, name2 ], ... ] }
+ [ [ id1, name1, hasKids1, [leaf1, leaf2,...] ],
+   [id2, name2, hasKids2, [], ... ] }
 
 =cut
 
@@ -220,23 +220,23 @@ sub getBranch {
     my $dbh = $self->dbh;
     my $sth;
 
-    $sth = $dbh->prepare("SELECT id, name FROM branch WHERE parent = ?");
+
+    $sth = $dbh->prepare("SELECT DISTINCT a.id, a.name, b.id IS NOT NULL FROM branch AS a LEFT JOIN branch AS b ON b.parent = a.id WHERE a.parent = ?");
     $sth->execute($parent);
     my $branches = $sth->fetchall_arrayref([]);
 
     $sth = $dbh->prepare("SELECT docid,data FROM node JOIN leaf ON node.docid = leaf.node AND leaf.parent = ?");
-    $sth->execute($parent);
-    my @leaves;
-    while (my ($docid,$row) = $sth->fetchrow_array()){  
-        my $data = $self->json->decode($row);    
-        $data->{__nodeId} = $docid;
-        push @leaves, [ map { $data->{$_} } @{$self->treeCols} ];
+    for my $branch (@$branches){
+        $sth->execute($branch->[0]);
+        my @leaves;
+        while (my ($docid,$row) = $sth->fetchrow_array()){  
+            my $data = $self->json->decode($row);    
+            $data->{__nodeId} = $docid;
+            push @leaves, [ map { $data->{$_} } @{$self->treeCols} ];
+        }
+        push @$branch, \@leaves;        
     }
-
-    return {
-        branches => $branches,
-        leaves => \@leaves,
-    }     
+    return $branches;
 }
 
 1;
