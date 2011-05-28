@@ -134,7 +134,7 @@ qx.Class.define("ep.ui.TreeView", {
                     if (branch[2]){
                         newNode.kids = [{
                             name: 'Loading',
-                            icon: 'loading',
+                            icon: 'loading'
                         }]
                     };
                     var kid = qx.data.marshal.Json.createModel(newNode, true);
