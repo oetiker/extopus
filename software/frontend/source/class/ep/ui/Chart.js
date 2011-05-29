@@ -75,6 +75,6 @@ qx.Class.define("ep.ui.Chart", {
         }
     },
     destruct: function(){
-        timer.stop();
+        this.__timer.stop();
     }    
 });

@@ -21,7 +21,9 @@ qx.Class.define("ep.ui.View", {
             // kids is not a copy but the actual kids array ... it shrinks as the
             // kids are removed.
             while (kids.length > 0){
-                this.remove(kids[0])
+                var kid = kids[0];
+                this.remove(kid);
+                kid.dispose();
             };
             sm.iterateSelection(function(ind){
                 // this will only iterate once since we are in single selection 
