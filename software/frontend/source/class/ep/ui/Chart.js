@@ -65,11 +65,11 @@ qx.Class.define("ep.ui.Chart", {
                 qx.html.Element.flush();
                 this.setSource(
                     url
-                    +';start='+(end-range)
-                    +';end='+end
-                    +';width=' + qx.bom.element.Dimension.getWidth(el)
-                    +';height=' + qx.bom.element.Dimension.getHeight(el)
-                    +';format=.png'
+                    +'&start='+(end-range)
+                    +'&end='+end
+                    +'&width=' + qx.bom.element.Dimension.getWidth(el)
+                    +'&height=' + qx.bom.element.Dimension.getHeight(el)
+                    +'&format=.png'
                 );
             }
         }
