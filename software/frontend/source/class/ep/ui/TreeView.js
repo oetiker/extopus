@@ -32,7 +32,7 @@ qx.Class.define("ep.ui.TreeView", {
             vPane.add(that._createTable(ret.names,ret.ids),1);
             hPane.add(that._createTree(),1);
             hPane.add(vPane,3);
-            vPane.add(that._createView(),3);
+            vPane.add(that._createView(),3);            
         },'getTableColumnDef','tree');
 //      this.__leafCache = {};
     },
@@ -49,6 +49,8 @@ qx.Class.define("ep.ui.TreeView", {
          * @param id {var} TODOC
          * @return {var} TODOC
          */        
+        __initialized: null,
+
         _createTree: function(){
             var root = qx.data.marshal.Json.createModel({
                 name: 'root',
@@ -70,7 +72,7 @@ qx.Class.define("ep.ui.TreeView", {
                             if (model.getKids != null) {
                                 return "icon/22/places/folder.png";
                             } else {
-                                return "icon/22/mimetypes/office-document.png";
+                                return "icon/22/mimetypes/office-spreadsheet.png";
                             }
                         } else {
                             return "ep/loading22.gif";
@@ -93,16 +95,10 @@ qx.Class.define("ep.ui.TreeView", {
                 }
             });
 
-//          control.addListener("treeOpenWhileEmpty",this._addNodeKids,this);
             control.getSelection().addListener("change",this._setLeavesTable,this);    
-//          control.addListener("treeClose",this._dropNode,this);            
-            this.setTree(control);
+            this.setTree(control);            
             return control;
         },
-
-//        _handleLeaf: function(e){
-//            this.debug(e.getData());
-//        },
 
         _createTable: function(names,ids){
             var tm = new qx.ui.table.model.Simple();
@@ -141,7 +137,18 @@ qx.Class.define("ep.ui.TreeView", {
                     // keep the data array as a normal array and don't have it qooxdooified
                     kid.setLeaves(branch[3]); 
                     kids.push(kid);
-                });            
+                });
+                // travel down the tree as it get loaded
+                if (! that.__initialized){
+                    var firstNewNode = kids.getItem(0);
+                    that.getTree().openNode(firstNewNode);
+                    var sel = that.getTree().getSelection();
+                    sel.removeAll();
+                    sel.push(firstNewNode);
+                    if (!firstNewNode.getKids){
+                        that.__initialized = true;
+                    }
+                }
             },'getBranch',node.getNodeId());
         },
         _setLeavesTable : function(e){
@@ -150,8 +157,12 @@ qx.Class.define("ep.ui.TreeView", {
                 var table = this.getTable();
                 var tm = table.getTableModel();
                 var sm = table.getSelectionModel();
-                sm.resetSelection();
-                tm.setData(sel.getItem(0).getLeaves());
+                var data = sel.getItem(0).getLeaves();                
+                table.resetSelection();
+                tm.setData(data);
+                if (data.length){
+                    sm.setSelectionInterval(0,0);
+                }
             }
         }
     }

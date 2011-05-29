@@ -32,6 +32,7 @@ sub matchRecord {
     my $rec = shift;
     return {
         visualizer =>  'plain',
+        title => 'Properties',
         arguments => $rec
     };
 }
