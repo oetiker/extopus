@@ -60,7 +60,7 @@ sub startup {
     $routes->get('/setUser/(:user)' => sub {
         my $self = shift;
         $self->session(epUser =>  $self->stash('user'));
-        $self->redirect_to('/');
+        $self->redirect_to('../..');
     });
 
     my $inventory = ep::Inventory->new(
