@@ -221,7 +221,7 @@ sub getBranch {
     my $sth;
 
 
-    $sth = $dbh->prepare("SELECT DISTINCT a.id, a.name, b.id IS NOT NULL FROM branch AS a LEFT JOIN branch AS b ON b.parent = a.id WHERE a.parent = ?");
+    $sth = $dbh->prepare("SELECT DISTINCT a.id, a.name, b.id IS NOT NULL FROM branch AS a LEFT JOIN branch AS b ON b.parent = a.id WHERE a.parent = ? ORDER BY a.name");
     $sth->execute($parent);
     my $branches = $sth->fetchall_arrayref([]);
 
