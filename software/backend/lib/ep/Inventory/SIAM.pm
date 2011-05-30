@@ -68,8 +68,6 @@ sub walkInventory {
                         %{$data->attributes},
                         %{$device->attributes}
                     };
-                    use Data::Dumper;
-                    warn Dumper $raw_data;
                     my $data = { map { $map->{$_} => $raw_data->{$_} } grep !/^_/, keys %$map };
                     $storeCallback->($data);
                     $count++;

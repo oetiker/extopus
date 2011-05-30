@@ -37,7 +37,6 @@ use warnings;
 use DBI;
 use Mojo::Base -base;
 use Mojo::JSON::Any;
-use Data::Dumper;
 
 has cacheKey    => sub { 'instance'.int(rand(1000000)) };
 has cacheRoot   => '/tmp/';
