@@ -57,10 +57,14 @@ qx.Class.define("ep.ui.visualizer.ChartImage", {
         __timer: null,
         reloadChart: function (){
             var url = this.getBaseUrl();
+            if (url == null){
+                this.setSource(null);
+                return;
+            };
             var range = this.getTimeRange();
             var end = this.getEndTime() || Math.round( new Date().getTime() / 1000 );
             var el = this.getContainerElement().getDomElement();
-            if (url && range && end && el){
+            if (range && end && el){
                 // sync screen before we measure things
                 qx.html.Element.flush();
                 var width = qx.bom.element.Dimension.getWidth(el);

@@ -34,7 +34,13 @@ qx.Class.define("ep.ui.visualizer.Chart", {
 
        var viewSelection = viewSelector.getSelection();
        viewSelection.addListener("change",function(e){
-           chart.setBaseUrl(viewSelection.getItem(0).getSrc());                
+            var item = viewSelection.getItem(0);
+            if (item == null){    
+                chart.setBaseUrl(null);
+            }
+            else {
+                chart.setBaseUrl(item.getSrc());
+            }
        },this);
 
        titleContainer.add(new qx.ui.core.Spacer(20),{flex: 2});                      
@@ -93,7 +99,6 @@ qx.Class.define("ep.ui.visualizer.Chart", {
         _applyArgs: function(newArgs,oldArgs){
             var viewModel = qx.data.marshal.Json.createModel(newArgs.views);
             this.__viewSelector.setModel(viewModel);
-            // this.__chart.setBaseUrl(viewModel.getItem(0).getSrc());                                    
         }
     }    
 });

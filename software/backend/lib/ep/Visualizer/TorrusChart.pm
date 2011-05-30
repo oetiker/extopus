@@ -116,7 +116,8 @@ sub getLeaves {
             if ($ret->{success}){
                 return $ret->{data};
             } else {
-                die mkerror(7534,$ret->{error} || "unknown error while fetching data from torrus");
+                $self->log->error("Getting leaves for $nodeid: ".$ret->{error});
+                return {};
             }
         }
         else {
