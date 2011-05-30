@@ -27,7 +27,7 @@ qx.Class.define("ep.ui.visualizer.Chart", {
        titleContainer.add(new qx.ui.basic.Label(this.tr('View')));
        var viewSelector = this.__viewSelector = new qx.ui.form.VirtualSelectBox().set({
            labelPath: 'title',
-           minWidth: 100,
+           minWidth: 280,
            maxListHeight: null
        });
        titleContainer.add(viewSelector,{flex: 1});
