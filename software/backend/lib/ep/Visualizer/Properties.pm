@@ -1,4 +1,4 @@
-package ep::Visualizer::Plain;
+package ep::Visualizer::Properties;
 
 =head1 NAME
 
@@ -31,7 +31,7 @@ sub matchRecord {
     my $self = shift;
     my $rec = shift;
     return {
-        visualizer =>  'plain',
+        visualizer =>  'properties',
         title => 'Properties',
         arguments => $rec
     };

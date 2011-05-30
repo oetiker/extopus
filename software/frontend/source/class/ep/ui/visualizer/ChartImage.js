@@ -10,7 +10,7 @@
 /**
  * Create a table according to the instructions provided.
  */
-qx.Class.define("ep.ui.Chart", {
+qx.Class.define("ep.ui.visualizer.ChartImage", {
     extend : qx.ui.basic.Image,
 
     construct : function() {
@@ -63,14 +63,18 @@ qx.Class.define("ep.ui.Chart", {
             if (url && range && end && el){
                 // sync screen before we measure things
                 qx.html.Element.flush();
-                this.setSource(
-                    url
-                    +'&start='+(end-range)
-                    +'&end='+end
-                    +'&width=' + qx.bom.element.Dimension.getWidth(el)
-                    +'&height=' + qx.bom.element.Dimension.getHeight(el)
-                    +'&format=.png'
-                );
+                var width = qx.bom.element.Dimension.getWidth(el);
+                var height = qx.bom.element.Dimension.getHeight(el)
+                if (width > 0 && height > 0){
+                    this.setSource(
+                        url
+                        +'&start='+(end-range)
+                        +'&end='+end
+                        +'&width=' + width
+                        +'&height=' + height
+                        +'&format=.png'
+                    );
+                }
             }
         }
     },
