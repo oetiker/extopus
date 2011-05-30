@@ -221,12 +221,17 @@ sub getBranch {
     my $sth;
 
 
-    $sth = $dbh->prepare("SELECT DISTINCT a.id, a.name, b.id IS NOT NULL FROM branch AS a LEFT JOIN branch AS b ON b.parent = a.id WHERE a.parent = ? ORDER BY a.name");
+    $sth = $dbh->prepare("SELECT DISTINCT a.id, a.name, b.id IS NOT NULL FROM branch AS a LEFT JOIN branch AS b ON b.parent = a.id WHERE a.parent = ?");
     $sth->execute($parent);
     my $branches = $sth->fetchall_arrayref([]);
 
     $sth = $dbh->prepare("SELECT docid,data FROM node JOIN leaf ON node.docid = leaf.node AND leaf.parent = ?");
-    for my $branch (@$branches){
+    my @sortedBranches;
+    for my $branch (sort {
+        my $l = $a->[1];
+        my $r = $b->[1];
+        ( $l =~ /^\d+/ and $r =~ /^\d+/ ) ? $l <=> $r : $l cmp $r
+    } @$branches){
         $sth->execute($branch->[0]);
         my @leaves;
         while (my ($docid,$row) = $sth->fetchrow_array()){  
@@ -235,8 +240,9 @@ sub getBranch {
             push @leaves, [ map { $data->{$_} } @{$self->treeCols} ];
         }
         push @$branch, \@leaves;        
+        push @sortedBranches, $branch;
     }
-    return $branches;
+    return \@sortedBranches;
 }
 
 1;
