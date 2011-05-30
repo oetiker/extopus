@@ -62,8 +62,8 @@ qx.Class.define("ep.ui.View", {
                         });                            
                         var row = 0;
                         for (var key in  viz.arguments){
-                            var l = new qx.ui.basic.Label(key + ': ');
-                            var v = new qx.ui.basic.Label(viz.arguments[key]);
+                            var l = new qx.ui.basic.Label(key + ': ').set({selectable: true});
+                            var v = new qx.ui.basic.Label(viz.arguments[key]).set({selectable: true});
                             tab.add(l,{row:row,column:0});
                             tab.add(v,{row:row,column:1});
                             row++;

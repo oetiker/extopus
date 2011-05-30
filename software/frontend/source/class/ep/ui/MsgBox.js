@@ -43,12 +43,15 @@ qx.Class.define("ep.ui.MsgBox", {
         });
 
         this.setLayout(new qx.ui.layout.VBox(20));
-
-        var body = new qx.ui.basic.Atom().set({
+        // setting the lable to an empty string, so that the lable widget gets
+        // created in the first place and hence the selectable attribute
+        // can be set on it
+        var body = new qx.ui.basic.Atom('').set({
             rich       : true,
             gap        : 10,
             allowGrowY : true,
-            allowGrowX : false
+            allowGrowX : false,
+            selectable : true
         });
 
         this.add(body);
