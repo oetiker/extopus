@@ -35,7 +35,7 @@ use ep::Exception qw(mkerror);
 my $instance = 0;
 
 has 'hostauth';
-has view => 'default-rrgraph';
+has view => 'embedded';
 has 'root';
 has json        => sub {Mojo::JSON::Any->new};
 
@@ -147,8 +147,8 @@ sub addProxyRoute {
         my $hash =  $req->param('hash');
         my $nodeid = $req->param('nodeid');
         my $url = $req->param('url');
-        my $width = $req->param('width') - 90 ;
-        my $height = $req->param('height') - 100;
+        my $width = $req->param('width');
+        my $height = $req->param('height');
         my $start = $req->param('start');
         my $end = $req->param('end');
         my $pxReq =  Mojo::URL->new($url);
