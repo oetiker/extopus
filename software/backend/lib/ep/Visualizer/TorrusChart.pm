@@ -31,6 +31,7 @@ use Mojo::URL;
 use Mojo::JSON::Any;
 use Mojo::UserAgent;
 use ep::Exception qw(mkerror);
+use POSIX qw(strftime);
 
 my $instance = 0;
 
@@ -152,6 +153,7 @@ sub addProxyRoute {
         my $height = $req->param('height');
         my $start = $req->param('start');
         my $end = $req->param('end');
+        my $format = $req->param('format');
         my $pxReq =  Mojo::URL->new($url);
         my $view = $self->view;
         my $newHash = $self->calcHash($url,$nodeid);
@@ -168,13 +170,23 @@ sub addProxyRoute {
         if ($self->hostauth){
             $pxReq->query({hostauth=>$self->hostauth});
         }        
+        if ($format =~ /pdf$/){
+            $pxReq->query({Gimgformat=>'PDF'})
+        }
         $self->log->debug("Fetching ".$pxReq->to_string);
         my $tx = $ctrl->ua->get($pxReq);
         if (my $res=$tx->success) {
            my $body = $res->body;
            my $rp = Mojo::Message::Response->new;
            $rp->code(200);
-           $rp->headers->content_type($res->headers->content_type);
+            my $type = $res->headers->content_type;
+           $rp->headers->content_type($type);
+           if (lc $type eq 'application/pdf'){
+               my $name = $nodeid;
+               $name =~ s/[^-_0-9a-z]+/_/ig;
+               $name .= '-'.strftime('%Y-%m-%d',localtime($start)).'_'.strftime('%Y-%m-%d',localtime($end));               
+               $rp->headers->add('Content-Disposition',"attachement; filename=$name.pdf");
+           }
            $rp->body($body);
            $ctrl->tx->res($rp);
            $ctrl->rendered;
