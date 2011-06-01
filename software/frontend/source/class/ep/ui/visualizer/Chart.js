@@ -25,36 +25,37 @@ qx.Class.define("ep.ui.visualizer.Chart", {
             alignY: 'middle'
         }));
         this.add(titleContainer);
+
         // the chart
         var chart = this.__chart = new ep.ui.visualizer.ChartImage();
         this.add(chart,{flex: 1});            
-        // node chooser
-//      titleContainer.add(new qx.ui.basic.Label(this.tr('View')));
+
+
+        // view selector
         var viewSelector = this.__viewSelector = new qx.ui.form.VirtualSelectBox().set({
            labelPath: 'title',
            width: 280,
            maxListHeight: null
         });
         titleContainer.add(viewSelector);
-
         var viewSelection = viewSelector.getSelection();
         viewSelection.addListener("change",function(e){
             var item = viewSelection.getItem(0);
             if (item == null){    
                 chart.setBaseUrl(null);
-                this.setEnabled(false);
+                titleContainer.setEnabled(false);
+                this.__printBtn.setEnabled(false);
             }
             else {                
                 var url = item.getSrc();
                 chart.setBaseUrl(url);
-                this.setEnabled(true);
-                savePdf.setEnabled(true);
+                titleContainer.setEnabled(true);
+                this.__printBtn.setEnabled(this.__template != null );            
             }
        },this);
 
        
         // time span
-//      titleContainer.add(new qx.ui.basic.Label(this.tr('Range')));
         var timeSpan = [
            { l: this.tr('1 Day'), v: 24*3600 },
            { l: this.tr('2 Days'), v: 2*24*3600 },
@@ -101,7 +102,7 @@ qx.Class.define("ep.ui.visualizer.Chart", {
         savePdf.addListener('execute',this._downloadPdf,this);
         titleContainer.add(savePdf);
  
-        var printBtn = this.__printBtn = new qx.ui.form.Button(this.tr('Print'),"icon/16/actions/document-print.png").set({ enabled: false });
+        var printBtn = this.__printBtn = new qx.ui.form.Button(this.tr('Print'),"icon/16/actions/document-print.png");
         printBtn.addListener('execute',this._popupPrintPage,this);
         titleContainer.add(printBtn);
 
@@ -116,9 +117,8 @@ qx.Class.define("ep.ui.visualizer.Chart", {
         __template: null,
         _applyArgs: function(newArgs,oldArgs){
             var viewModel = qx.data.marshal.Json.createModel(newArgs.views);
-            this.__viewSelector.setModel(viewModel);
             this.__template = newArgs.template
-            this.__printBtn.setEnabled(this.__template != null);
+            this.__viewSelector.setModel(viewModel);
         },
         _downloadPdf: function(){
             var chart = this.__chart;
