@@ -45,11 +45,21 @@ torrus.nodeid = torrus.nodeid
 'Location',$R{country}, $R{city}, $R{street}
 $R{cust},$R{svc_type},$R{data_type}
 
-*** VISUALIZER: siam1 ***
-module=TorrusIframe
+*** VISUALIZER: chart ***
+module=TorrusChart
++TxPrintTemplate
+<!doctype html><html>
+ <head><title><%= "$R{cust} $R{city} $R{svc_type}" %></title></head>
+ <body>
+   <h1><%= "$R{cust} $R{city}" %></h1>
+   <h2>@@VIEW@@</h2>
+   <div>@@START(d.MM.yyyy)@@ - @@END(d.MM.yyy)@@</div>
+   <p><img src="@@SRC@@"/></p>
+ </body>
+</html>
 
-*** VISUALIZER: siam2 ***
-module=Plain
+*** VISUALIZER: prop ***
+module=Properties
 
 
 

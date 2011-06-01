@@ -7,6 +7,7 @@
 
 /* ***************
 #asset(qx/icon/${qx.icontheme}/16/actions/document-save.png)
+#asset(qx/icon/${qx.icontheme}/16/actions/document-print.png)
 ****************/
 
 /**
@@ -35,21 +36,18 @@ qx.Class.define("ep.ui.visualizer.Chart", {
            maxListHeight: null
         });
         titleContainer.add(viewSelector);
-        var savePdf = new qx.ui.form.Button(this.tr('Save PDF'),"icon/16/actions/document-save.png").set({
-            enabled: false
-        });
-        savePdf.addListener('execute',this._downloadPdf,this);
 
         var viewSelection = viewSelector.getSelection();
         viewSelection.addListener("change",function(e){
             var item = viewSelection.getItem(0);
             if (item == null){    
                 chart.setBaseUrl(null);
-                savePdf.setEnabled(false);
+                this.setEnabled(false);
             }
             else {                
                 var url = item.getSrc();
                 chart.setBaseUrl(url);
+                this.setEnabled(true);
                 savePdf.setEnabled(true);
             }
        },this);
@@ -82,8 +80,6 @@ qx.Class.define("ep.ui.visualizer.Chart", {
        
         titleContainer.add(timeSpanSelector);
 
-        // end date
-//      titleContainer.add(new qx.ui.basic.Label(this.tr('End')).set({paddingLeft: 10}));
         var dateField = new qx.ui.form.DateField().set({
             value: null,
             dateFormat: new qx.util.format.DateFormat("dd.MM.yyyy"),
@@ -101,17 +97,28 @@ qx.Class.define("ep.ui.visualizer.Chart", {
             }            
         });
         titleContainer.add(new qx.ui.core.Spacer(20),{flex: 1});                      
+        var savePdf = new qx.ui.form.Button(this.tr('Save PDF'),"icon/16/actions/document-save.png");
+        savePdf.addListener('execute',this._downloadPdf,this);
         titleContainer.add(savePdf);
+ 
+        var printBtn = this.__printBtn = new qx.ui.form.Button(this.tr('Print'),"icon/16/actions/document-print.png").set({ enabled: false });
+        printBtn.addListener('execute',this._popupPrintPage,this);
+        titleContainer.add(printBtn);
+
     },
     statics: {
         KEY: 'chart'
     },
     members: {
         __viewSelector: null,        
+        __printBtn: null,
         __chart: null,
+        __template: null,
         _applyArgs: function(newArgs,oldArgs){
             var viewModel = qx.data.marshal.Json.createModel(newArgs.views);
             this.__viewSelector.setModel(viewModel);
+            this.__template = newArgs.template
+            this.__printBtn.setEnabled(this.__template != null);
         },
         _downloadPdf: function(){
             var chart = this.__chart;
@@ -129,6 +136,44 @@ qx.Class.define("ep.ui.visualizer.Chart", {
                     win.close();
                 }
             });
+        },
+        _fillTemplate: function(){
+            var chart = this.__chart;
+            var end = chart.getEndTime() || Math.round(new Date().getTime()/1000);
+            var start =  end - chart.getTimeRange();
+            var view = this.__viewSelector.getSelection();
+            var map = {
+                'SRC': function(){
+                    return chart.getBaseUrl()+'&width=800&height=600&start='+start+'&end='+end+'&format=.png';
+                },
+                // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String/replace#Specifying_a_function_as_a_parameter
+                'START\\(([^)]+)\\)': function(str,pattern){
+                    var fmt = new qx.util.format.DateFormat(pattern);
+                    return fmt.format(new Date(start*1000));
+                },
+                'END\\(([^)]+)\\)': function(str,pattern){
+                    var fmt = new qx.util.format.DateFormat(pattern);
+                    return fmt.format(new Date(end*1000));
+                },
+                'VIEW': function(){
+                    return view.getItem(0).getTitle();
+                }
+            };
+            var input = this.__template;
+            for (var key in map){
+                var rx = new RegExp('@@'+key+'@@','g');
+                input = input.replace(rx,map[key]);
+            }
+            return input;                            
+        },
+        _popupPrintPage: function(){
+            var win = qx.bom.Window.open("about:blank", '_blank', {
+                scrollbars: 'yes',
+                width: 900,
+                height: 600
+            });
+            win.document.write(this._fillTemplate());
+            win.print();
         }
     }    
 });

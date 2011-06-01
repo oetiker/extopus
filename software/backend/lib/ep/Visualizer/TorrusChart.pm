@@ -20,6 +20,32 @@ This visualizer will match any records that have the following attributes:
  torrus.url-prefix
  torrus.nodeid
 
+The visualizer allows to configure a template for printing graphs.
+It uses the L<Mojo::Template> to render the content server side. Via the %R you have
+access to all node properties. Client side the following items will be replaced in the resulting
+html prior to displaying it. See L<http://demo.qooxdoo.org/current/apiviewer/#qx.util.format.DateFormat>
+for information on date format strings (according to unicode tr35).
+
+ @@SRC@@ the image src  path to the current chart
+ @@START(format)@@ Start date of the chart
+ @@END(format)@@ End date of the chart
+ @@VIEW@@ The selected view
+
+Example configuration snipped
+
+ *** VISUALIZER: chart ***
+ module = TorrusChart
+ +TxPrintTemplate
+ <!doctype html><html>
+  <head><title><%= $R{name} $R{location} %></title></head>
+  <body>
+    <h1><%= $R{name} $R{location} %></h1>
+    <h2>@@VIEW@@</h2>
+    <div>@@START(YYYY.MM.DD)@@ - @@END(YYY.MM.DD)@@</div>
+    <p><img src="@@SRC@@"/></p>
+  </body>
+ </html>
+
 =cut
 
 use strict;
@@ -30,6 +56,8 @@ use Mojo::Util qw(hmac_md5_sum url_unescape);
 use Mojo::URL;
 use Mojo::JSON::Any;
 use Mojo::UserAgent;
+use Mojo::Template;
+
 use ep::Exception qw(mkerror);
 use POSIX qw(strftime);
 
@@ -39,11 +67,21 @@ has 'hostauth';
 has view => 'embedded';
 has 'root';
 has json        => sub {Mojo::JSON::Any->new};
+has 'printtemplate';
 
 sub new {
     my $self = shift->SUPER::new(@_);
     $self->root('/torrusChart_'.$instance);
     $self->addProxyRoute();
+    if ($self->cfg->{TxPrintTemplate}){
+        my $mt = Mojo::Template->new;
+#       $mt->prepend('my $self=shift; my %R = (%{$_[0]});');
+        $mt->parse('% my %R = (%{$_[0]});'."\n".$self->cfg->{TxPrintTemplate}{_text});
+        $mt->build;
+        my $exception = $mt->compile;
+        die "Compiling Template: ".$exception if $exception;
+        $self->printtemplate($mt);
+    }
     return $self;
 }
    
@@ -81,13 +119,17 @@ sub matchRecord {
             src => '..'.$plain_src,
             title => $leaf->{comment},
         },
-    
     };
+    my $template;
+    if ($self->printtemplate){
+        $template = $self->printtemplate->interpret($rec)
+    }
     return {
         visualizer => 'chart',
         title => 'Chart',
         arguments => {
-            views => \@nodes
+            views => \@nodes,
+            template => $template
         }
     };
 }

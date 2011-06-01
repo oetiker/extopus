@@ -259,7 +259,7 @@ EX
             _doc => 'Instanciate a visualizer object',
             _vars => [ qw(module /[a-z]\S+/) ],
             _mandatory => [ 'module' ],
-            _sections => ['/[A-Z]\S+/' ],
+            _sections => ['/Tx[A-Z]\S+/','/[A-Z]\S+/' ],
             module => {
                 _doc => 'The visualization module to load'
             },
@@ -272,6 +272,10 @@ EX
                 '/[a-z]\S+/' => {             
                     _doc => 'Any key value settings appropriate for the instance at hand'
                 }        
+            },
+            '/Tx[A-Z]\S+/' => {
+                _doc => 'Text Section',
+                _text => {}
             },
         },
     };
