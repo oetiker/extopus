@@ -42,9 +42,11 @@ has 'cfg' => sub {
     return $conf->parse_config();
 };
 
+has 'prefix' => '/app';
+
 sub startup {
     my $self = shift;
-
+    my $me = $self;
     my $gcfg = $self->cfg->{GENERAL};
     $self->secret($gcfg->{mojo_secret});
     if ($self->app->mode ne 'development'){
@@ -60,8 +62,10 @@ sub startup {
     $routes->get('/setUser/(:user)' => sub {
         my $self = shift;
         $self->session(epUser =>  $self->stash('user'));
-        $self->redirect_to('../..');
+        $self->redirect_to($me->prefix.'/');
     });
+
+    $routes->get('/' => sub { shift->redirect_to($me->prefix.'/')});
 
     my $inventory = ep::Inventory->new(
         cfg=>$self->cfg,
@@ -71,6 +75,7 @@ sub startup {
     );
 
     my $visualizer = ep::Visualizer->new(
+        prefix=>$self->prefix,
         cfg=>$self->cfg,
         log=>$self->log,
         routes=>$self->routes,
@@ -85,6 +90,7 @@ sub startup {
     );
 
     $self->plugin('qooxdoo_jsonrpc',{
+        prefix => $self->prefix,
         services => {
             ep => $service
         }

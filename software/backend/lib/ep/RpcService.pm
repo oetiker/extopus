@@ -94,10 +94,9 @@ sub getTableColumnDef {
     my $cols = $self->cfg->{TABLES}{$table};
     die mkerror(34884,"Table type '$table' is not known!") unless defined $cols;
     my $attr = $self->cfg->{ATTRIBUTES};
-    my @cols = split /\s*,\s*/, $cols;
     return {
-        ids => ['__nodeId', @cols],
-        names => [ 'NodeId', map { $attr->{$_} } @cols ]
+        ids => ['__nodeId', @$cols],
+        names => [ 'NodeId', map { $attr->{$_} } @$cols ]
     };
 }
 

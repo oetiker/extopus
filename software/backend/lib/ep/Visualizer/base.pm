@@ -19,6 +19,7 @@ use Mojo::Base -base;
 has 'cfg';
 has 'log';
 has 'routes';
+has 'prefix' => '';
 has 'secret';
 
 =head2 matchRecord(rec)

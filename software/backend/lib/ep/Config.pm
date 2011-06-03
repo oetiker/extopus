@@ -140,17 +140,18 @@ ${E}head1 SYNOPSIS
  yaml_cfg=/path_to/siam.yaml
  
  +MAP
- siam.svc.product_name = prod
- xyc.svc.loc.country = country
- xyc.svc.loc.city = city
- xyc.svc.loc.address = street
- xyc.svc.loc.building_number = number
- siam.contract.customer_name = cust
- siam.svc.type = svc_type
- siam.svcdata.name = data
- siam.svcdata.type = data_type
- xyc.port.shortname = port
- siam.svc.inventory_id = inv_id
+ prod = siam.svc.product_name
+ country =  xyc.svc.loc.country
+ city = xyc.svc.loc.city
+ street = \$I{'xyc.svc.loc.address'} . ' ' . \$I{'xyc.svc.loc.building_number'}
+ cust = siam.contract.customer_name
+ svc_type = siam.svc.type
+ data = siam.svcdata.name
+ data_type = siam.svcdata.type
+ port = xyc.port.shortname
+ inv_id = siam.svc.inventory_id
+ torrus.tree-url = torrus.tree-url
+ torrus.nodeid = torrus.nodeid
  
  +TREE
  'Location',\$R{country}, \$R{city}, \$R{street}
@@ -159,6 +160,19 @@ ${E}head1 SYNOPSIS
 
  *** VISUALIZER: siam1 ***
  module = TorrusIframe
+ url_attrib = torrus.tree-url
+ nodeid_attrib = torrus.nodeid
+
+ +TxPrintTemplate
+ <!doctype html><html>
+ <head><title><%= "\$R{cust} \$R{city} \$R{svc_type}" %></title></head>
+ <body>
+   <h1><%= "\$R{cust} \$R{city}" %></h1>
+   <h2>\@\@VIEW\@\@</h2>
+   <div>\@\@START(d.MM.yyyy)\@\@ - \@\@END(d.MM.yyy)\@\@</div>
+   <p><img src="\@\@SRC\@\@"/></p>
+ </body>
+ </html>
 
 ${E}head1 DESCRIPTION
 
@@ -203,11 +217,13 @@ sub _make_parser {
             _mandatory => [ qw(search tree) ],
             search => {
                 _doc => 'list of attributes for search results table',
-                _examples => 'search = prod, country, city, street, number'
+                _examples => 'search = prod, country, city, street, number',
+                _sub => sub { $_[0] = [ split /\s*,\s*/, $_[0] ]; undef },
             },            
             tree => {
                 _doc => 'list of attributes for tree nodes table',
-                _examples => 'tree = prod, country, city, street, number'
+                _examples => 'tree = prod, country, city, street, number',
+                _sub => sub { $_[0] = [ split /\s*,\s*/, $_[0] ]; undef },
             },            
         },
 
@@ -219,7 +235,7 @@ sub _make_parser {
             module => {
                 _doc => 'The inventory module to load'
             },
-            _sections => [ 'TREE', '/[A-Z]\S+/' ],
+            _sections => [ 'TREE', 'MAP', '/[A-Z]\S+/' ],
             '/[a-z]\S+/' => {
                 _doc => 'Any key value settings appropriate for the instance at hand'
             },
@@ -228,7 +244,28 @@ sub _make_parser {
                 _vars => [ '/[a-z]\S+/' ],
                 '/[a-z]\S+/' => {             
                     _doc => 'Any key value settings appropriate for the instance at hand'
-                }        
+                },
+            },
+            'MAP' => {
+                _doc => 'Mapping between inventory attributes and extopus attribute names.',
+                _vars => [ '/[a-z]\S+/' ],
+                '/[a-z]\S+/' => {             
+                    _doc => <<'DOC',
+The value of an extopus attribute can either be the name of a inventory attribute OR a perl snippet refering the the inventory attributes via the %I hash.
+The perl snippet mode gets activated if [$"'{;] appears in the value.
+DOC
+                    _example => 'address = $I{"inventory.street"} . " " . $I{"inventory.number"}',
+                    _sub => sub {
+                        if ( $_[0] =~ /[\$\{\"\'\;]/ ){
+                            my $code = eval 'sub { my %I = (%{$_[0]});'.$_[0].'}';
+                            if ($@){
+                                return "Failed to compile $_[0]: $@";
+                            }
+                            $_[0] = $code;
+                        }
+                        undef;
+                    },                            
+                },
             },
             'TREE' => {
                 _doc => <<'DOC',

@@ -27,6 +27,7 @@ has 'user';
 has 'log';
 has 'routes';
 has 'secret';
+has 'prefix';
 
 =head2 new
 
@@ -45,7 +46,7 @@ sub new {
         my $key = $1;
         do {
             no strict 'refs';
-            push @{$self->visualizers}, "ep::Visualizer::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,key=>$key });
+            push @{$self->visualizers}, "ep::Visualizer::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,key=>$key,prefix=>$self->prefix});
         }
     }
     return $self;

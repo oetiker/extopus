@@ -16,6 +16,9 @@ The base class for inventory modules.
 
 use Mojo::Base -base;
 
+has 'cfg';
+has 'log';
+
 =head2 walkInventory(callback)
 
 Walk the invntory and hand all objects to the cache callback for adding to the cache.
@@ -24,6 +27,28 @@ Walk the invntory and hand all objects to the cache callback for adding to the c
 
 sub walkInventory {
     die;
+}
+
+=head2 $recordHash = buildRecord($dataHash)
+
+Builds a record, using data from the MAP section. Executing snipped as necessary.
+
+=cut
+
+sub buildRecord {
+    my $self = shift;    
+    my $raw = shift;
+    my $map = $self->cfg->{MAP};
+    my %rec;
+    for my $attr ( keys %$map ){
+        if (ref $map->{$attr} eq 'CODE'){
+            $rec{$attr} = $map->{$attr}($raw);
+        }
+        else {
+            $rec{$attr} = $raw->{$map->{$attr}};
+        }
+    }
+    return \%rec;
 }
 
 1;

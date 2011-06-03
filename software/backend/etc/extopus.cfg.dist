@@ -26,19 +26,19 @@ module=SIAM
 siam_cfg=/opt/extopus/etc/siam.yaml
 
 +MAP
-siam.svc.product_name = prod
-xyc.svc.loc.country = country
-xyc.svc.loc.city = city
-xyc.svc.loc.address = street
-xyc.svc.loc.building_number = number
-siam.contract.customer_name = cust
-siam.svc.type = svc_type
-siam.svcdata.name = data
-siam.svcdata.type = data_type
-xyc.port.shortname = port
-siam.svc.inventory_id = inv_id
+prod = siam.svc.product_name
+country = xyc.svc.loc.country
+city = xyc.svc.loc.city
+street = $I{'xyc.svc.loc.address'} . ' ' . ( $I{'xyc.svc.loc.building_number'} || '')
+cust = siam.contract.customer_name
+svc_type = siam.svc.type
+data_class = siam.svcdata.name
+data_type = siam.svcdata.type
+port = xyc.port.shortname 
+inv_id = siam.svc.inventory_id
 torrus.tree-url = torrus.tree-url
 torrus.nodeid = torrus.nodeid
+car = xyc.svc.car_name
 
 +TREE
 

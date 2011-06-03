@@ -36,13 +36,11 @@ my $instance = 0;
 
 has 'hostauth';
 #has 'view' => 'expanded-dir-html';
-has view => 'iframe-rrd';
-has 'root';
-has json        => sub {Mojo::JSON::Any->new};
-
+has view    => 'iframe-rrd';
+has json    => sub {Mojo::JSON::Any->new};
+has root    => sub { '/torrusIframe_'.($instance++) };
 sub new {
     my $self = shift->SUPER::new(@_);
-    $self->root('/torrusIframe_'.$instance);
     $self->addProxyRoute();
     return $self;
 }
@@ -77,12 +75,13 @@ sub matchRecord {
             view => $view,
             url => $url
         );
-        my $plain_src = $src->to_string;
+        $src->base->path($self->root);
+        my $plain_src = $src->to_rel;
         url_unescape $plain_src;
         push @views, {
             visualizer =>  'iframe',
             arguments => {
-                src => '..'.$plain_src,
+                src => $plain_src,
                 title => $leaf->{comment},
             }
         }
@@ -140,7 +139,7 @@ sub addProxyRoute {
     my $self = shift;
     my $routes = $self->routes;
 
-    $routes->get( $self->root, sub {
+    $routes->get( $self->prefix.$self->root, sub {
         my $ctrl = shift;
         my $req = $ctrl->req;
         my $hash =  $req->param('hash');

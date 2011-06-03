@@ -20,10 +20,8 @@ use ep::Exception qw(mkerror);
 use SIAM;
 use YAML;
 
-has 'cfg';
 has 'user';
 has 'siam';
-has 'log';
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -42,6 +40,8 @@ call the data loading function for each data object retrieved from the inventory
 =cut
 
 sub walkInventory {
+#    DB::enable_profile();
+    $ENV{DBI_PROFILE}=2;
     my $self = shift;
     my $storeCallback = shift;
     my $siam = $self->siam;    
@@ -51,24 +51,26 @@ sub walkInventory {
         $self->log->debug($self->cfg->{driver}.' has no information on '.$self->user);
         return;
     };
+    my %user = (%{$user->attributes});
     my $contracts = $siam->get_contracts_by_user_privilege($user, 'ViewContract');
     # my $contracts = $siam->get_all_contracts();
     my $count = 0;
     my $map = $self->cfg->{MAP};
     loading:
     for my $cntr ( @{$contracts} ){
+        my %cntr = (%{$cntr->attributes});
         for my $srv ( @{$cntr->get_services} ){
+            my %srv = (%{$srv->attributes});
             for my $unit ( @{$srv->get_service_units} ){
+                my %unit = (%{$unit->attributes});
                 for my $data ( @{$unit->get_data_elements} ){
+                    my %data = (%{$data->attributes});
                     my $device = $data->get_device();
+                    my %device = (%{$device->attributes});
                     my $raw_data = {
-                        %{$cntr->attributes},
-                        %{$srv->attributes},                        
-                        %{$unit->attributes},
-                        %{$data->attributes},
-                        %{$device->attributes}
+                        %user,%cntr,%srv, %unit, %data, %device 
                     };
-                    my $data = { map { $map->{$_} => $raw_data->{$_} } grep !/^_/, keys %$map };
+                    my $data = $self->buildRecord($raw_data);
                     $storeCallback->($data);
                     $count++;
                 }
@@ -77,6 +79,8 @@ sub walkInventory {
     }
     $siam->disconnect();
     $self->log->debug('loaded '.$count.' nodes');
+#    DB::disable_profile();
+#    DB::finish_profile();
 }
 
 1;

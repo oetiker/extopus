@@ -65,13 +65,12 @@ my $instance = 0;
 
 has 'hostauth';
 has view => 'embedded';
-has 'root';
 has json        => sub {Mojo::JSON::Any->new};
 has 'printtemplate';
+has 'root' => sub { '/torrusChart_'.($instance++) };
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    $self->root('/torrusChart_'.$instance);
     $self->addProxyRoute();
     if ($self->cfg->{TxPrintTemplate}){
         my $mt = Mojo::Template->new;
@@ -113,10 +112,11 @@ sub matchRecord {
             nodeid => $nodeid,
             url => $url
         );
-        my $plain_src = $src->to_string;
+        $src->base->path($self->root);
+        my $plain_src = $src->to_rel;
         url_unescape $plain_src;
         push @nodes, {
-            src => '..'.$plain_src,
+            src => $plain_src,
             title => $leaf->{comment},
         },
     };
@@ -185,7 +185,7 @@ sub addProxyRoute {
     my $self = shift;
     my $routes = $self->routes;
 
-    $routes->get( $self->root, sub {
+    $routes->get($self->prefix.$self->root, sub {
         my $ctrl = shift;
         my $req = $ctrl->req;
         my $hash =  $req->param('hash');
