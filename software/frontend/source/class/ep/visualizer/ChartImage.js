@@ -10,7 +10,7 @@
 /**
  * Create a table according to the instructions provided.
  */
-qx.Class.define("ep.ui.visualizer.ChartImage", {
+qx.Class.define("ep.visualizer.ChartImage", {
     extend : qx.ui.basic.Image,
 
     construct : function() {

@@ -35,6 +35,7 @@ our %allow = (
     getNode => 1,
     getTableColumnDef =>1,
     getVisualizers => 1,
+    visualize => 1,
 );
 
 has 'cfg';

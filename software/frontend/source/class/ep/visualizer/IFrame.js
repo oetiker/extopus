@@ -8,8 +8,8 @@
 /**
  * A simple iFrame. Loads the src property of the args map
 **/
-qx.Class.define("ep.ui.visualizer.IFrame", {
-    extend : ep.ui.visualizer.AbstractVisualizer,
+qx.Class.define("ep.visualizer.IFrame", {
+    extend : ep.visualizer.AbstractVisualizer,
     construct : function(title) {
         this.base(arguments,title);
         this.set({

@@ -8,8 +8,8 @@
 /**
  * Show page from monitoring System.
 **/
-qx.Class.define("ep.ui.visualizer.Properties", {
-    extend : ep.ui.visualizer.AbstractVisualizer,
+qx.Class.define("ep.visualizer.Properties", {
+    extend : ep.visualizer.AbstractVisualizer,
     construct : function(title) {
         this.base(arguments,title);
         this.set({

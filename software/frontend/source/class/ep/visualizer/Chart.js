@@ -13,8 +13,8 @@
 /**
  * Show page from monitoring System.
 **/
-qx.Class.define("ep.ui.visualizer.Chart", {
-    extend : ep.ui.visualizer.AbstractVisualizer,
+qx.Class.define("ep.visualizer.Chart", {
+    extend : ep.visualizer.AbstractVisualizer,
     construct : function(title) {
         this.base(arguments,title);
         this.set({
@@ -27,7 +27,7 @@ qx.Class.define("ep.ui.visualizer.Chart", {
         this.add(titleContainer);
 
         // the chart
-        var chart = this.__chart = new ep.ui.visualizer.ChartImage();
+        var chart = this.__chart = new ep.visualizer.ChartImage();
         this.add(chart,{flex: 1});            
 
 

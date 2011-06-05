@@ -44,14 +44,17 @@ qx.Class.define("ep.ui.View", {
                 }
                 else {
                     switch(viz.visualizer){
-                    case ep.ui.visualizer.Chart.KEY:
-                        control = new ep.ui.visualizer.Chart(viz.title);
+                    case ep.visualizer.Chart.KEY:
+                        control = new ep.visualizer.Chart(viz.title);
                         break;
-                    case ep.ui.visualizer.IFrame.KEY:
-                        control = new ep.ui.visualizer.IFrame(viz.title);
+                    case ep.visualizer.IFrame.KEY:
+                        control = new ep.visualizer.IFrame(viz.title);
                         break;
-                    case ep.ui.visualizer.Properties.KEY:
-                        control = new ep.ui.visualizer.Properties(viz.title);
+                    case ep.visualizer.Properties.KEY:
+                        control = new ep.visualizer.Properties(viz.title);
+                        break;
+                    case ep.visualizer.Data.KEY:
+                        control = new ep.visualizer.Data(viz.title);
                         break;
                     default: 
                         qx.dev.Debug.debugObject(vizList[i],'Can not handle ');

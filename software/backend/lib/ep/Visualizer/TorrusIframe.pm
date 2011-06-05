@@ -32,7 +32,6 @@ use Mojo::JSON::Any;
 use Mojo::UserAgent;
 use ep::Exception qw(mkerror);
 
-my $instance = 0;
 
 has 'hostauth';
 #has 'view' => 'expanded-dir-html';
@@ -42,7 +41,7 @@ has 'root';
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    $self->root('/torrusIframe_'.$self->key);
+    $self->root('/torrusIframe_'.$self->instance);
     $self->addProxyRoute();
     return $self;
 }

@@ -21,7 +21,7 @@ has 'log';
 has 'routes';
 has 'prefix' => '';
 has 'secret';
-has 'key';
+has 'instance';
 
 =head2 matchRecord(rec)
 

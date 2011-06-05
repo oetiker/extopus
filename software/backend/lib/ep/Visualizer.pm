@@ -44,12 +44,12 @@ sub new {
         my $drvCfg = $cfg->{$entry};
         require 'ep/Visualizer/'.$drvCfg->{module}.'.pm';
         $entry =~ m/VISUALIZER:\s*(\S+)/ or die "Could not match $entry";
-        my $key = $1;
+        my $instance = $1;
         do {
             no strict 'refs';
-            my $visObj = "ep::Visualizer::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,key=>$key,prefix=>$self->prefix});
+            my $visObj = "ep::Visualizer::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,instance=>$instance,prefix=>$self->prefix});
             push @{$self->visualizers}, $visObj;
-            $self->vismap->{$key} = $visObj;
+            $self->vismap->{$instance} = $visObj;
         }
     }
     return $self;

@@ -8,7 +8,7 @@
 /**
  * Visualization widgets they are re-usable by calling .setArgs(args)
 **/
-qx.Class.define("ep.ui.visualizer.AbstractVisualizer", {
+qx.Class.define("ep.visualizer.AbstractVisualizer", {
     extend : qx.ui.tabview.Page,
     type: 'abstract',
     construct : function(title) {                

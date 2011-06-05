@@ -58,6 +58,19 @@ module=TorrusChart
  </body>
 </html>
 
+*** VISUALIZER: data ***
+module = TorrusData
+selector = data_type
+type = PortTraffic
+name = Port Traffic
+sub_nodes = inbytes, outbytes
+col_names = Avg In, Avg  Out, Total In, Total Out, Max In, Max Out
+col_data = $D{inbytes}{AVG}, $D{inbytes}{AVG}, \
+           $D{inbytes}{AVG} * $DURATION / 100 * $D{inbytes}{AVAIL}, \
+           $D{outbytes}{AVG} * $DURATION / 100 * $D{outbytes}{AVAIL}, \
+           $D{inbytes}{MAX}, \
+           $D{outbytes}{MAX}
+
 *** VISUALIZER: prop ***
 module=Properties
 

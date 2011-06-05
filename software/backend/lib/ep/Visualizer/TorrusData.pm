@@ -29,11 +29,11 @@ It determines further processing by evaluation additional configurable attribute
  type = PortTraffic
  name = Port Traffic
  sub_nodes = inbytes, outbytes
- col_name = Avg In, Avg  Out, Total In, Total Out, Max In, Max Out
+ col_names = Avg In, Avg  Out, Total In, Total Out, Max In, Max Out
  col_data = $D{inbytes}{AVG}, $D{inbytes}{AVG}, \
             $D{inbytes}{AVG} * $DURATION / 100 * $D{inbytes}{AVAIL}, \
             $D{outbytes}{AVG} * $DURATION / 100 * $D{outbytes}{AVAIL}, \
-            $D{inbytes}{MAX}, 
+            $D{inbytes}{MAX}, \
             $D{outbytes}{MAX}
 
 =cut
@@ -52,31 +52,30 @@ use Time::Local qw(timelocal_nocheck);
 use ep::Exception qw(mkerror);
 use POSIX qw(strftime);
 
-my $instance = 0;
-
 has 'hostauth';
 has view => 'embedded';
 has json        => sub {Mojo::JSON::Any->new};
 has 'root';
- => sub { '/torrusCSV_'.($instance++) };
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    $self->root('/torrusCSV_'.$self->key);
+    $self->root('/torrusCSV_'.$self->instance);
     # parse some config data
-    for my $prop (qw(selector name type sub_nodes col_name col_data)){
+    for my $prop (qw(selector name type sub_nodes col_names col_data)){
         die mkerror(9273, "mandatory property $prop for visualizer module TorrusData is not defined")
             if not defined $self->cfg->{$prop};
     }
-    $self->cfg->{col_name} = split /\s*,\s*/, $self->cfg->{col_name};
-    $self->cfg->{sub_nodes} = split /\s*,\s*/, $self->cfg->{sub_nodes};
+    $self->cfg->{col_names} = [ split /\s*,\s*/, $self->cfg->{col_names} ];
+    $self->cfg->{sub_nodes} = [ split /\s*,\s*/, $self->cfg->{sub_nodes} ];
     my $sub = eval 'sub { my $DURATION = shift; my %D = (%{$_[0]}); return [ '.$self->cfg->{col_data} . ' ] }';
     if ($@){
         die mkerror(38734,"Failed to compile $self->cfg->{col_data}"); 
     }
+    $self->cfg->{col_data} = $sub;
     $self->addProxyRoute();    
     return $self;
 }
+
    
 =head2 matchRecord(rec)
 
@@ -89,18 +88,26 @@ sub matchRecord {
     my $rec = shift;
     for (qw(torrus.nodeid torrus.tree-url)){
         return undef unless defined $rec->{$_};
-    };
-    return undef it $rec->{$self->cfg->{selector} ne $self->cfg->{type};
+    }
+
+    return undef 
+        if $rec->{$self->cfg->{selector}} ne $self->cfg->{type};
+
     return {
         visualizer => 'data',
-        title => $self->cfg->'name',
+        title => $self->cfg->{name},
         arguments => {
-            views => [
+            instance => $self->instance,
+            columns => $self->cfg->{col_names},
+            intervals => [
                 { key => 'day', name => 'Daily' },
                 { key => 'week', name => 'Weekly' },
                 { key => 'month', name => 'Monthly' },
-                { key => 'year', name => 'Yearly' }
-            ]
+                { key => 'year', name => 'Yearly' },
+            ],
+            treeUrl => $rec->{'torrus.tree-url'},
+            nodeId => $rec->{'torrus.nodeid'},
+            hash => $self->calcHash( $rec->{'torrus.tree-url'}, $rec->{'torrus.nodeid'})
         }
     };
 }
@@ -113,19 +120,16 @@ use the AGGREGATE_DS rpc call to pull some statistics from the server.
 
 sub getData {
     my $self = shift;
-    my $tree_url = shift;
-    my $nodeid = shift;
+    my $treeUrl = shift;
+    my $nodeId = shift;
     my $end = shift;
     my $interval = shift;
     my $count = shift;
-    my $url = Mojo::URL->new($tree_url);
-    $url->query(
-        view=> 'rpc',
-        RPCCALL => 'AGGREGATE_DS',
-    );
+    my $url = Mojo::URL->new($treeUrl);
     my %E;
-    my @return;
     @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($end);
+
+    my @return;
     for (my $step=0;$step < $count;$step++){
         my $stepStart;
         my $stepEnd;
@@ -156,13 +160,15 @@ sub getData {
                 next;
             };
         }
-        $url->query({
-            Gstart => $stepStart,
-            Gend => $stepEnd
-        });
         my %data;    
         for my $subNode (@{$self->cfg->{sub_nodes}}){
-            $url->query({nodeid=>"$nodeid//$subNode"});
+            $url->query(
+                view=> 'rpc',
+                RPCCALL => 'AGGREGATE_DS',
+                Gstart => $stepStart,
+                Gend => $stepEnd,
+                nodeid=>"$nodeId//$subNode"
+            );
             $self->log->debug("getting ".$url->to_string);
             my $tx = Mojo::UserAgent->new->get($url);
             my $data;
@@ -170,28 +176,47 @@ sub getData {
                 if ($res->headers->content_type =~ m'application/json'i){
                     my $ret = $self->json->decode($res->body);
                     if ($ret->{success}){
-                        $data{$subNode} = $ret->{data};
-                } else {
-                    $self->log->error("Fetching ".$url->to_string." returns ".$data->{error};
-                    die mkerror(89384,"Torrus is not happy with our request: ".$data->{error});
+                        my $key = (keys %{$ret->{data}})[0];
+                        $data{$subNode} = $ret->{data}{$key};
+                    } else {
+                        $self->log->error("Fetching ".$url->to_string." returns ".$data->{error});
+                        die mkerror(89384,"Torrus is not happy with our request: ".$data->{error});
+                    }
+                }
+                else {
+                    $self->log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
+                    die mkerror("unexpected content/type (".$res->headers->content_type."): ".$res->body);
                 }
             }
             else {
-                $self->log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
-                die mkerror("unexpected content/type (".$res->headers->content_type."): ".$res->body);
+                my ($msg,$error) = $tx->error;
+                $self->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
+                die mkerror(48877,"fetching Leaves for $nodeId from torrus server: $msg ".($error ||''));        
             }
         }
-        else {
-            my ($msg,$error) = $tx->error;
-            $self->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
-            die mkerror(48877,"fetching data from $nodeid from torrus server: $msg ".($error ||''));        
-        }
+        use Data::Dumper;
+        warn Dumper \%data;
         push @return, [ $stepLabel, @{$self->cfg->{col_data}($stepEnd - $stepStart,\%data)} ];
     }
+
     return {
         status => 1,
         data => \@return,
-    }
+    };
+}
+
+=head2 rpcService 
+
+provide rpc data access
+
+=cut
+
+sub rpcService {
+    my $self = shift;
+    my $arg = shift;
+    die mkerror(9844,"hash is not matching url and nodeid")
+        unless $self->calcHash($arg->{treeUrl},$arg->{nodeId}) eq $arg->{hash};
+    return $self->getData($arg->{treeUrl},$arg->{nodeId},$arg->{endDate},$arg->{interval},$arg->{count});
 }
 
 =head2 addProxyRoute()
@@ -210,56 +235,42 @@ sub addProxyRoute {
         my $hash =  $req->param('hash');
         my $nodeid = $req->param('nodeid');
         my $url = $req->param('url');
-        my $width = $req->param('width');
-        my $height = $req->param('height');
-        my $start = $req->param('start');
         my $end = $req->param('end');
-        my $format = $req->param('format');
-        my $pxReq =  Mojo::URL->new($url);
-        my $view = $self->view;
+        my $interval = $req->param('interval');
+        my $count = $req->param('count');
         my $newHash = $self->calcHash($url,$nodeid);
         if ($hash ne $newHash){
             $ctrl->render(
                  status => 401,
                  text => "Supplied hash ($hash) does not match our expectations",
             );
-            $self->log->warn("Request for $url?nodeid=$nodeid;view=$view denied ($hash ne $newHash)");
+            $self->log->warn("Request for $url?nodeid=$nodeid denied ($hash ne $newHash)");
             return;
         }
-        my $baseUrl = $pxReq->to_string;
-        $pxReq->query(nodeid=>$nodeid,view=>$view,Gwidth=>$width,Gheight=>$height,Gstart=>$start,Gend=>$end);
-        if ($self->hostauth){
-            $pxReq->query({hostauth=>$self->hostauth});
-        }        
-        if ($format =~ /pdf$/){
-            $pxReq->query({Gimgformat=>'PDF'})
-        }
-        $self->log->debug("Fetching ".$pxReq->to_string);
-        my $tx = $ctrl->ua->get($pxReq);
-        if (my $res=$tx->success) {
-           my $body = $res->body;
-           my $rp = Mojo::Message::Response->new;
-           $rp->code(200);
-            my $type = $res->headers->content_type;
-           $rp->headers->content_type($type);
-           if (lc $type eq 'application/pdf'){
-               my $name = $nodeid;
-               $name =~ s/[^-_0-9a-z]+/_/ig;
-               $name .= '-'.strftime('%Y-%m-%d',localtime($start)).'_'.strftime('%Y-%m-%d',localtime($end));               
-               $rp->headers->add('Content-Disposition',"attachement; filename=$name.pdf");
-           }
-           $rp->body($body);
-           $ctrl->tx->res($rp);
-           $ctrl->rendered;
-        }
-        else {     
-            my ($msg,$error) = $tx->error;
-            $ctrl->tx->res->headers->add('X-Remote-Status',($error||'???').': '.$msg);
+        my $data =  $self->getData($url,$nodeid,$end,$interval,$count);
+        if (not $data->{status}){
             $ctrl->render(
-                status => 500,
-                text => 'Failed to fetch data from backend'
+                 status => 401,
+                 text => $data->{error},
             );
+            $self->log->error("faild getting data $data->{error}");
+            return;
         }
+        
+        my $rp = Mojo::Message::Response->new;
+        $rp->code(200);
+        $rp->headers->content_type('application/csv');
+        my $name = $nodeid;
+        $name =~ s/[^-_0-9a-z]+/_/ig;
+        $name .= '-'.strftime('%Y-%m-%d',localtime($end));               
+        $rp->headers->add('Content-Disposition',"attachement; filename=$name.csv");
+        my $body = join(",",map {qq{"$_"}} '',@{$self->cfg->{col_names}})."\r\n";
+        for my $row (@{$data->{data}}){
+            $body .= join(",",map { /[^.0-9]/ ? qq{"$_"} : $_ } @$row)."\r\n";
+        }
+        $rp->body($body);
+        $ctrl->tx->res($rp);
+        $ctrl->rendered;
     });
 }
 

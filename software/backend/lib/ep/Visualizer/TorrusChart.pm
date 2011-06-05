@@ -69,7 +69,7 @@ has 'root';
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    $self->root('/torrusChart_'.$self->key);
+    $self->root('/torrusChart_'.$self->instance);
     $self->addProxyRoute();
     if ($self->cfg->{TxPrintTemplate}){
         my $mt = Mojo::Template->new;
