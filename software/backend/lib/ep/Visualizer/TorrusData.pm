@@ -194,8 +194,6 @@ sub getData {
                 die mkerror(48877,"fetching Leaves for $nodeId from torrus server: $msg ".($error ||''));        
             }
         }
-        use Data::Dumper;
-        warn Dumper \%data;
         push @return, [ $stepLabel, @{$self->cfg->{col_data}($stepEnd - $stepStart,\%data)} ];
     }
 
