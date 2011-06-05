@@ -38,9 +38,11 @@ has 'hostauth';
 #has 'view' => 'expanded-dir-html';
 has view    => 'iframe-rrd';
 has json    => sub {Mojo::JSON::Any->new};
-has root    => sub { '/torrusIframe_'.($instance++) };
+has 'root';
+
 sub new {
     my $self = shift->SUPER::new(@_);
+    $self->root('/torrusIframe_'.$self->key);
     $self->addProxyRoute();
     return $self;
 }

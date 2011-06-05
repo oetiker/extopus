@@ -23,6 +23,7 @@ use Mojo::Base -base;
 
 has 'cfg';
 has 'visualizers' => sub { [] };
+has 'vismap' => sub { {} };
 has 'user';
 has 'log';
 has 'routes';
@@ -46,7 +47,9 @@ sub new {
         my $key = $1;
         do {
             no strict 'refs';
-            push @{$self->visualizers}, "ep::Visualizer::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,key=>$key,prefix=>$self->prefix});
+            my $visObj = "ep::Visualizer::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,key=>$key,prefix=>$self->prefix});
+            push @{$self->visualizers}, $visObj;
+            $self->vismap->{$key} = $visObj;
         }
     }
     return $self;
@@ -68,6 +71,18 @@ sub getVisualizers {
         push @matches, grep({ defined $_ }  $instance->matchRecord($record));
     }
     return \@matches;
+}
+
+=head2 visualize(instance,args)
+
+call the rpcService method of the selected instance.
+
+=cut
+
+sub visualize {
+    my $self = shift;
+    my $instance = shift;
+    return $self->vismap->{$instance}->rpcService(@_);
 }
 
 1;

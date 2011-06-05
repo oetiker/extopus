@@ -61,16 +61,15 @@ use Mojo::Template;
 use ep::Exception qw(mkerror);
 use POSIX qw(strftime);
 
-my $instance = 0;
-
 has 'hostauth';
 has view => 'embedded';
 has json        => sub {Mojo::JSON::Any->new};
 has 'printtemplate';
-has 'root' => sub { '/torrusChart_'.($instance++) };
+has 'root';
 
 sub new {
     my $self = shift->SUPER::new(@_);
+    $self->root('/torrusChart_'.$self->key);
     $self->addProxyRoute();
     if ($self->cfg->{TxPrintTemplate}){
         my $mt = Mojo::Template->new;

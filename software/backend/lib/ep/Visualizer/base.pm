@@ -21,6 +21,7 @@ has 'log';
 has 'routes';
 has 'prefix' => '';
 has 'secret';
+has 'key';
 
 =head2 matchRecord(rec)
 
@@ -38,6 +39,18 @@ sub matchRecord {
     my $self= shift;
     my $rec = shift;    
     return undef;
+}
+
+=head2 rpcService
+
+accessible via the C<visualize(visualizerInstance,args)> rpc call
+
+=cut
+
+sub rpcService {
+    my $self = shift;
+    my @args = @_;
+    die "sorry, no rpc service support";   
 }
 
 1;

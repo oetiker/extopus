@@ -135,6 +135,18 @@ sub getVisualizers {
     return $self->visualizer->getVisualizers($record);
 }
 
+=head2 visualize(instance,args)
+
+generic rpc call to be forwarere to the rpcService method of the visualizer instance.
+
+=cut
+
+sub visualize {
+    my $self = shift;
+    my $instance = shift;
+    return $self->visualizer->visualize($instance,@_);
+}
+
 1;
 __END__
 
