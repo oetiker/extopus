@@ -206,7 +206,7 @@ sub _make_parser {
             log_level => { _doc => 'what to write to the logfile'},
         },
         ATTRIBUTES => {
-            _vars => [ '/[-_a-z0-9]+/' ],
+            _vars => [ '/[-._a-z0-9]+/' ],
             '/[-_a-z0-9]+/' => {
                 _doc => 'List of known attributes with friendly names.',
                 _examples => 'city = City'
