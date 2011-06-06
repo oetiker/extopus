@@ -133,7 +133,9 @@ ${E}head1 SYNOPSIS
 
  *** TABLES ***
  search = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
+ search_width = 1,   1,       1,    1,      1,    1,          1,   1
  tree = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
+ tree_width = 1,   1,      1,    1,      1,    1,          1,    1 
 
  *** INVENTORY: siam1 ***
  module=SIAM
@@ -158,21 +160,8 @@ ${E}head1 SYNOPSIS
  \$R{cust},\$R{svc_type},\$R{data_type}
 
 
- *** VISUALIZER: siam1 ***
- module = TorrusIframe
- url_attrib = torrus.tree-url
- nodeid_attrib = torrus.nodeid
-
- +TxPrintTemplate
- <!doctype html><html>
- <head><title><%= "\$R{cust} \$R{city} \$R{svc_type}" %></title></head>
- <body>
-   <h1><%= "\$R{cust} \$R{city}" %></h1>
-   <h2>\@\@VIEW\@\@</h2>
-   <div>\@\@START(d.MM.yyyy)\@\@ - \@\@END(d.MM.yyy)\@\@</div>
-   <p><img src="\@\@SRC\@\@"/></p>
- </body>
- </html>
+ *** VISUALIZER: xyc ***
+ module = xyc
 
 ${E}head1 DESCRIPTION
 
@@ -213,16 +202,26 @@ sub _make_parser {
             },            
         },
         TABLES => {
-            _vars => [ qw(search tree) ],
+            _vars => [ qw(search tree search_width tree_width) ],
             _mandatory => [ qw(search tree) ],
             search => {
                 _doc => 'list of attributes for search results table',
                 _examples => 'search = prod, country, city, street, number',
                 _sub => sub { $_[0] = [ split /\s*,\s*/, $_[0] ]; undef },
             },            
+            search_width => {
+                _doc => 'list of relative column widths',
+                _examples => 'search_width = 3,1,1,1,1',
+                _sub => sub { $_[0] = [ split /\s*,\s*/, $_[0] ]; undef },
+            },            
             tree => {
                 _doc => 'list of attributes for tree nodes table',
                 _examples => 'tree = prod, country, city, street, number',
+                _sub => sub { $_[0] = [ split /\s*,\s*/, $_[0] ]; undef },
+            },            
+            tree_width => {
+                _doc => 'list of relative column widths',
+                _examples => 'tree_width = 3,1,1,1,1',
                 _sub => sub { $_[0] = [ split /\s*,\s*/, $_[0] ]; undef },
             },            
         },

@@ -15,13 +15,12 @@
 **/
 qx.Class.define("ep.visualizer.Chart", {
     extend : ep.visualizer.AbstractVisualizer,
-    construct : function(title) {
+    construct : function(title,args) {
         this.base(arguments,title);
         this.set({
-            layout: new qx.ui.layout.VBox(5),
-            padding: 5
+            layout: new qx.ui.layout.VBox(10)
         });
-        var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(5).set({
+        var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(8).set({
             alignY: 'middle'
         }));
         this.add(titleContainer);
@@ -105,7 +104,7 @@ qx.Class.define("ep.visualizer.Chart", {
         var printBtn = this.__printBtn = new qx.ui.form.Button(this.tr('Print'),"icon/16/actions/document-print.png");
         printBtn.addListener('execute',this._popupPrintPage,this);
         titleContainer.add(printBtn);
-
+        this.setArgs(args);
     },
     statics: {
         KEY: 'chart'

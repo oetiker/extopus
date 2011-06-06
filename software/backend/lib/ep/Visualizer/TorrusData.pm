@@ -29,7 +29,9 @@ It determines further processing by evaluation additional configurable attribute
  type = PortTraffic
  name = Port Traffic
  sub_nodes = inbytes, outbytes
- col_names = Avg In, Avg  Out, Total In, Total Out, Max In, Max Out
+ col_names = Date, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
+ col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
+ col_widths = 2, 1     1,    1,  1,  1,    1,    1
  col_data = $D{inbytes}{AVG}, $D{inbytes}{AVG}, \
             $D{inbytes}{AVG} * $DURATION / 100 * $D{inbytes}{AVAIL}, \
             $D{outbytes}{AVG} * $DURATION / 100 * $D{outbytes}{AVAIL}, \
@@ -61,12 +63,14 @@ sub new {
     my $self = shift->SUPER::new(@_);
     $self->root('/torrusCSV_'.$self->instance);
     # parse some config data
-    for my $prop (qw(selector name type sub_nodes col_names col_data)){
+    my @split_nodes = qw(col_names col_units col_widths sub_nodes);
+    for my $prop (qw(selector name type col_data), @split_nodes){
         die mkerror(9273, "mandatory property $prop for visualizer module TorrusData is not defined")
             if not defined $self->cfg->{$prop};
     }
-    $self->cfg->{col_names} = [ split /\s*,\s*/, $self->cfg->{col_names} ];
-    $self->cfg->{sub_nodes} = [ split /\s*,\s*/, $self->cfg->{sub_nodes} ];
+    for (@split_nodes){
+        $self->cfg->{$_} = $self->cfg->{$_} ? [ split /\s*,\s*/, $self->cfg->{$_} ] : undef;
+    }
     my $sub = eval 'sub { my $DURATION = shift; my %D = (%{$_[0]}); return [ '.$self->cfg->{col_data} . ' ] }';
     if ($@){
         die mkerror(38734,"Failed to compile $self->cfg->{col_data}"); 
@@ -137,13 +141,25 @@ sub matchRecord {
 
     return undef 
         if $rec->{$self->cfg->{selector}} ne $self->cfg->{type};
-
+    my $src = Mojo::URL->new();
+    my $hash = $self->calcHash( $rec->{'torrus.tree-url'}, $rec->{'torrus.nodeid'});
+    $src->path($self->root);    
+    $src->query(
+        hash => $hash,
+        nodeid => $rec->{'torrus.nodeid'},
+        url => $rec->{'torrus.tree-url'}
+    );
+    $src->base->path($self->root);
+    my $plain_src = $src->to_rel;
+    url_unescape $plain_src;
     return {
         visualizer => 'data',
         title => $self->cfg->{name},
         arguments => {
             instance => $self->instance,
             columns => $self->cfg->{col_names},
+            column_widths => $self->cfg->{col_widths},
+            column_units => $self->cfg->{col_units},
             intervals => [
                 { key => 'day', name => 'Daily' },
                 { key => 'week', name => 'Weekly' },
@@ -152,7 +168,8 @@ sub matchRecord {
             ],
             treeUrl => $rec->{'torrus.tree-url'},
             nodeId => $rec->{'torrus.nodeid'},
-            hash => $self->calcHash( $rec->{'torrus.tree-url'}, $rec->{'torrus.nodeid'})
+            hash => $hash,
+            csvUrl => $plain_src
         }
     };
 }
@@ -208,7 +225,7 @@ sub getData {
             /year/ && do {
                 @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($end - $step*365.25*24*3600);
                 $stepStart = timelocal_nocheck(0,0,0,1,0,$E{year}-$step);
-                $stepEnd = timelocal_nocheck(23,59,59,31,11,$E{year}-$step+1);
+                $stepEnd = timelocal_nocheck(23,59,59,31,11,$E{year}-$step);
                 $stepLabel = strftime("%Y",localtime($stepStart+180*24*3600));
                 next;
             };
@@ -281,7 +298,6 @@ create a proxy route with the given properties of the object
 sub addProxyRoute {
     my $self = shift;
     my $routes = $self->routes;
-
     $routes->get($self->prefix.$self->root, sub {
         my $ctrl = shift;
         my $req = $ctrl->req;
@@ -317,9 +333,15 @@ sub addProxyRoute {
         $name =~ s/[^-_0-9a-z]+/_/ig;
         $name .= '-'.strftime('%Y-%m-%d',localtime($end));               
         $rp->headers->add('Content-Disposition',"attachement; filename=$name.csv");
-        my $body = join(",",map {qq{"$_"}} '',@{$self->cfg->{col_names}})."\r\n";
+        my @cnames;
+        for (my $c=0;$self->cfg->{col_names}[$c];$c++){
+            my $name = $self->cfg->{col_names}[$c];
+            my $unit = $self->cfg->{col_units}[$c] || '';
+            push @cnames, qq{"$name [$unit]"};
+        }
+        my $body = join(",",@cnames)."\r\n";
         for my $row (@{$data->{data}}){
-            $body .= join(",",map { /[^.0-9]/ ? qq{"$_"} : $_ } @$row)."\r\n";
+            $body .= join(",",map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row)."\r\n";
         }
         $rp->body($body);
         $ctrl->tx->res($rp);

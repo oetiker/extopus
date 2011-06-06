@@ -29,7 +29,7 @@ qx.Class.define("ep.ui.TreeView", {
         var rpc=ep.data.Server.getInstance();
         var that = this;
         rpc.callAsyncSmart(function(ret){
-            vPane.add(that._createTable(ret.names,ret.ids),1);
+            vPane.add(that._createTable(ret.names,ret.ids,ret.widths),1);
             hPane.add(that._createTree(),1);
             hPane.add(vPane,3);
             vPane.add(that._createView(),3);            
@@ -100,10 +100,10 @@ qx.Class.define("ep.ui.TreeView", {
             return control;
         },
 
-        _createTable: function(names,ids){
+        _createTable: function(names,ids,widths){
             var tm = new qx.ui.table.model.Simple();
             tm.setColumns(names,ids);
-            var control = new ep.ui.Table(tm);
+            var control = new ep.ui.Table(tm,widths);
             this.setTable(control);
             return control;
         },

@@ -37,6 +37,7 @@ qx.Class.define("ep.ui.View", {
                 var control;
                 if (page){
                     control = page.widget;
+                    control.setArgs(viz.arguments);
                     if (!page.included){
                         page.included = true;
                         this.add(control);
@@ -45,16 +46,16 @@ qx.Class.define("ep.ui.View", {
                 else {
                     switch(viz.visualizer){
                     case ep.visualizer.Chart.KEY:
-                        control = new ep.visualizer.Chart(viz.title);
+                        control = new ep.visualizer.Chart(viz.title,viz.arguments);
                         break;
                     case ep.visualizer.IFrame.KEY:
-                        control = new ep.visualizer.IFrame(viz.title);
+                        control = new ep.visualizer.IFrame(viz.title,viz.arguments);
                         break;
                     case ep.visualizer.Properties.KEY:
-                        control = new ep.visualizer.Properties(viz.title);
+                        control = new ep.visualizer.Properties(viz.title,viz.arguments);
                         break;
                     case ep.visualizer.Data.KEY:
-                        control = new ep.visualizer.Data(viz.title);
+                        control = new ep.visualizer.Data(viz.title,viz.arguments);
                         break;
                     default: 
                         qx.dev.Debug.debugObject(vizList[i],'Can not handle ');
@@ -62,7 +63,6 @@ qx.Class.define("ep.ui.View", {
                     this.add(control);
                     this.__pageCache[key] = { widget: control, included: true };
                 }
-                control.setArgs(viz.arguments);
             }
             for (var vizKey in this.__visiblePages){
                 if (!usedVisualizers[vizKey]){

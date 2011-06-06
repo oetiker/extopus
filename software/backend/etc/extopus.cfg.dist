@@ -19,7 +19,9 @@ inv_id = SAP
 *** TABLES ***
 
 search = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
+search_width = 1,   1,       1,    2,      2,    1,          1,   2   
 tree = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
+tree_width = 1,   1,      1,    2,      2,    1,          1,    2
 
 *** INVENTORY: siam1 ***
 module=SIAM
@@ -64,12 +66,17 @@ selector = data_type
 type = PortTraffic
 name = Port Traffic
 sub_nodes = inbytes, outbytes
-col_names = Avg In, Avg  Out, Total In, Total Out, Max In, Max Out
-col_data = $D{inbytes}{AVG}, $D{inbytes}{AVG}, \
-           $D{inbytes}{AVG} * $DURATION / 100 * $D{inbytes}{AVAIL}, \
-           $D{outbytes}{AVG} * $DURATION / 100 * $D{outbytes}{AVAIL}, \
-           $D{inbytes}{MAX}, \
-           $D{outbytes}{MAX}
+col_names = Date, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out
+col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
+col_widths = 2,  3  ,  3,    3,  3,  3,    3, 2
+
+col_data = int($D{inbytes}{AVG}*8/1e4)/1e2, \
+           int($D{outbytes}{AVG}*8/1e4)/1e2, \
+           int($D{inbytes}{AVG}*8 * $DURATION / 100 * $D{inbytes}{AVAIL}/1e7)/1e2, \
+           int($D{outbytes}{AVG}*8 * $DURATION / 100 * $D{outbytes}{AVAIL}/1e7)/1e2, \
+           int($D{inbytes}{MAX}*8/1e5)/1e1, \
+           int($D{outbytes}{MAX}*8/1e5)/1e1, \
+           int($D{inbytes}{AVAIL})        
 
 *** VISUALIZER: prop ***
 module=Properties

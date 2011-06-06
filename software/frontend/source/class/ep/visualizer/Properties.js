@@ -10,12 +10,13 @@
 **/
 qx.Class.define("ep.visualizer.Properties", {
     extend : ep.visualizer.AbstractVisualizer,
-    construct : function(title) {
+    construct : function(title,args) {
         this.base(arguments,title);
         this.set({
             layout: new qx.ui.layout.Grid(3,3),
             padding: 5
         });
+        this.setArgs(args);
     },
     statics: {
         KEY: 'properties'

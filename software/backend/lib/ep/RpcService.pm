@@ -92,12 +92,16 @@ Return table column definitions.
 sub getTableColumnDef {
     my $self = shift;
     my $table = shift;
-    my $cols = $self->cfg->{TABLES}{$table};
+    my $cfg = $self->cfg->{TABLES};
+    my $cols = $cfg->{$table};
     die mkerror(34884,"Table type '$table' is not known!") unless defined $cols;
     my $attr = $self->cfg->{ATTRIBUTES};
     return {
         ids => ['__nodeId', @$cols],
-        names => [ 'NodeId', map { $attr->{$_} } @$cols ]
+        names => [ 'NodeId', map { $attr->{$_} } @$cols ],
+        ref $cfg->{"${table}_width"} ? (
+            widths  => [1,@{$cfg->{${table}."_width"}}]
+        ) : ()
     };
 }
 

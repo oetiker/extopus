@@ -13,7 +13,7 @@
 qx.Class.define("ep.ui.Table", {
     extend : qx.ui.table.Table,
 
-    construct : function(tm) {
+    construct : function(tm,widths) {
         var tableOpts = {
             tableColumnModel : function(obj) {
                 return new qx.ui.table.columnmodel.Resize(obj);
@@ -25,8 +25,16 @@ qx.Class.define("ep.ui.Table", {
         });
         // hide the first column as it contains the internal
         // id of the node
-        this.getTableColumnModel().setColumnVisible(0,false);
+        var tcm = this.getTableColumnModel();
+        tcm.setColumnVisible(0,false);
+        if (widths){
+            var resizeBehavior = tcm.getBehavior(); 
+            for (var i=0;i<widths.length;i++){
+                resizeBehavior.setWidth(i, String(widths[i]) + "*");    
+            }
+        }
         this.getDataRowRenderer().setHighlightFocusRow(false);
+        
     }
 
 

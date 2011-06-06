@@ -10,13 +10,14 @@
 **/
 qx.Class.define("ep.visualizer.IFrame", {
     extend : ep.visualizer.AbstractVisualizer,
-    construct : function(title) {
+    construct : function(title,args) {
         this.base(arguments,title);
         this.set({
             layout: new qx.ui.layout.Grow()
         });
         this.__iFrame = new qx.ui.embed.ThemedIframe();
         this.add(this.__iFrame);
+        this.setArgs(args);
     },
     statics: {
         KEY: 'iframe'

@@ -21,7 +21,7 @@ qx.Class.define("ep.ui.SearchView", {
         rpc.callAsyncSmart(function(ret){
             var tm = ep.data.NodeTableModel.getInstance();
             tm.setColumns(ret.names,ret.ids);
-            that._createTable();
+            that._createTable(ret.widths);
             that._createView();
         },'getTableColumnDef','search');
     },
@@ -41,9 +41,9 @@ qx.Class.define("ep.ui.SearchView", {
             control.addListener("changeValue",this._setSearch,this);
             this.setSearchBox(control);
         },
-        _createTable: function(){
+        _createTable: function(widths){
             var model = ep.data.NodeTableModel.getInstance();
-            var control = new ep.ui.Table(model);
+            var control = new ep.ui.Table(model,widths);
             this.__vPane.add(control,1);
             this.getSearchBox().setEnabled(true);
             this.setTable(control);
