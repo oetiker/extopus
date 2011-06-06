@@ -48,16 +48,14 @@ qx.Class.define("ep.visualizer.Data", {
        
         // time span
         titleContainer.add(new qx.ui.basic.Label(this.tr('rows')).set({paddingLeft: 8}));
-        var rowCount = new qx.ui.form.Spinner(1).set({
-            maximum: 1000,
-            minimum: 1,
-            pageStep: 10,
-            singleStep: 1
+        var rowCount = new qx.ui.form.TextField("1").set({
+            required: true,
+            filter: /^[1-9][0-9]{0,2}$/
         });
 
         titleContainer.add(rowCount);
         rowCount.addListener('changeValue',function(e){
-            dataTable.setCount(e.getData());   
+            dataTable.setCount(parseInt(e.getData(),10));   
         },this);
         dataTable.setCount(1);
             

@@ -24,8 +24,8 @@ qx.Class.define("ep.ui.LoadingBox", {
         var loader = this.__loader = new qx.ui.basic.Atom(null,"ep/loader.gif").set({
             visibility: 'hidden',
             show: 'icon',
-            backgroundColor: '#fcfcfc',
-            opacity: 0.7,
+            backgroundColor: '#ffffff',
+//          opacity: 0.7,
             allowGrowX: true,
             allowGrowY: true,
             allowShrinkX: true,
