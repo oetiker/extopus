@@ -250,22 +250,30 @@ sub getData {
                         $data{$subNode} = rrd2float($ret->{data}{$key});
                     } else {
                         $self->log->error("Fetching ".$url->to_string." returns ".$data->{error});
-                        die mkerror(89384,"Torrus is not happy with our request: ".$data->{error});
+                        return {
+                           status => 0,
+                           error => $data->{error}
+                        };
                     }
                 }
                 else {
                     $self->log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
-                    die mkerror("unexpected content/type (".$res->headers->content_type."): ".$res->body);
+                    return {
+                       status => 0,
+                       error => "unexpected content/type (".$res->headers->content_type."): ".$res->body
+                    };
                 }
             }
             else {
                 my ($msg,$error) = $tx->error;
                 $self->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
-                die mkerror(48877,"fetching Leaves for $nodeId from torrus server: $msg ".($error ||''));        
+                return {    
+                    status => 0,    
+                    error => "fetching data for $nodeId from torrus server: $msg ".($error ||'')
+                };
             }
         };
-        my $row = denan($self->cfg->{col_data}($stepEnd - $stepStart,\%data));
-       
+        my $row = denan($self->cfg->{col_data}($stepEnd - $stepStart,\%data));       
         push @return, [ $stepLabel, @{$row} ];
     }
 

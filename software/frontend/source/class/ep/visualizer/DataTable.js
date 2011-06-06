@@ -97,16 +97,17 @@ qx.Class.define("ep.visualizer.DataTable", {
                     date = Math.round(this.getEndDate().getTime()/1000);
                 }
                 var tm = this.__model;
-                this.setLoading(true);
+                this.setState('loading');
                 var that = this;
                 rpc.callAsyncSmart(function(ret){
                     if (ret.status){                
+                        that.setState('ready');
                         tm.setData(ret.data);
                     }
                     else {
+                        that.setState('nodata');
                         tm.setData([]);
                     }
-                    that.setLoading(false);
                 },'visualize',this.getInstance(),{
                     interval: this.getInterval(),
                     endDate: date,

@@ -6,6 +6,7 @@
 ************************************************************************ */
 /**********
 #asset(ep/loader.gif)
+#asset(qx/icon/${qx.icontheme}/64/status/dialog-information.png)
 **********/
 /**
  * Navigation Window with tree and table
@@ -37,34 +38,62 @@ qx.Class.define("ep.ui.LoadingBox", {
             center: true
         });
         this._add(loader);
+        var noData = this.__noData = new qx.ui.basic.Atom(this.tr("no data available"),"icon/64/status/dialog-information.png").set({
+            visibility: 'hidden',
+            gap: 20,
+            backgroundColor: '#ffffff',
+            show: 'both',
+            font: new qx.bom.Font(50,['sans-serif']),
+            textColor: '#bfbfbf',
+            allowGrowX: true,
+            allowGrowY: true,
+            allowShrinkX: true,
+            allowShrinkY: true,
+            alignX: 'center',
+            alignY: 'middle',
+            center: true
+        });
+        this._add(noData);
     },
     properties: {
-        loading: {
-            init : false,
-            check: 'Boolean',
-            apply: '_applyLoading'
+        state: {
+            init : 'ready',
+            apply: '_applyState'
         }
     },
 
     members: {
         __loader: null,
-        __runningTimer: null,
-        _applyLoading: function(newValue,oldValue){
+        __noData: null,
+        __runningTimer: null,              
+        _applyState: function(newValue,oldValue){
             if (newValue == oldValue){
                 return;
             }
-            if (newValue){                                
-                this.__runningTimer = qx.event.Timer.once(function(){
-                    this.__runningTimer = null;
-                    this.__loader.show();
-                },this,200);
-            }
-            else {
-                if (this.__runningTimer){
-                    this.__runningTimer.stop();
-                    this.__runningTimer = null;
-                }
-                this.__loader.hide();
+            switch (newValue){
+                case 'loading':
+                    this.__runningTimer = qx.event.Timer.once(function(){
+                        this.__runningTimer = null;
+                        this.__loader.show();
+                        this.__noData.hide();
+                    },this,200);
+                    break;
+                case 'nodata':
+                    if (this.__runningTimer){
+                        this.__runningTimer.stop();
+                        this.__runningTimer = null;
+                    }
+                    this.__loader.hide();
+                    this.__noData.show();
+                    break;
+                case 'ready':
+                    if (this.__runningTimer){
+                        this.__runningTimer.stop();
+                        this.__runningTimer = null;
+                    }
+                    this.__loader.hide();
+                    this.__noData.hide();
+                    break;
             }
         }
     }

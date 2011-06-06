@@ -31,7 +31,10 @@ qx.Class.define("ep.visualizer.ChartImage", {
         },this);
         img.addListener('loaded',function(){
             timer.restart();
-            this.setLoading(false);
+            this.setState('ready');
+        },this);
+        img.addListener('loadingFailed',function(){
+            this.setState('nodata');
         },this);
         timer.start();
     },
@@ -73,7 +76,7 @@ qx.Class.define("ep.visualizer.ChartImage", {
                 var width = qx.bom.element.Dimension.getWidth(el);
                 var height = qx.bom.element.Dimension.getHeight(el)
                 if (width > 0 && height > 0){
-                    that.setLoading(true);
+                    that.setState('loading');
                     that.__img.setSource(
                         url
                         +'&start='+(end-range)
