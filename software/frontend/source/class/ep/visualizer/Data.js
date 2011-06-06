@@ -58,13 +58,13 @@ qx.Class.define("ep.visualizer.Data", {
             var value = parseInt(e.getData(),10);
             if (value < 1 || value > 100){
                 rowCount.set({
-                    valid: false,
+                    valid: false
                 });
                 return;
             }
             else {
                 rowCount.set({
-                    valid: true,
+                    valid: true
                 });
             }
             dataTable.setCount(parseInt(e.getData(),10));   
