@@ -12,6 +12,29 @@ ep::Inventory::SIAM - read data from a SIAM connector
 
 Thie ep::Inventory::SIAM grabs information from a SIAM inventory.
 
+ *** INVENTORY: siam1 ***
+ module=SIAM
+ siam_cfg=test.yaml
+ # load_all = true
+ +MAP
+ prod = siam.svc.product_name
+ country = cablecom.svc.loc.country
+ city = cablecom.svc.loc.city
+ street = $I{'cablecom.svc.loc.address'} . ' ' . ( $I{'cablecom.svc.loc.building_number'} || '')
+ cust = siam.contract.customer_name
+ svc_type = siam.svc.type
+ data_class = siam.svcdata.name
+ data_type = siam.svcdata.type
+ port = cablecom.port.shortname
+ inv_id = siam.svc.inventory_id
+ torrus.tree-url = torrus.tree-url
+ torrus.nodeid = torrus.nodeid
+ car = cablecom.svc.car_name
+
+ +TREE
+ 'Location',$R{country}, $R{city}, $R{street}.' '.($R{number}||'')
+ $R{cust},$R{svc_type},$R{car}
+
 =cut
 
 use Mojo::Base 'ep::Inventory::base';
@@ -40,23 +63,28 @@ call the data loading function for each data object retrieved from the inventory
 =cut
 
 sub walkInventory {
-#    DB::enable_profile();
-    $ENV{DBI_PROFILE}=2;
+#   DB::enable_profile();
+#   $ENV{DBI_PROFILE}=2;
     my $self = shift;
     my $storeCallback = shift;
     my $siam = $self->siam;    
-    $self->log->debug('loading nodes for '.$self->user);
     $siam->connect();
-    my $user = $siam->get_user($self->user) or do {
-        $self->log->debug($self->cfg->{driver}.' has no information on '.$self->user);
-        return;
-    };
-    my %user = (%{$user->attributes});
-    my $contracts = $siam->get_contracts_by_user_privilege($user, 'ViewContract');
-    # my $contracts = $siam->get_all_contracts();
+    my %user = ();
+    my $contracts;
+    if ($self->cfg->{load_all}){
+        $self->log->debug('loading ALL nodes');
+        $contracts = $siam->get_all_contracts();
+    }
+    else {
+        $self->log->debug('loading nodes for '.$self->user);
+        my $user = $siam->get_user($self->user) or do {
+            $self->log->debug($self->cfg->{driver}.' has no information on '.$self->user);
+            return;
+        };
+        %user = (%{$user->attributes});
+        $contracts = $siam->get_contracts_by_user_privilege($user, 'ViewContract');
+    }
     my $count = 0;
-    my $map = $self->cfg->{MAP};
-    loading:
     for my $cntr ( @{$contracts} ){
         my %cntr = (%{$cntr->attributes});
         for my $srv ( @{$cntr->get_services} ){
@@ -79,8 +107,8 @@ sub walkInventory {
     }
     $siam->disconnect();
     $self->log->debug('loaded '.$count.' nodes');
-#    DB::disable_profile();
-#    DB::finish_profile();
+#   DB::disable_profile();
+#   DB::finish_profile();
 }
 
 1;

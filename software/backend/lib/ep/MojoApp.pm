@@ -59,11 +59,19 @@ sub startup {
     # session is valid for 7 days
     $self->sessions->default_expiration(7*24*3600);
     # run /setUser/oetiker to launch the application for a particular user
-    $routes->get('/setUser/(:user)' => sub {
-        my $self = shift;
-        $self->session(epUser =>  $self->stash('user'));
-        $self->redirect_to($me->prefix.'/');
-    });
+    if ($gcfg->{default_user}){
+        $self->app->hook(before_dispatch => sub {
+            my $self = shift;
+            $self->session(epUser =>  $gcfg->{default_user});
+        });
+    }
+    else {
+        $routes->get('/setUser/(:user)' => sub {
+            my $self = shift;
+            $self->session(epUser =>  $self->stash('user'));
+            $self->redirect_to($me->prefix.'/');
+        });
+    }
 
     $routes->get('/' => sub { shift->redirect_to($me->prefix.'/')});
 
