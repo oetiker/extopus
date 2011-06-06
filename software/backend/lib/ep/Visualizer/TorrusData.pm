@@ -171,40 +171,42 @@ sub getData {
     my $interval = shift;
     my $count = shift;
     my $url = Mojo::URL->new($treeUrl);
-    my %E;
-    @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($end);
-    my %S;
     my @return;
     for (my $step=0;$step < $count;$step++){
         my $stepStart;
         my $stepEnd;
         my $stepLabel;
+        my %E;
+        my %S;
         for ($interval){
             /day/ && do { 
-                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($end-24*3600);
+                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($end-$step*24*3600);
                 $stepStart = timelocal_nocheck(0,0,0,$S{mday},@S{qw(mon year)});
+                @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($stepStart+25*3600);
                 $stepEnd = timelocal_nocheck(0,0,0,$E{mday},@E{qw(mon year)});
                 $stepLabel = strftime("%F",localtime($stepStart+12*3600));
                 next;
             };
             /week/ && do {
-                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($end-7*24*3600);
+                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($end-$step*7*24*3600);
                 $stepStart = timelocal_nocheck(0,0,0,$S{mday} - $S{wday},@S{qw(mon year)});
-                $stepEnd = timelocal_nocheck(0,0,0,$E{mday} - $E{wday},@E{qw(mon year)});
+                @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($stepStart+7.1*24*3600);
+                $stepEnd = timelocal_nocheck(0,0,0,$E{mday},@E{qw(mon year)});
                 $stepLabel = strftime("%Y.%02V",localtime($stepStart+3.5*24*3600));
                 next;
             };
             /month/ && do {
-                my $midMonStart = timelocal_nocheck(0,0,0,15,$E{mon},$E{year}) - $step * 365.25*24*3600/12;
-                my %E2;
+                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($end - 15 - $step * 365.25*24*3600/12);
+                my $midMonStart = timelocal_nocheck(0,0,0,15,$S{mon},$S{year});
                 @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($midMonStart);
-                @E2{qw{sec min hour mday mon year wday yday isdst}} = localtime($midMonStart+365*24*3600/12);
+                @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($midMonStart+365.25*24*3600/12);
                 $stepStart = timelocal_nocheck(0,0,0,1,$S{mon},$S{year});
-                $stepEnd = timelocal_nocheck(0,0,0,1,$E2{mon},$E2{year})-1;
+                $stepEnd = timelocal_nocheck(0,0,0,1,$E{mon},$E{year})-1;
                 $stepLabel = strftime("%Y-%02m",localtime($stepStart));
                 next;
             };
             /year/ && do {
+                @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($end - $step*365.25*24*3600);
                 $stepStart = timelocal_nocheck(0,0,0,1,0,$E{year}-$step);
                 $stepEnd = timelocal_nocheck(23,59,59,31,11,$E{year}-$step+1);
                 $stepLabel = strftime("%Y",localtime($stepStart+180*24*3600));
