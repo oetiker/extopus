@@ -4,7 +4,9 @@
    Authors:   Tobi Oetiker <tobi@oetiker.ch>
    Utf8Check: äöü
 ************************************************************************ */
-
+/**********
+#asset(ep/loader.gif)
+**********/
 /**
  * Navigation Window with tree and table
  */

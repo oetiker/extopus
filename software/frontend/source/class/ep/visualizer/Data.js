@@ -49,12 +49,24 @@ qx.Class.define("ep.visualizer.Data", {
         // time span
         titleContainer.add(new qx.ui.basic.Label(this.tr('rows')).set({paddingLeft: 8}));
         var rowCount = new qx.ui.form.TextField("1").set({
-            required: true,
-            filter: /^[1-9][0-9]{0,2}$/
+            filter: /[0-9]/,
+            invalidMessage: this.tr('use values between 1 and 100'),
         });
 
         titleContainer.add(rowCount);
         rowCount.addListener('changeValue',function(e){
+            var value = parseInt(e.getData(),10);
+            if (value < 1 || value > 100){
+                rowCount.set({
+                    valid: false,
+                });
+                return;
+            }
+            else {
+                rowCount.set({
+                    valid: true,
+                });
+            }
             dataTable.setCount(parseInt(e.getData(),10));   
         },this);
         dataTable.setCount(1);
