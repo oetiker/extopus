@@ -50,7 +50,7 @@ qx.Class.define("ep.visualizer.Data", {
         titleContainer.add(new qx.ui.basic.Label(this.tr('rows')).set({paddingLeft: 8}));
         var rowCount = new qx.ui.form.TextField("1").set({
             filter: /[0-9]/,
-            invalidMessage: this.tr('use values between 1 and 100'),
+            invalidMessage: this.tr('use values between 1 and 100')
         });
 
         titleContainer.add(rowCount);
