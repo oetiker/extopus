@@ -22,7 +22,12 @@ qx.Class.define("ep.visualizer.DataTable", {
                 return new qx.ui.table.columnmodel.Resize(obj);
             }
         };
-        var table = new qx.ui.table.Table(tm,tableOpts);
+        var table = new qx.ui.table.Table(tm,tableOpts).set({
+            allowShrinkX: true,
+            allowShrinkY: true,
+            allowGrowX: true,
+            allowGrowY: true
+        });
         var tcm = table.getTableColumnModel();
         var resizeBehavior = tcm.getBehavior();
         for (var i=0;i<columns.length;i++){

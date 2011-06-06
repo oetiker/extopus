@@ -25,7 +25,7 @@ qx.Class.define("ep.visualizer.Data", {
         }));
         this.add(titleContainer);
         var dataTable = this.__dataTable = new ep.visualizer.DataTable(args.instance,args.columns,args.column_widths,args.column_units);
-        this.add(dataTable);
+        this.add(dataTable,{flex: 1});
         // view selector
         var intervalSelector = this.__intervalSelector = new qx.ui.form.VirtualSelectBox().set({
            labelPath: 'name',

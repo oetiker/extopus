@@ -13,6 +13,12 @@ qx.Class.define("ep.ui.LoadingBox", {
 
     construct : function(widget) {
         this.base(arguments);
+        this.set({
+            allowGrowX: true,
+            allowGrowY: true,
+            allowShrinkX: true,
+            allowShrinkY: true
+        });
         this._setLayout(new qx.ui.layout.Grow());
         this._add(widget);
         var loader = this.__loader = new qx.ui.basic.Atom(null,"ep/loader.gif").set({
@@ -22,6 +28,8 @@ qx.Class.define("ep.ui.LoadingBox", {
             opacity: 0.7,
             allowGrowX: true,
             allowGrowY: true,
+            allowShrinkX: true,
+            allowShrinkY: true,
             alignX: 'center',
             alignY: 'middle',
             center: true
