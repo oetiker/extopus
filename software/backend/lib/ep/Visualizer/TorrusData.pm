@@ -223,7 +223,7 @@ sub getData {
                 next;
             };
             /year/ && do {
-                @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($end - $step*365.25*24*3600);
+                @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($end);
                 $stepStart = timelocal_nocheck(0,0,0,1,0,$E{year}-$step);
                 $stepEnd = timelocal_nocheck(23,59,59,31,11,$E{year}-$step);
                 $stepLabel = strftime("%Y",localtime($stepStart+180*24*3600));
