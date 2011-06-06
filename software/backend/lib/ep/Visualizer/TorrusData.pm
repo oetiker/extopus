@@ -76,7 +76,52 @@ sub new {
     return $self;
 }
 
-   
+
+=head2 rrd2float(hash)
+
+turn hash values that look liike floats into floats
+
+=cut
+
+sub rrd2float {
+    my $hash = shift;
+    my %out;
+    my $nan = 0.0+"NaN";
+    for my $key (keys %$hash){
+        my $val =  $hash->{$key};
+        if ( defined $val and $val ne ""){
+            if ( $val =~ /[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?/ ){
+                $out{$key} = 1.0 * $val;
+            }            
+            elsif ( $val =~ /nan/i ){
+                # perl turns this into a real NaN it seems
+                $out{$key} = $nan; 
+            }
+            else {
+                $out{$key} = $val;
+            }
+        }
+        else {
+            $out{$key} = undef;
+        }
+    }    
+    return \%out;
+}
+
+=head2 denan(array)
+
+turn nan values into undef since json implementations have issues with nan ... 
+
+=cut
+
+sub denan {
+    my $in = shift;
+    my $nan = 0.0+"NaN";
+    return [
+        map { defined $nan <=> $_ ? $_ : undef } @$in
+    ]    
+}
+
 =head2 matchRecord(rec)
 
 can we handle this type of record
@@ -128,7 +173,7 @@ sub getData {
     my $url = Mojo::URL->new($treeUrl);
     my %E;
     @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($end);
-
+    my %S;
     my @return;
     for (my $step=0;$step < $count;$step++){
         my $stepStart;
@@ -136,21 +181,27 @@ sub getData {
         my $stepLabel;
         for ($interval){
             /day/ && do { 
-                $stepStart = timelocal_nocheck(0,0,0,$E{mday} - $step,@E{qw(mon year)});
-                $stepEnd = $end + 24*3600;            
+                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($end-24*3600);
+                $stepStart = timelocal_nocheck(0,0,0,$S{mday},@S{qw(mon year)});
+                $stepEnd = timelocal_nocheck(0,0,0,$E{mday},@E{qw(mon year)});
                 $stepLabel = strftime("%F",localtime($stepStart+12*3600));
                 next;
             };
             /week/ && do {
-                $stepStart = timelocal_nocheck(0,0,0,$E{mday} - $step*7 - $E{wday},@E{qw(mon year)});
-                $stepEnd = $end + 7*24*3600;            
-                $stepLabel = strftime("Week %V, %Y",localtime($stepStart+3.5*24*3600));
+                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($end-7*24*3600);
+                $stepStart = timelocal_nocheck(0,0,0,$S{mday} - $S{wday},@S{qw(mon year)});
+                $stepEnd = timelocal_nocheck(0,0,0,$E{mday} - $E{wday},@E{qw(mon year)});
+                $stepLabel = strftime("%Y.%02V",localtime($stepStart+3.5*24*3600));
                 next;
             };
             /month/ && do {
-                $stepStart = timelocal_nocheck(0,0,0,1,$E{mon}-$step,$E{year});
-                $stepEnd = timelocal_nocheck(23,59,59,-1,$E{mon}-$step+1,$E{year});
-                $stepLabel = strftime("%b, %Y",localtime($stepStart+15*24*3600));
+                my $midMonStart = timelocal_nocheck(0,0,0,15,$E{mon},$E{year}) - $step * 365.25*24*3600/12;
+                my %E2;
+                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($midMonStart);
+                @E2{qw{sec min hour mday mon year wday yday isdst}} = localtime($midMonStart+365*24*3600/12);
+                $stepStart = timelocal_nocheck(0,0,0,1,$S{mon},$S{year});
+                $stepEnd = timelocal_nocheck(0,0,0,1,$E2{mon},$E2{year})-1;
+                $stepLabel = strftime("%Y-%02m",localtime($stepStart));
                 next;
             };
             /year/ && do {
@@ -177,7 +228,7 @@ sub getData {
                     my $ret = $self->json->decode($res->body);
                     if ($ret->{success}){
                         my $key = (keys %{$ret->{data}})[0];
-                        $data{$subNode} = $ret->{data}{$key};
+                        $data{$subNode} = rrd2float($ret->{data}{$key});
                     } else {
                         $self->log->error("Fetching ".$url->to_string." returns ".$data->{error});
                         die mkerror(89384,"Torrus is not happy with our request: ".$data->{error});
@@ -193,8 +244,10 @@ sub getData {
                 $self->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
                 die mkerror(48877,"fetching Leaves for $nodeId from torrus server: $msg ".($error ||''));        
             }
-        }
-        push @return, [ $stepLabel, @{$self->cfg->{col_data}($stepEnd - $stepStart,\%data)} ];
+        };
+        my $row = denan($self->cfg->{col_data}($stepEnd - $stepStart,\%data));
+       
+        push @return, [ $stepLabel, @{$row} ];
     }
 
     return {
