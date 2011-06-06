@@ -12,6 +12,9 @@ qx.Class.define("ep.ui.View", {
     extend : qx.ui.tabview.TabView,
     construct : function(table) {                
         this.base(arguments,'top');
+        this.set({
+            minHeight: 250
+        });
         var sm = table.getSelectionModel();
         sm.setSelectionMode(qx.ui.table.selection.Model.SINGLE_SELECTION);
         var tm = table.getTableModel();
