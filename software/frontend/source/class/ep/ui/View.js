@@ -30,47 +30,51 @@ qx.Class.define("ep.ui.View", {
     },
     members: {
         __pageCache: null,
+        _createVisualizer: function(viz){
+            var control;
+            switch(viz.visualizer){
+                case ep.visualizer.Chart.KEY:
+                    control = new ep.visualizer.Chart(viz.title,viz.arguments);
+                    break;
+                case ep.visualizer.IFrame.KEY:
+                    control = new ep.visualizer.IFrame(viz.title,viz.arguments);
+                    break;
+                case ep.visualizer.Properties.KEY:
+                    control = new ep.visualizer.Properties(viz.title,viz.arguments);
+                    break;
+                case ep.visualizer.Data.KEY:
+                    control = new ep.visualizer.Data(viz.title,viz.arguments);
+                    break;
+                default: 
+                    qx.dev.Debug.debugObject(viz,'Can not handle ');
+                
+            }
+            return control;
+        },
         _showVisualizers: function(vizList){
-            var activeVisualizers = {};
+            var active = {};
+            var cache = this.__pageCache;
             for (var i = 0; i< vizList.length;i++) {
                 var viz = vizList[i];
                 var key = viz.visualizer + ':' + viz.title;
-                activeVisualizers[key] = true;
-                var page = this.__pageCache[key];
-                var control;
-                if (page){
-                    control = page.widget;
-                    control.setArgs(viz.arguments);
-                    if (!page.included){
-                        page.included = true;
-                        this.add(control);
-                    }
+                active[key] = true;
+                var control = cache[key];
+                if (control){
+                    control.getChildControl('button').show();
+                    control.setArgs(viz.arguments);                    
                 }
                 else {
-                    switch(viz.visualizer){
-                    case ep.visualizer.Chart.KEY:
-                        control = new ep.visualizer.Chart(viz.title,viz.arguments);
-                        break;
-                    case ep.visualizer.IFrame.KEY:
-                        control = new ep.visualizer.IFrame(viz.title,viz.arguments);
-                        break;
-                    case ep.visualizer.Properties.KEY:
-                        control = new ep.visualizer.Properties(viz.title,viz.arguments);
-                        break;
-                    case ep.visualizer.Data.KEY:
-                        control = new ep.visualizer.Data(viz.title,viz.arguments);
-                        break;
-                    default: 
-                        qx.dev.Debug.debugObject(vizList[i],'Can not handle ');
-                    }
+                    control = this._createVisualizer(viz);
                     this.add(control);
-                    this.__pageCache[key] = { widget: control, included: true };
+                    cache[key] = control;
                 }
             }
-            for (var vizKey in this.__pageCache){
-                if (!activeVisualizers[vizKey] && this.__pageCache[vizKey].included){
-                    this.remove(this.__pageCache[vizKey].widget);
-                    this.__pageCache[vizKey].included = false;
+            for (var vizKey in cache){
+                if (!active[vizKey]){
+                    cache[vizKey].getChildControl('button').exclude();
+                    if (this.isSelected(cache[vizKey])){                        
+                        this.setSelection([this.getSelectables(true)[0]]);
+                    }
                 }
             }
         }

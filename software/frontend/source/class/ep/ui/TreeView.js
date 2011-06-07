@@ -71,14 +71,6 @@ qx.Class.define("ep.ui.TreeView", {
                     this._openTree(tree,kids.getItem(k),first && k==0);
                 }
             }
-            else {
-               var sel = tree.getSelection();
-                sel.removeAll();
-                sel.push(node);
-  var sel = tree.getSelection();
-                sel.removeAll();
-                sel.push(node);
-            }
         },
         _createTree: function(){
             var root = qx.data.marshal.Json.createModel({
