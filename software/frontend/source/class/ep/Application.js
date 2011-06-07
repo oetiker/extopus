@@ -32,12 +32,17 @@ qx.Class.define("ep.Application", {
                 qx.log.appender.Console;
             }
             var root = this.getRoot();
-            root.add(ep.ui.Desktop.getInstance(),{
+            var desktop = ep.ui.Desktop.getInstance();
+            root.add(desktop,{
                 left   : 0,
                 top    : 0,
                 right  : 0,
                 bottom : 0
             });       
+            var rpc=ep.data.Server.getInstance();
+            rpc.callAsyncSmart(function(cfg){
+                desktop.populate(cfg);
+            },'getConfig');
         }
     }
 });

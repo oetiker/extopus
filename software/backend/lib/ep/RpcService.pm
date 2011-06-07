@@ -29,11 +29,11 @@ is this method accessible?
 =cut
 
 our %allow = (
+    getConfig => 1,
     getBranch => 1,
     getNodeCount => 1,
     getNodes => 1,
     getNode => 1,
-    getTableColumnDef =>1,
     getVisualizers => 1,
     visualize => 1,
 );
@@ -72,6 +72,22 @@ sub allow_rpc_access {
     return $allow{$method}; 
 }
    
+
+=head2 getConfig()
+
+get some gloabal configuration information into the interface
+
+=cut
+
+sub getConfig {
+    my $self = shift;
+    return {
+        openBranches => $self->cfg->{GENERAL}{open_branches},
+        treeCols => $self->getTableColumnDef('tree'),
+        searchCols => $self->getTableColumnDef('search'),
+    }
+}
+
 =head2 getTreeBranch(parent)
 
 Get the branches and leaves attachd to the given parent. The root of the tree has the parent id 0.

@@ -10,20 +10,16 @@
  */
 qx.Class.define("ep.ui.SearchView", {
     extend : qx.ui.core.Widget,
-    construct : function() {
+    construct : function(colDef) {
         this.base(arguments);
         this._setLayout(new qx.ui.layout.VBox());
         this._createSearchBox();
         this.__vPane = new qx.ui.splitpane.Pane("vertical");
         this._add(this.__vPane,{flex: 1});
-        var rpc=ep.data.Server.getInstance();
-        var that = this;
-        rpc.callAsyncSmart(function(ret){
-            var tm = ep.data.NodeTableModel.getInstance();
-            tm.setColumns(ret.names,ret.ids);
-            that._createTable(ret.widths);
-            that._createView();
-        },'getTableColumnDef','search');
+        var tm = ep.data.NodeTableModel.getInstance();
+        tm.setColumns(colDef.names,colDef.ids);
+        this._createTable(colDef.widths);
+        this._createView();
     },
     properties: {
         searchBox: {},

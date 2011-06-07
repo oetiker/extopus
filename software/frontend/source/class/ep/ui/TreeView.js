@@ -7,9 +7,9 @@
 
 /* ************************************************************************
 
-#asset(qx/icon/${qx.icontheme}/22/places/folder.png)
-#asset(qx/icon/${qx.icontheme}/22/mimetypes/office-spreadsheet.png)
-#asset(ep/loading22.gif)
+#asset(qx/icon/${qx.icontheme}/16/places/folder.png)
+#asset(qx/icon/${qx.icontheme}/16/mimetypes/office-spreadsheet.png)
+#asset(ep/loading16.gif)
 
 ************************************************************************ */
 
@@ -20,21 +20,19 @@
 qx.Class.define("ep.ui.TreeView", {
     extend : qx.ui.core.Widget,
 
-    construct : function() {
+    construct : function(colDef,treeOpen) {
+        this.__initial_open = treeOpen;
         this.base(arguments);
         this._setLayout(new qx.ui.layout.Grow());
         var hPane = new qx.ui.splitpane.Pane("horizontal");
         this._add(hPane);
         var vPane = new qx.ui.splitpane.Pane("vertical");
-        var rpc=ep.data.Server.getInstance();
-        var that = this;
-        rpc.callAsyncSmart(function(ret){
-            vPane.add(that._createTable(ret.names,ret.ids,ret.widths),1);
-            hPane.add(that._createTree(),1);
-            hPane.add(vPane,3);
-            vPane.add(that._createView(),3);            
-        },'getTableColumnDef','tree');
-//      this.__leafCache = {};
+        vPane.add(this._createTable(colDef.names,colDef.ids,colDef.widths),1);
+        var tree = this._createTree();
+        hPane.add(tree,1);
+        this._openTree(tree,tree.getModel(),true);
+        hPane.add(vPane,3);
+        vPane.add(this._createView(),3);            
     },
 
     properties: {
@@ -43,21 +41,52 @@ qx.Class.define("ep.ui.TreeView", {
         view: {}
     },
     members : {
-        /**
-         * get the kids ready
-         *
-         * @param id {var} TODOC
-         * @return {var} TODOC
-         */        
-        __initialized: null,
-
+        __initial_open: null,
+        _openTree: function(tree,node,first){
+            if (!node.getKids){
+                if (first){
+                    var sel = tree.getSelection();
+                    sel.removeAll();
+                    sel.push(node);
+                }
+                return;
+            } 
+            if (! node.getLoaded()){
+                if (this.__initial_open<0){
+                    return;
+                }
+                node.addListenerOnce('changeLoaded',function(){
+                    this._openTree(tree,node,first);
+                },this);
+                this.__initial_open--;
+                tree.openNode(node);
+                return;
+            }
+            if (node.getKids){
+                if (! tree.isNodeOpen(node)){
+                    tree.openNode(node);
+                }
+                var kids = node.getKids();
+                for (var k=0;k < kids.length;k++){
+                    this._openTree(tree,kids.getItem(k),first && k==0);
+                }
+            }
+            else {
+               var sel = tree.getSelection();
+                sel.removeAll();
+                sel.push(node);
+  var sel = tree.getSelection();
+                sel.removeAll();
+                sel.push(node);
+            }
+        },
         _createTree: function(){
             var root = qx.data.marshal.Json.createModel({
                 name: 'root',
                 kids: [],
                 leaves: null,
                 icon: 'default',
-                loaded: true,
+                loaded: false,
                 nodeId: 0
             },true);
             this._addNodeKids(root);
@@ -70,12 +99,12 @@ qx.Class.define("ep.ui.TreeView", {
                     converter : function(value, model) {
                         if (value == "default") {
                             if (model.getKids != null) {
-                                return "icon/22/places/folder.png";
+                                return "icon/16/places/folder.png";
                             } else {
-                                return "icon/22/mimetypes/office-spreadsheet.png";
+                                return "icon/16/mimetypes/office-spreadsheet.png";
                             }
                         } else {
-                            return "ep/loading22.gif";
+                            return "ep/loading16.gif";
                         }
                     }
                 },
@@ -118,7 +147,6 @@ qx.Class.define("ep.ui.TreeView", {
             rpc.callAsyncSmart(function(ret){
                 var kids = node.getKids();
                 kids.removeAll();
-                node.setLoaded(true);
                 ret.map(function(branch){                
                     var newNode = {
                         nodeId: branch[0],
@@ -138,17 +166,7 @@ qx.Class.define("ep.ui.TreeView", {
                     kid.setLeaves(branch[3]); 
                     kids.push(kid);
                 });
-                // travel down the tree as it get loaded
-                if (! that.__initialized){
-                    var firstNewNode = kids.getItem(0);
-                    that.getTree().openNode(firstNewNode);
-                    var sel = that.getTree().getSelection();
-                    sel.removeAll();
-                    sel.push(firstNewNode);
-                    if (!firstNewNode.getKids){
-                        that.__initialized = true;
-                    }
-                }
+                node.setLoaded(true);
             },'getBranch',node.getNodeId());
         },
         _setLeavesTable : function(e){
