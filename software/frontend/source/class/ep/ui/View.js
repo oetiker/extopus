@@ -31,11 +31,11 @@ qx.Class.define("ep.ui.View", {
     members: {
         __pageCache: null,
         _showVisualizers: function(vizList){
-            var usedVisiblePages = {};
+            var activeVisualizers = {};
             for (var i = 0; i< vizList.length;i++) {
                 var viz = vizList[i];
                 var key = viz.visualizer + ':' + viz.title;
-                usedVisiblePages[key] = true;
+                activeVisualizers[key] = true;
                 var page = this.__pageCache[key];
                 var control;
                 if (page){
@@ -67,8 +67,8 @@ qx.Class.define("ep.ui.View", {
                     this.__pageCache[key] = { widget: control, included: true };
                 }
             }
-            for (var vizKey in this.__visiblePages){
-                if (!usedVisualizers[vizKey]){
+            for (var vizKey in this.__pageCache){
+                if (!activeVisualizers[vizKey] && this.__pageCache[vizKey].included){
                     this.remove(this.__pageCache[vizKey].widget);
                     this.__pageCache[vizKey].included = false;
                 }

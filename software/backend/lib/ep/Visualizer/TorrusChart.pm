@@ -16,9 +16,12 @@ it can rewrite internal img refs to include appropriate hash keys.
 
 This visualizer will match any records that have the following attributes:
 
- torrus.server
- torrus.url-prefix
+ torrus.tree-url
  torrus.nodeid
+
+in qos mode  you also need
+
+ torrus.qos_enabled
 
 The visualizer allows to configure a template for printing graphs.
 It uses the L<Mojo::Template> to render the content server side. Via the %R you have
@@ -35,6 +38,9 @@ Example configuration snipped
 
  *** VISUALIZER: chart ***
  module = TorrusChart
+ name = Traffic
+ mode = traffic
+ # mode = qos
  +TxPrintTemplate
  <!doctype html><html>
   <head><title><%= $R{name} $R{location} %></title></head>
@@ -66,11 +72,15 @@ has view => 'embedded';
 has json        => sub {Mojo::JSON::Any->new};
 has 'printtemplate';
 has 'root';
+has 'mode' => 'traffic';
 
 sub new {
     my $self = shift->SUPER::new(@_);
     $self->root('/torrusChart_'.$self->instance);
     $self->addProxyRoute();
+    if ($self->cfg->{mode}){
+        $self->mode($self->cfg->{mode});
+    }    
     if ($self->cfg->{TxPrintTemplate}){
         my $mt = Mojo::Template->new;
 #       $mt->prepend('my $self=shift; my %R = (%{$_[0]});');
@@ -93,10 +103,19 @@ sub matchRecord {
     my $self = shift;
     my $rec = shift;
     for (qw(torrus.nodeid torrus.tree-url)){
-        return undef unless defined $rec->{$_};
+        return undef unless $rec->{$_};
+    };
+    if ($self->mode eq 'qos'){
+        return undef unless $rec->{'torrus.qos-enabled'};
     };
     my $url = $rec->{'torrus.tree-url'};
-    my $leaves = $self->getLeaves($url,$rec->{'torrus.nodeid'});
+    my $leaves;
+    if ($self->mode eq 'traffic'){
+        $leaves = $self->getLeaves($url,'WALK_LEAVES', {nodeid => $rec->{'torrus.nodeid'}});
+    }
+    else {
+        $leaves = $self->getLeaves($url,'SEARCH_NODEID', {PREFIX => 'qos//'.$rec->{'torrus.nodeid'}});
+    }    
     my @nodes;
     for my $token (sort { ($leaves->{$b}{precedence} || 0) <=> ($leaves->{$a}{precedence} || 0) } keys %$leaves){        
         my $leaf = $leaves->{$token};
@@ -116,7 +135,7 @@ sub matchRecord {
         url_unescape $plain_src;
         push @nodes, {
             src => $plain_src,
-            title => $leaf->{comment},
+            title => $leaf->{'cbqos-object-descr'} || $leaf->{comment},
         },
     };
     my $template;
@@ -125,7 +144,7 @@ sub matchRecord {
     }
     return {
         visualizer => 'chart',
-        title => 'Chart',
+        title => $self->cfg->{name} || 'Chart',
         arguments => {
             views => \@nodes,
             template => $template
@@ -142,13 +161,14 @@ pull the list of leaves from torrus
 sub getLeaves {
     my $self = shift;
     my $tree_url = shift;
-    my $nodeid = shift;
+    my $rpcCall = shift;
+    my $callParams = shift;
     my $url = Mojo::URL->new($tree_url);
     $url->query(
-        nodeid => $nodeid,
         view=> 'rpc',
-        RPCCALL => 'WALK_LEAVES',
-        GET_PARAMS => 'precedence',
+        RPCCALL => $rpcCall,
+        GET_PARAMS => 'precedence,cbqos-object-descr',
+        %$callParams
     );    
     $self->log->debug("getting ".$url->to_string);
     my $tx = Mojo::UserAgent->new->get($url);
@@ -158,19 +178,19 @@ sub getLeaves {
             if ($ret->{success}){
                 return $ret->{data};
             } else {
-                $self->log->error("Getting leaves for $nodeid: ".$ret->{error});
+                $self->log->error("Running $rpcCall on ".join(', ',map{"$_: $callParams->{$_}"} keys %$callParams).$ret->{error});
                 return {};
             }
         }
         else {
             $self->log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
-            die mkerror(39944,"expected torrus to return and application/json result, but got ".$res->headers->content_type);
+            return {};
         }
     }
     else {
         my ($msg,$error) = $tx->error;
         $self->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
-        die mkerror(48877,"fetching Leaves for $nodeid from torrus server: $msg ".($error ||''));        
+        return {};
     }
 }
 

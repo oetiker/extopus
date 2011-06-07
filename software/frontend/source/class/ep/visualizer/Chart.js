@@ -31,12 +31,15 @@ qx.Class.define("ep.visualizer.Chart", {
 
 
         // view selector
-        var viewSelector = this.__viewSelector = new qx.ui.form.VirtualSelectBox().set({
+        var dummyModel = qx.data.marshal.Json.createModel([{title: ''}]);
+        var viewSelector = this.__viewSelector = new qx.ui.form.VirtualSelectBox(dummyModel).set({
            labelPath: 'title',
-           width: 280,
+           maxWidth: 600,
+           width: 400,
+           minWidth: 250,
            maxListHeight: null
         });
-        titleContainer.add(viewSelector);
+        titleContainer.add(viewSelector,{flex: 1});
         var viewSelection = viewSelector.getSelection();
         viewSelection.addListener("change",function(e){
             var item = viewSelection.getItem(0);

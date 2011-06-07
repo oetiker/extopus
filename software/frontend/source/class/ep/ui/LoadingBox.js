@@ -76,7 +76,7 @@ qx.Class.define("ep.ui.LoadingBox", {
                         this.__runningTimer = null;
                         this.__loader.show();
                         this.__noData.hide();
-                    },this,200);
+                    },this,100);
                     break;
                 case 'nodata':
                     if (this.__runningTimer){

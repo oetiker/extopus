@@ -49,6 +49,9 @@ $R{cust},$R{svc_type},$R{data_type}
 
 *** VISUALIZER: chart ***
 module=TorrusChart
+name = Torrus Traffic
+mode = traffic
+#mode = qos
 +TxPrintTemplate
 <!doctype html><html>
  <head><title><%= "$R{cust} $R{city} $R{svc_type}" %></title></head>
