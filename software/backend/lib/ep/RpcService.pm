@@ -49,7 +49,7 @@ sub allow_rpc_access {
     my $self = shift;
     my $method = shift;
     my $user = $self->mojo_session->{'epUser'};
-    die mkerror(3993,q{Which user are you talking about?}) unless defined $user;
+    die mkerror(3993,q{Your session has expired. Please re-connect.}) unless defined $user;
     my $cfg = $self->cfg;
     my $cache = ep::Cache->new(
         cacheRoot => $cfg->{GENERAL}{cache_dir},

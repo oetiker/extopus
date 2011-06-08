@@ -56,8 +56,8 @@ sub startup {
         }
     }
     my $routes = $self->routes;
-    # session is valid for 7 days
-    $self->sessions->default_expiration(7*24*3600);
+    # session is valid for 1 day
+    $self->sessions->default_expiration(1*24*3600);
     # run /setUser/oetiker to launch the application for a particular user
     if ($gcfg->{default_user}){
         $self->app->hook(before_dispatch => sub {
