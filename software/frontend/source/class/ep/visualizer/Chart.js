@@ -39,7 +39,7 @@ qx.Class.define("ep.visualizer.Chart", {
            minWidth: 250,
            maxListHeight: null
         });
-        titleContainer.add(viewSelector,{flex: 1});
+        titleContainer.add(viewSelector,{flex: 10});
         var viewSelection = viewSelector.getSelection();
         viewSelection.addListener("change",function(e){
             var item = viewSelection.getItem(0);
@@ -100,7 +100,7 @@ qx.Class.define("ep.visualizer.Chart", {
                chart.setEndTime(null);
             }            
         });
-        titleContainer.add(new qx.ui.core.Spacer(20),{flex: 1});                      
+        titleContainer.add(new qx.ui.core.Spacer(10),{flex: 1});                      
         var savePdf = new qx.ui.form.Button(this.tr('Save PDF'),"icon/16/actions/document-save.png");
         savePdf.addListener('execute',this._downloadPdf,this);
         titleContainer.add(savePdf);

@@ -47,7 +47,7 @@ Example configuration snipped
   <body>
     <h1><%= $R{name} $R{location} %></h1>
     <h2>@@VIEW@@</h2>
-    <div>@@START(YYYY.MM.DD)@@ - @@END(YYY.MM.DD)@@</div>
+    <div>@@START(yyyy.MM.d)@@ - @@END(yyyy.MM.d)@@</div>
     <p><img src="@@SRC@@"/></p>
   </body>
  </html>
