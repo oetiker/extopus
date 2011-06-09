@@ -2,96 +2,63 @@
 
 by Tobias Oetiker, L<tobi@oetiker.ch>
 
-Extopus is an aggregating front end for monitoring systems.
+Extopus is an aggregating front end for monitoring systems. The basic
+principal of operation is that extopus gathers static configuration
+information from external monitoring systems and caches it for quick access.
+As the user selects items, live data is presented, coming directly from the
+external monitoring system.
 
 =head2 Data Model
 
-=head3 Nodes
+Extopus sees the world as a collection of nodes. Each node is a document made up from attribute names and values:
 
-Extopus is built around a notion of nodes. Each node has a set of
-properties associated with it, they fall into three categories:
-mandatory (xm_*), optional (xo_*) and user defined. Extopus can
-use common property values between nodes to build arbitrary tree
-structures.
+ location: Zurich
+ type: port
+ node-id: 38948
+ snmp-community: 9asf8ff
+ ip-address: 66.66.66.66
+ friendly-name: Smile
+ 
+There is no hierarchy, there are no required attributes. 
 
-=over
+=head2 Data Access
 
-=item xm_src
+Extopus supports two fundamental ways of accessing data: Search and Tree
+navigation. A google like search function allows to quickly select nodes. A
+configurable navigation tree is built by assigning particular attribute
+values to tree nesting levels. The same node can appear multiple times in
+the same tree.
 
-the source of this node. This is an internal connection to a Extopus plug-in instance
-providing this information. The plug-in may provide additional information at run-time.
+A tree configuration could look like this:
+ 
+ $R{customer}, $R{location}, $R{street}
+ $R{vendor},$R{product}, $R{revision}
 
-=item mx_id
+Extopus will build the trees as its database gets populated.
 
-a node id which can be used to retrieve additional information about this node via the source plug-in instance.
-The id is only unique within the scope of the plug-in.
+As the user selects a node, the live statistical information is sourced from
+the original monitoring system.
 
-=item mx_expiry (epoch)
+=head2 Provisioning
 
-when can this node be purged
+Inventory plug-ins are responsible for acquiering data from external
+systems. The inventory plugins are tailer made for each typ of external
+system.
 
-=item mx_name
+=head2 Visualisation
 
-some friendly name for the node
-
-=item mo_country, mo_state, mo_town, mo_zip, mo_street, mo_building, mo_floor, mo_room, mo_rack, mo_shelf, mo_long, mo_lat
-
-information about the physical location of the node
-
-=item mo_vendor, mo_model, mo_serial, mo_slot, mo_port
-
-information about the device this node is associated with
-
-=item mo_user, mo_groups[]
-
-who does this node belong to, to be used in determining access privileges
-
-=back
-
-Additional site specific information can be associated with the node for
-use in plug-in.
-
-As a node is selected, Extopus will ask the associated plug-in for further
-information about how to display details on the node. The plug-in will then
-either access the linked back end monitoring system to grab additional
-information or it will pull the data from the Extopus node database.
-
-=head3 Node Database
-
-All nodes are stored in a no-sql database (mongodb) with the ability to
-store arbitrary attributes for each node without requiring any schema changes.
-
-The database can gets populated via the plug-ins integrating the different
-back end systems. There are three ways of database population
-
-=over
-
-=item periodically
-
-plug-ins are asked for re-populating the database by a cron-like facility.
-
-=item push
-
-external systems can push updates to the node database
-
-=item login event
-
-plug-ins poll data provider upon user login for appropriate nodes, this may
-involve authenticating with the data provider to get access to appropriate
-information.
-
-The node database is no permanent data repository. Every node has an expiry
-property which will cause its own removal from the database.
-
-=back
-
+Visualization plug-ins take care of presenting the data to the user. As the
+user selects a node, the data of the node is run by all configured
+visualisation plug-ins. Each plug-in can then decide if it is able to do
+something with the data or not. Resulting in different visualization options
+depending of the attributes of the node.
+ 
 =head3 Access Control
 
-And authentication and authorization is governed by an authentication
-plug-in. It governs which nodes are accessible to a user and within the nodes
-which attributes are available. The access rules not only apply to the user,
-but also to other plug-ins. If a plug-in was to draw node locations on a
-google map, it would only get access to the nodes the user can access too.
+Extopus can be configured to require a user to log in. It will then provide
+this user name to the inventory plug-ins as they go about their job of
+importing data. They can then make sure to only import the data appropriate
+for the current user.
 
 =head2 User Interface
 
@@ -99,41 +66,36 @@ There are three main elements to the user interface:
 
 =over
 
-=item Navigation Tree
+=item Tree
 
-Using common attribute values between nodes, Extopus can build tree representations of the nodes, providing quick hierarchical access to the information.
+Using common attribute values between nodes, Extopus can build tree
+representations of the nodes, providing quick hierarchical access to the
+information.
 
-=item Node Search
+=item Search
 
-A google like full text search allows to find any node in the database quickly
+A google like full text search allows to find any node in the database
+quickly
 
-=item Information Display
+=item Visualization
 
-As a node gets selected, Extopus asks the associated plug-in instance for information to display. Extopus provides a range of different widgets for displaying information.
+As a node gets selected, Extopus asks the visualization plug-ins to
+visualize the node. Each plugin will decide if and how it can deal with the
+node, resulting in a selection of different visualization options for each
+node.
 
 =back
 
-=head2 Information Display Widgets
+=head2 Web Frontend
 
-Depending on the nature of information on display, Extopus sports a range of different widgets for displaying the information to the user.
+Extopus comes with a advanced web frontend, written entirely in javascript. This allows to offload
+a lot of the presentation work to the browser while keeping a user experiance similar to a desktop application.
 
-=head3 Iframe
+=head2 Implementation Languages
 
-At the most basic level, output from other systems can be integrated within iframes, either fed directly from an external URL or proxied via the Extopus server.
+The backend is written in Perl using the Mojolicious framework. The frontend
+is written in JavaScript using the Qooxdoo framework. Building on two full
+advanced frameworks allows the implementation to progress quickly while
+keeping code quality at a high level.
 
-=head3 Tabular Data
-
-Tabular data can be displayed in a sortable and exportable table widget
-
-=head3 Live Charting
-
-Numeric data can be presented in charting widgets
-
-=head3 RRD Interactive
-
-Since RRD is widely used for storing time-series monitoring data, Extopus
-has special support producing interactive presentations of rrdtool charts
-given appropriate support from the respective back end system.
-
-
-
+*EOD*

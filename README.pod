@@ -18,8 +18,8 @@ The user experience is often not ideal, up to the point where proprietary
 solutions are being considered due to the superior looks of their web
 interfaces and marketing literature.
 
-Extopus is an aggregating front end to a wide array of monitoring
-systems. Its plug-in system provides an easy route to integrating several
+Extopus is an aggregating front end to a wide array of monitoring systems.
+Its plug-in system provides an easy route to integrating data from several
 systems into a single instance of Extopus.
 
 If connected to an authentication and authorization provider, Extopus can
