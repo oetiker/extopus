@@ -1,5 +1,0 @@
-=head1 Extopus Ideas
-
-Ideas for makeing extopus even cooler.
-
-
