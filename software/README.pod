@@ -1,4 +1,0 @@
-=head1 NOTE
-
-These are just some simple testing bits to see if the projected webinterface
-and mongodb can handle 1.6 million nodes.
