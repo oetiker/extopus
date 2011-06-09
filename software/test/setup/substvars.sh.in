@@ -1,0 +1,51 @@
+#!@SHELL@
+#  Copyright (C) 2011  Stanislav Sinyagin
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+#
+
+PACKAGE=@PACKAGE@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+perllibdir=@perllibdir@
+datarootdir=@datarootdir@
+datadir=@datadir@
+pkgdatadir=@pkgdatadir@
+frontenddir=@frontenddir@
+backenddir=@backenddir@
+
+@SED@ \
+    -e "s,\@PERL\@,@PERL@,g" \
+    -e "s,\@PYTHON\@,@PYTHON@,g" \
+    -e "s,\@VERSION\@,@VERSION@,g" \
+    -e "s,\@QOOXDOO_SDK\@,@QOOXDOO_SDK@,g" \
+    -e "s,\@USE_QOOXDOO_SDK\@,@USE_QOOXDOO_SDK@,g" \
+    -e "s,\@QXDYGRAPHS_LOCATION\@,@QXDYGRAPHS_LOCATION@,g" \
+    -e "s,\@frontenddir\@,@frontenddir@,g" \
+    -e "s,\@backenddir\@,@backenddir@,g" \
+    -e "s,\@backendurl\@,@backendurl@,g" \
+    -e "s,\@jsonrpcpath\@,@jsonrpcpath@,g" \
+    -e "s,\@exportpath\@,@exportpath@,g" \
+    -e "s,\@backendsitecfg\@,@backendsitecfg@,g" \
+    -e "s,\@abs_frontend_builddir\@,@abs_top_builddir@/frontend,g" \
+    $1
+
+# Local Variables:
+# mode: shell-script
+# indent-tabs-mode: nil
+# perl-indent-level: 4
+# End:
