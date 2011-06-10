@@ -18,19 +18,12 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
         var breakOutButton = this._breakOutButton = new qx.ui.basic.Atom().set({
             icon: 'icon/16/actions/edit-redo.png',
             show: 'icon',
-            opacity: 0.7,
             cursor: 'pointer'            
         });
         breakOutButton.exclude();
         var button = this.getChildControl('button');
         button._add(breakOutButton,{row: 0, column: 5});
         breakOutButton.addListener("click", this._onBreakOutButtonClick, this);
-        breakOutButton.addListener("mouseover", function(){
-            breakOutButton.setOpacity(1);
-        });
-        breakOutButton.addListener("mouseout", function(){
-            breakOutButton.setOpacity(0.7);
-        });
         button.addListener('syncAppearance',this._updateBreakOutButton,this);
     },
     statics: {
