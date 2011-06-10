@@ -141,10 +141,11 @@ sub matchRecord {
     my $template;
     if ($self->printtemplate){
         $template = $self->printtemplate->interpret($rec)
-    }
+    }    
     return {
         visualizer => 'chart',
-        title => $self->cfg->{name} || 'Chart',
+        title => $self->cfg->{title},
+        caption => $self->cfg->{caption}($rec),
         arguments => {
             views => \@nodes,
             template => $template

@@ -27,7 +27,8 @@ It determines further processing by evaluation additional configurable attribute
  module = TorrusData
  selector = data_type
  type = PortTraffic
- name = Port Traffic
+ title = Port Traffic
+ caption = $R{cust}
  sub_nodes = inbytes, outbytes
  col_names = Date, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
  col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
@@ -64,7 +65,7 @@ sub new {
     $self->root('/torrusCSV_'.$self->instance);
     # parse some config data
     my @split_nodes = qw(col_names col_units col_widths sub_nodes);
-    for my $prop (qw(selector name type col_data), @split_nodes){
+    for my $prop (qw(selector type col_data), @split_nodes){
         die mkerror(9273, "mandatory property $prop for visualizer module TorrusData is not defined")
             if not defined $self->cfg->{$prop};
     }
@@ -154,7 +155,8 @@ sub matchRecord {
     url_unescape $plain_src;
     return {
         visualizer => 'data',
-        title => $self->cfg->{name},
+        title => $self->cfg->{title},
+        caption => $self->cfg->{caption}($rec),
         arguments => {
             instance => $self->instance,
             columns => $self->cfg->{col_names},

@@ -141,7 +141,6 @@ ${E}head1 SYNOPSIS
 
  *** INVENTORY: siam1 ***
  module=SIAM
- yaml_cfg=/path_to/siam.yaml
  
  +MAP
  prod = siam.svc.product_name
@@ -164,6 +163,8 @@ ${E}head1 SYNOPSIS
 
  *** VISUALIZER: xyc ***
  module = xyc
+ title = Tab Title
+ caption = \$R{cust}
 
 ${E}head1 DESCRIPTION
 
@@ -296,11 +297,27 @@ EX
         '/VISUALIZER:\s+\S+/' => {
             _order => 1,
             _doc => 'Instanciate a visualizer object',
-            _vars => [ qw(module /[a-z]\S+/) ],
-            _mandatory => [ 'module' ],
+            _vars => [ qw(module title caption /[a-z]\S+/) ],
+            _mandatory => [ qw(module title caption) ],
             _sections => ['/Tx[A-Z]\S+/','/[A-Z]\S+/' ],
             module => {
                 _doc => 'The visualization module to load'
+            },
+            title => {
+                _doc => 'The title for the visualizer tab'
+            },
+            caption => {
+                _doc => 'Caption for the window if the tab gets broken out. Access Record via $R',
+                _sub => sub { 
+                    my $code = $_[0];
+                    my $perl = 'sub { my %R = (%{$_[0]}); '.$code.'}';
+                    # check and modify the _text in place ... sneaky ... 
+                    $_[0] = eval $perl;
+                    if ($@){
+                        return "Failed to compile $code: $@ ";
+                    }
+                    undef;
+                 }
             },
             '/[a-z]\S+/' => {
                 _doc => 'Any key value settings appropriate for the instance at hand'

@@ -49,7 +49,8 @@ $R{cust},$R{svc_type},$R{data_type}
 
 *** VISUALIZER: chart ***
 module=TorrusChart
-name = Torrus Traffic
+title = Torrus Traffic
+caption = "$R{prod} $R{inv_id} $R{device_name}:$R{port}"
 mode = traffic
 #mode = qos
 +TxPrintTemplate
@@ -67,7 +68,7 @@ mode = traffic
 module = TorrusData
 selector = data_type
 type = PortTraffic
-name = Port Traffic
+title = Port Traffic
 sub_nodes = inbytes, outbytes
 col_names = Date, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out
 col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
@@ -83,6 +84,9 @@ col_data = int($D{inbytes}{AVG}*8/1e4)/1e2, \
 
 *** VISUALIZER: prop ***
 module=Properties
-
+title=Properties
+caption = "$R{prod} $R{inv_id} $R{device_name}:$R{port}"
+# use this to limit the attributes shown
+# properties = cust,street,city,data_type,data_class
 
 

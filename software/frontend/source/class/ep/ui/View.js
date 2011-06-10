@@ -65,9 +65,12 @@ qx.Class.define("ep.ui.View", {
                 }
                 else {
                     control = this._createVisualizer(viz);
+                    control.setUserData('key',key);
                     this.add(control);
+                    control.addListenerOnce('breakout',this._onBreakOut,this);
                     cache[key] = control;
                 }
+                control.setUserData('caption',viz.caption);
             }
             for (var vizKey in cache){
                 if (!active[vizKey]){
@@ -77,6 +80,35 @@ qx.Class.define("ep.ui.View", {
                     }
                 }
             }
-        }
+        },
+        _onBreakOut: function(e){
+            var page = e.getData();         
+            var el = page.getContainerElement().getDomElement();
+            var width = qx.bom.element.Dimension.getWidth(el);
+            var height = qx.bom.element.Dimension.getHeight(el)
+   
+            /// figure size and set on window
+            this.remove(page);
+            delete this.__pageCache[page.getUserData('key')];
+            var win = new qx.ui.window.Window(page.getUserData('caption')).set({
+                showMinimize: false,
+                width: width,
+                height: height
+            });
+            win.setLayout(new qx.ui.layout.Grow());
+            page.show();
+            page.remove
+            win.add(page);            
+            win.open();
+            win.addListenerOnce('appear',function(e){
+                win.center()
+            },this);
+            win.addListenerOnce('close',function(e){
+                page.getButton().dispose();
+                page.dispose();
+                this.getApplicationRoot().remove(win);
+                win.dispose();
+            },this);
+        }                        
     }    
 });

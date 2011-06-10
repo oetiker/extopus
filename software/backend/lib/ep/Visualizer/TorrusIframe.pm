@@ -81,6 +81,8 @@ sub matchRecord {
         url_unescape $plain_src;
         push @views, {
             visualizer =>  'iframe',
+            title => $self->cfg->{title},
+            caption => $self->cfg->{caption}($rec),
             arguments => {
                 src => $plain_src,
                 title => $leaf->{comment},
