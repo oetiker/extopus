@@ -98,8 +98,9 @@ qx.Class.define("ep.ui.View", {
             win.setLayout(new qx.ui.layout.Grow());
             page.show();
             page.remove
-            win.add(page);            
             win.open();
+            win.maximize();
+            win.add(page);            
             win.addListenerOnce('appear',function(e){
                 win.center()
             },this);

@@ -5,7 +5,7 @@
    Utf8Check: äöü
 ************************************************************************ */
 /**********
-#asset(qx/icon/${qx.icontheme}/16/actions/edit-redo.png)
+#asset(decoration/window/maximize.gif)
 ***********/
 /**
  * Visualization widgets they are re-usable by calling .setArgs(args)
@@ -16,7 +16,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
     construct : function(title) {                
         this.base(arguments,this['tr'](title));        
         var breakOutButton = this._breakOutButton = new qx.ui.basic.Atom().set({
-            icon: 'icon/16/actions/edit-redo.png',
+            icon: 'decoration/window/maximize.gif',
             show: 'icon',
             cursor: 'pointer'            
         });
