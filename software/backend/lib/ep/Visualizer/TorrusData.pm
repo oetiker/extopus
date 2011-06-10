@@ -12,7 +12,7 @@ my $viz = ep::Visualizer::TorrusData->new();
 =head1 DESCRIPTION
 
 Works in conjunction with the Data frontend visualizer. Data can be
-presented in tabular form and as a csv download.
+presented in tabular form, as a csv download and as an Excel Worksheet.
 
 This visualizer will match records that have the following attributes:
 
@@ -49,15 +49,20 @@ use Mojo::URL;
 use Mojo::JSON::Any;
 use Mojo::UserAgent;
 use Mojo::Template;
+
 use Time::Local qw(timelocal_nocheck);
+
+use Spreadsheet::WriteExcel;
+use Excel::Writer::XLSX;
 
 use ep::Exception qw(mkerror);
 use POSIX qw(strftime);
 
 has 'hostauth';
-has view => 'embedded';
-has json        => sub {Mojo::JSON::Any->new};
 has 'root';
+
+has view => 'embedded';
+has json => sub {Mojo::JSON::Any->new};
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -315,6 +320,7 @@ sub addProxyRoute {
         my $end = $req->param('end');
         my $interval = $req->param('interval');
         my $count = $req->param('count');
+        my $format = $req->param('format');
         my $newHash = $self->calcHash($url,$nodeid);
         if ($hash ne $newHash){
             $ctrl->render(
@@ -324,7 +330,7 @@ sub addProxyRoute {
             $self->log->warn("Request for $url?nodeid=$nodeid denied ($hash ne $newHash)");
             return;
         }
-        my $data =  $self->getData($url,$nodeid,$end,$interval,$count);
+        my $data = $self->getData($url,$nodeid,$end,$interval,$count);
         if (not $data->{status}){
             $ctrl->render(
                  status => 401,
@@ -332,30 +338,137 @@ sub addProxyRoute {
             );
             $self->log->error("faild getting data $data->{error}");
             return;
-        }
-        
+        }       
         my $rp = Mojo::Message::Response->new;
         $rp->code(200);
-        $rp->headers->content_type('application/csv');
         my $name = $nodeid;
         $name =~ s/[^-_0-9a-z]+/_/ig;
         $name .= '-'.strftime('%Y-%m-%d',localtime($end));               
-        $rp->headers->add('Content-Disposition',"attachement; filename=$name.csv");
-        my @cnames;
-        for (my $c=0;$self->cfg->{col_names}[$c];$c++){
-            my $name = $self->cfg->{col_names}[$c];
-            my $unit = $self->cfg->{col_units}[$c] || '';
-            push @cnames, qq{"$name [$unit]"};
+        my $fileData;
+        $format = 'csv'; # debugging
+        for ($format) {
+            /csv/ && do {
+                $fileData = $self->csvBuilder($data,$name);
+                next;
+            };
+            /xls/ && do {
+                $fileData = $self->xlsBuilder($data,$name);
+                next;
+            };
+            /xlsx/ && do {
+                $fileData = $self->xlsxBuilder($data,$name);
+                next;
+            };
         }
-        my $body = join(",",@cnames)."\r\n";
-        for my $row (@{$data->{data}}){
-            $body .= join(",",map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row)."\r\n";
-        }
-        $rp->body($body);
+        $rp->headers->content_type($fileData->contentType);
+        $rp->headers->add('Content-Disposition', $fileData->contentDisposition);
+        $rp->body($fileData->body);   
         $ctrl->tx->res($rp);
         $ctrl->rendered;
     });
 }
+
+=head2 csvBuilder(data,filename)
+
+creates a csv data list
+
+=cut
+
+sub csvBuilder {
+   my $self = shift;
+   my $data = shift;
+   my $name = shift; 
+   my $fileData;
+   $fileData->contentType = 'application/csv';
+   $fileData->contentDisposition = "attachement; filename=$name.csv";
+   my @cnames;
+   for (my $c=0;$self->cfg->{col_names}[$c];$c++){
+        my $name = $self->cfg->{col_names}[$c];
+        my $unit = $self->cfg->{col_units}[$c] || '';
+        push @cnames, qq{"$name [$unit]"};
+   }
+   my $body = join(",",@cnames)."\r\n";
+   for my $row (@{$data->{data}}){
+       $body .= join(",",map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row)."\r\n";
+   }
+   $fileData->body = $body; 
+   return $fileData;
+}
+
+
+=head2 xlsBuilder(data,filename)
+
+creates a xls data list
+
+=cut
+
+sub xlsBuilder {
+   my $self = shift; 
+   my $data = shift;
+   my $name = shift; 
+   my $fileData;
+   $fileData->contentType = 'application/vnd.ms-excel';
+   $fileData->contentDisposition = "attachement; filename=$name.xls";
+   my @cnames;
+   for (my $c=0;$self->cfg->{col_names}[$c];$c++){
+	my $name = $self->cfg->{col_names}[$c];
+        my $unit = $self->cfg->{col_units}[$c] || '';
+	push @cnames, qq{"$name [$unit]"};
+   }
+   open my $fh, '>', \my $xlsbody or die "Failed to open filehandle: $!";
+   my $workbook = Spreadsheet::WriteExcel->new($fh);
+   # my $workbook = Spreadsheet::WriteExcel->new('test.xls');
+   my $worksheet = $workbook->add_worksheet();  
+   my $cnames_ref = \@cnames;
+   $worksheet->write_row(0, 0, $cnames_ref);
+   my $counter = 1;
+   for my $row (@{$data->{data}}){ 
+       my @line = map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row;
+       my $line_ref = \@line;
+       $worksheet->write_row(0,$counter, $line_ref);
+   }
+   $workbook->close();   
+   $fileData->body = $xlsbody;
+   return $fileData;
+}
+
+=head2 xlsxBuilder(data,filename)
+
+creates a xls data list
+
+=cut
+
+sub xlsxBuilder {
+   my $self = shift;
+   my $data = shift;
+   my $name = shift;
+   my $fileData;
+   $fileData->contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+   $fileData->contentDisposition = "attachement; filename=$name.xlsx";
+   my @cnames;
+   for (my $c=0;$self->cfg->{col_names}[$c];$c++){
+        my $name = $self->cfg->{col_names}[$c];   
+	my $unit = $self->cfg->{col_units}[$c] || '';
+	push @cnames, qq{"$name [$unit]"};
+   }
+   open my $fh, '>', \my $xlsxbody or die "Failed to open filehandle: $!";
+   my $workbook = Excel::Writer::XLSX->new($fh);
+   my $worksheet = $workbook->add_worksheet();  
+   my $cnames_ref = \@cnames;
+   $worksheet->write_row(0, 0, $cnames_ref);
+   my $counter = 1; 
+   for my $row (@{$data->{data}}){
+       my @line = map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row;
+       my $line_ref = \@line;
+       $worksheet->write_row(0,$counter, $line_ref);
+   }
+   $workbook->close(); 
+   $fileData->body = $xlsxbody;
+   return $fileData;
+}
+
+
+
 
 =head2 calcHash(ref)
 
