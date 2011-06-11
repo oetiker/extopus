@@ -4,9 +4,6 @@
    Authors:   Tobi Oetiker <tobi@oetiker.ch>
    Utf8Check: äöü
 ************************************************************************ */
-/**********
-#asset(decoration/window/maximize.gif)
-***********/
 /**
  * Visualization widgets they are re-usable by calling .setArgs(args)
 **/
