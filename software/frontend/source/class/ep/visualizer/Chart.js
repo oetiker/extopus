@@ -47,7 +47,7 @@ qx.Class.define("ep.visualizer.Chart", {
                 chart.setBaseUrl(null);
                 titleContainer.setEnabled(false);
                 this.__printBtn.setEnabled(false);
-                chart.setState('nodata');
+                chart.setViewMode('nodata');
             }
             else {                
                 var url = item.getSrc();

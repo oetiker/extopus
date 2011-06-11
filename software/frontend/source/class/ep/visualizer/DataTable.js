@@ -97,15 +97,15 @@ qx.Class.define("ep.visualizer.DataTable", {
                     date = Math.round(this.getEndDate().getTime()/1000);
                 }
                 var tm = this.__model;
-                this.setState('loading');
+                this.setViewMode('loading');
                 var that = this;
                 rpc.callAsyncSmart(function(ret){
                     if (ret.status){                
-                        that.setState('ready');
+                        that.setViewMode('ready');
                         tm.setData(ret.data);
                     }
                     else {
-                        that.setState('nodata');
+                        that.setViewMode('nodata');
                         tm.setData([]);
                     }
                 },'visualize',this.getInstance(),{
@@ -116,6 +116,9 @@ qx.Class.define("ep.visualizer.DataTable", {
                     nodeId: this.getNodeId(),
                     hash: this.getHash()
                 });
+            }
+            else {
+                this.setViewMode('nodata');
             }
         }
     }

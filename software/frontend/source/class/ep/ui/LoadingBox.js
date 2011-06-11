@@ -56,9 +56,9 @@ qx.Class.define("ep.ui.LoadingBox", {
         this._add(noData);
     },
     properties: {
-        state: {
+        viewMode: {
             init : 'ready',
-            apply: '_applyState'
+            apply: '_applyViewMode'
         }
     },
 
@@ -66,7 +66,7 @@ qx.Class.define("ep.ui.LoadingBox", {
         __loader: null,
         __noData: null,
         __runningTimer: null,              
-        _applyState: function(newValue,oldValue){
+        _applyViewMode: function(newValue,oldValue){
             if (newValue == oldValue){
                 return;
             }
