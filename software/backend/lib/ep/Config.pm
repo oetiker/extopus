@@ -152,7 +152,7 @@ ${E}head1 SYNOPSIS
  prod = siam.svc.product_name
  country =  xyc.svc.loc.country
  city = xyc.svc.loc.city
- street = \$I{'xyc.svc.loc.address'} . ' ' . \$I{'xyc.svc.loc.building_number'}
+ street = \$R{'xyc.svc.loc.address'} . ' ' . \$R{'xyc.svc.loc.building_number'}
  cust = siam.contract.customer_name
  svc_type = siam.svc.type
  data = siam.svcdata.name
@@ -198,26 +198,22 @@ sub _make_parser {
     my $E = '=';
 
     my $compileR = sub { 
-       my $code = $_[0];
-       my $perl = 'sub { my %R = (%{$_[0]}); '.$code.'}';
-       # check and modify content in place
-       $_[0] = eval $perl;
-       if ($@){
-           return "Failed to compile $code: $@ ";
-       }
-       return undef;
+        my $code = $_[0];
+        # check and modify content in place
+        my $perl;
+        if ($code =~ /[{("';\[]/){
+            $perl = 'sub { my %R = (%{$_[0]}); '.$code.'}';
+        }
+        else {
+           $perl = 'sub { $_[0]->{"'.$code.'"}}';
+        }
+        my $sub = eval $perl;
+        if ($@){
+            return "Failed to compile $code: $@ ";
+        }
+        $_[0] = $sub;
+        return undef;
     };
-    my $compileI = sub { 
-       my $code = $_[0];
-       my $perl = 'sub { my %I = (%{$_[0]}); '.$code.'}';
-       # check and modify content in place
-       $_[0] = eval $perl;
-       if ($@){
-           return "Failed to compile $code: $@ ";
-       }
-       return undef;
-    };
-
 
     my $grammar = {
         _sections => [ qw{GENERAL /INVENTORY:\s+\S+/ /VISUALIZER:\s+\S+/ ATTRIBUTES TABLES }],
@@ -274,8 +270,8 @@ sub _make_parser {
             },
             _sections => [ qw(TREE MAP /[-._A-Z]+_TX/ /[-._A-Z]+_PL/ /[-._A-Z]+/) ],
             '/[-._a-z]+_pl/' => {
-                _doc => 'Comipled Perl with access to incoming data in %I',
-                _sub => $compileI
+                _doc => 'Comipled Perl with access to incoming data in %R',
+                _sub => $compileR
             },
             '/[-._a-z]+/' => {
                 _doc => 'Any key value settings appropriate for the instance at hand'
@@ -287,8 +283,8 @@ sub _make_parser {
                     _doc => 'Any key value settings appropriate for the instance at hand'
                 },
                 '/[-._a-z]+_pl/' => {
-                    _doc => 'Comipled Perl with access to incoming data in %I',
-                    _sub => $compileI
+                    _doc => 'Comipled Perl with access to incoming data in %R',
+                    _sub => $compileR
                 },
             },
             '/[-._A-Z]+_TX/' => {
@@ -296,21 +292,21 @@ sub _make_parser {
                 _text => {}
             },
             '/[-._A-Z]+_PL/' => {
-                _doc => 'Compiled Text Section with access to the record in %I',
+                _doc => 'Compiled Text Section with access to the record in %R',
                 _text => {
-                    _sub => $compileI
+                    _sub => $compileR
                 }
             },
             'MAP' => {
                 _doc => 'Mapping between inventory attributes and extopus attribute names.',
                 _vars => [ '/[-._a-z]+/' ],
-                '/[-._a-z]+/' => {             
+                '/[-._a-z]+/' => {
                     _doc => <<'DOC',
-The value of an extopus attribute can either be the name of a inventory attribute OR a perl snippet refering the the inventory attributes via the %I hash.
+The value of an extopus attribute can either be the name of a inventory attribute OR a perl snippet refering the the inventory attributes via the %R hash.
 The perl snippet mode gets activated if [$"'{;] appears in the value.
 DOC
-                    _example => 'address = $I{"inventory.street"} . " " . $I{"inventory.number"}',
-                    _sub => $compileI,
+                    _example => 'address = $R{"inventory.street"} . " " . $R{"inventory.number"}',
+                    _sub => $compileR,
                 },
             },
             'TREE' => {

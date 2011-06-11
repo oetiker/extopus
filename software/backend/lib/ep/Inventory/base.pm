@@ -41,12 +41,7 @@ sub buildRecord {
     my $map = $self->cfg->{MAP};
     my %rec;
     for my $attr ( keys %$map ){
-        if (ref $map->{$attr} eq 'CODE'){
-            $rec{$attr} = $map->{$attr}($raw);
-        }
-        else {
-            $rec{$attr} = $raw->{$map->{$attr}};
-        }
+        $rec{$attr} = $map->{$attr}($raw);
     }
     return \%rec;
 }

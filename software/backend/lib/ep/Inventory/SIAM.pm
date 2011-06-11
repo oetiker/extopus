@@ -20,7 +20,7 @@ Thie ep::Inventory::SIAM grabs information from a SIAM inventory.
  load_all = true
 
  # do not add nodes satisfying this condition
- skipnode_pl = $I{'cablecom.port.display'} eq 'skip'
+ skipnode_pl = $R{'cablecom.port.display'} eq 'skip'
 
  +TREE
  'Location',$R{country}, $R{city}, $R{street}.' '.($R{number}||'')
@@ -30,7 +30,7 @@ Thie ep::Inventory::SIAM grabs information from a SIAM inventory.
  prod = siam.svc.product_name
  country = cablecom.svc.loc.country
  city = cablecom.svc.loc.city
- street = $I{'cablecom.svc.loc.address'} . ' ' . ( $I{'cablecom.svc.loc.building_number'} || '')
+ street = $R{'cablecom.svc.loc.address'} . ' ' . ( $R{'cablecom.svc.loc.building_number'} || '')
  cust = siam.contract.customer_name
  svc_type = siam.svc.type
  data_class = siam.svcdata.name
