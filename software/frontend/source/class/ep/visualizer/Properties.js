@@ -21,7 +21,7 @@ qx.Class.define("ep.visualizer.Properties", {
         var l = this._label = new qx.ui.basic.Label().set({
             rich: true,
             padding: 10,
-            selectable: true,
+            selectable: true
         });
         scroller.add(l);
         this.add(scroller);
