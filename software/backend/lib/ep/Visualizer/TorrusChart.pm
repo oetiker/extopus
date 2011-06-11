@@ -38,10 +38,13 @@ Example configuration snipped
 
  *** VISUALIZER: chart ***
  module = TorrusChart
- name = Traffic
+ title = Traffic
+ caption = $R{name}
  mode = traffic
+ skiprec_pl = $R{port.display} eq 'data_unavailable'  
+
  # mode = qos
- +TxPrintTemplate
+ +PRINTTEMPLATE_TX
  <!doctype html><html>
   <head><title><%= $R{name} $R{location} %></title></head>
   <body>
@@ -81,10 +84,10 @@ sub new {
     if ($self->cfg->{mode}){
         $self->mode($self->cfg->{mode});
     }    
-    if ($self->cfg->{TxPrintTemplate}){
+    if ($self->cfg->{PRINTTEMPLATE_TX}){
         my $mt = Mojo::Template->new;
 #       $mt->prepend('my $self=shift; my %R = (%{$_[0]});');
-        $mt->parse('% my %R = (%{$_[0]});'."\n".$self->cfg->{TxPrintTemplate}{_text});
+        $mt->parse('% my %R = (%{$_[0]});'."\n".$self->cfg->{PRINTTEMPLATE_TX}{_text});
         $mt->build;
         my $exception = $mt->compile;
         die "Compiling Template: ".$exception if $exception;
@@ -108,6 +111,17 @@ sub matchRecord {
     if ($self->mode eq 'qos'){
         return undef unless $rec->{'torrus.qos-enabled'};
     };
+    if ($self->cfg->{skiprec_pl} and $self->cfg->{skiprec_pl}->($rec)){
+        return {  
+            visualizer => 'chart',
+            title => $self->cfg->{title},
+            caption => $self->cfg->{caption}($rec),
+            arguments => {
+                views => [], 
+                template => undef
+            }
+        }
+    }
     my $url = $rec->{'torrus.tree-url'};
     my $leaves;
     if ($self->mode eq 'traffic'){
@@ -145,7 +159,7 @@ sub matchRecord {
     return {
         visualizer => 'chart',
         title => $self->cfg->{title},
-        caption => $self->cfg->{caption}($rec),
+        caption => $self->cfg->{caption}->($rec),
         arguments => {
             views => \@nodes,
             template => $template

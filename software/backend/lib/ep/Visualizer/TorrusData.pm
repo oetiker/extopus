@@ -30,6 +30,8 @@ It determines further processing by evaluation additional configurable attribute
  title = Port Traffic
  caption = $R{cust}
  sub_nodes = inbytes, outbytes
+ skiprec_pl = $R{port.display} eq 'data_unavailable'  
+
  col_names = Date, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
  col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
  col_widths = 2, 1     1,    1,  1,  1,    1,    1
@@ -136,12 +138,26 @@ can we handle this type of record
 sub matchRecord {
     my $self = shift;
     my $rec = shift;
+    my $cfg = $self->cfg;
     for (qw(torrus.nodeid torrus.tree-url)){
         return undef unless defined $rec->{$_};
     }
 
-    return undef 
-        if $rec->{$self->cfg->{selector}} ne $self->cfg->{type};
+    if ($rec->{$cfg->{selector}} ne $cfg->{type}){
+        return undef;
+    }
+
+    my $baseProps = {
+        visualizer => 'data',
+        title => $cfg->{title},
+        caption => $cfg->{caption}($rec),
+        arguments => {}
+    };
+    
+    if ($cfg->{skiprec_pl} and $cfg->{skiprec_pl}->($rec)){
+        return $baseProps;
+    };
+
     my $src = Mojo::URL->new();
     my $hash = $self->calcHash( $rec->{'torrus.tree-url'}, $rec->{'torrus.nodeid'});
     $src->path($self->root);    
@@ -154,14 +170,12 @@ sub matchRecord {
     my $plain_src = $src->to_rel;
     url_unescape $plain_src;
     return {
-        visualizer => 'data',
-        title => $self->cfg->{title},
-        caption => $self->cfg->{caption}($rec),
+        %$baseProps,
         arguments => {
             instance => $self->instance,
-            columns => $self->cfg->{col_names},
-            column_widths => $self->cfg->{col_widths},
-            column_units => $self->cfg->{col_units},
+            columns => $cfg->{col_names},
+            column_widths => $cfg->{col_widths},
+            column_units => $cfg->{col_units},
             intervals => [
                 { key => 'day', name => 'Daily' },
                 { key => 'week', name => 'Weekly' },
