@@ -139,9 +139,15 @@ ${E}head1 SYNOPSIS
  tree = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
  tree_width = 1,   1,      1,    1,      1,    1,          1,    1 
 
- *** INVENTORY: siam1 ***
+ *** INVENTORY: dummy ***
  module=SIAM
- 
+
+ xycany_pl = \$R{cust} 
+ +XYC_TX 
+ some text
+ +OTHER_PL
+ "perl".\$R{cust}
+
  +MAP
  prod = siam.svc.product_name
  country =  xyc.svc.loc.country
@@ -160,11 +166,16 @@ ${E}head1 SYNOPSIS
  'Location',\$R{country}, \$R{city}, \$R{street}
  \$R{cust},\$R{svc_type},\$R{data_type}
 
-
  *** VISUALIZER: xyc ***
  module = xyc
  title = Tab Title
  caption = \$R{cust}
+
+ xycany_pl = \$R{cust}
+ +XYC_TX
+ some text
+ +OTHER_PL
+ "perl".\$R{cust}
 
 ${E}head1 DESCRIPTION
 
@@ -185,6 +196,31 @@ Create a config parser for DbToRia.
 sub _make_parser {
     my $self = shift;
     my $E = '=';
+
+    my $compileR = sub { 
+       my $code = $_[0];
+       my $perl = 'sub { my %R = (%{$_[0]}); '.$code.'}';
+       # check and modify content in place
+       $_[0] = eval $perl;
+       if ($@){
+           return "Failed to compile $code: $@ ";
+       }
+           undef;
+       }
+    };
+    my $compileI = sub { 
+       my $code = $_[0];
+       my $perl = 'sub { my %I = (%{$_[0]}); '.$code.'}';
+       # check and modify content in place
+       $_[0] = eval $perl;
+       if ($@){
+           return "Failed to compile $code: $@ ";
+       }
+           undef;
+       }
+    };
+
+
     my $grammar = {
         _sections => [ qw{GENERAL /INVENTORY:\s+\S+/ /VISUALIZER:\s+\S+/ ATTRIBUTES TABLES }],
         _mandatory => [qw(GENERAL ATTRIBUTES TABLES)],
@@ -233,21 +269,39 @@ sub _make_parser {
         '/INVENTORY:\s+\S+/' => {
             _order => 1,
             _doc => 'Instanciate an inventory object',
-            _vars => [ qw(module /[a-z]\S+/) ],
+            _vars => [ qw(module /[a-z]+_pl/ /[a-z]+/) ],
             _mandatory => [ 'module' ],
             module => {
                 _doc => 'The inventory module to load'
             },
-            _sections => [ 'TREE', 'MAP', '/[A-Z]\S+/' ],
-            '/[a-z]\S+/' => {
+            _sections => [ qw(TREE MAP /[A-Z]+_TX/ /[A-Z]+_PL/ /[A-Z]+/) ],
+            '/[a-z]+_pl/' => {
+                _doc => 'Comipled Perl with access to incoming data in %I',
+                _sub => $compileI
+            },
+            '/[a-z]+/' => {
                 _doc => 'Any key value settings appropriate for the instance at hand'
             },
-            '/[A-Z]\S+/' => {
+            '/[A-Z]+/' => {
                 _doc => 'Grouped configuraiton options for complex inventory driver configurations',
                 _vars => [ '/[a-z]\S+/' ],
                 '/[a-z]\S+/' => {             
                     _doc => 'Any key value settings appropriate for the instance at hand'
                 },
+                '/[a-z]+_pl/' => {
+                    _doc => 'Comipled Perl with access to incoming data in %I',
+                    _sub => $compileI
+                },
+            },
+            '/[A-Z]+_TX/' => {
+                _doc => 'Text Section',
+                _text => {}
+            },
+            '/[A-Z]+_PL/' => {
+                _doc => 'Compiled Text Section with access to the record in %R',
+                _text => {
+                    _sub => $compileR
+                }
             },
             'MAP' => {
                 _doc => 'Mapping between inventory attributes and extopus attribute names.',
@@ -258,16 +312,7 @@ The value of an extopus attribute can either be the name of a inventory attribut
 The perl snippet mode gets activated if [$"'{;] appears in the value.
 DOC
                     _example => 'address = $I{"inventory.street"} . " " . $I{"inventory.number"}',
-                    _sub => sub {
-                        if ( $_[0] =~ /[\$\{\"\'\;]/ ){
-                            my $code = eval 'sub { my %I = (%{$_[0]});'.$_[0].'}';
-                            if ($@){
-                                return "Failed to compile $_[0]: $@";
-                            }
-                            $_[0] = $code;
-                        }
-                        undef;
-                    },                            
+                    _sub => $compileI,
                 },
             },
             'TREE' => {
@@ -297,9 +342,9 @@ EX
         '/VISUALIZER:\s+\S+/' => {
             _order => 1,
             _doc => 'Instanciate a visualizer object',
-            _vars => [ qw(module title caption /[a-z]\S+/) ],
+            _vars => [ qw(module title caption.pl /[a-z]+_pl/ /[a-z]+/) ],
             _mandatory => [ qw(module title caption) ],
-            _sections => ['/Tx[A-Z]\S+/','/[A-Z]\S+/' ],
+            _sections => [qw(/[A-Z]+_TX/ /[A-Z]+_PL/ /[A-Z]+/) ],
             module => {
                 _doc => 'The visualization module to load'
             },
@@ -307,31 +352,36 @@ EX
                 _doc => 'The title for the visualizer tab'
             },
             caption => {
-                _doc => 'Caption for the window if the tab gets broken out. Access Record via $R',
-                _sub => sub { 
-                    my $code = $_[0];
-                    my $perl = 'sub { my %R = (%{$_[0]}); '.$code.'}';
-                    # check and modify the _text in place ... sneaky ... 
-                    $_[0] = eval $perl;
-                    if ($@){
-                        return "Failed to compile $code: $@ ";
-                    }
-                    undef;
-                 }
+                _doc => 'Caption for the window if the tab gets broken out. Access Record via %R',
+                _sub => $compileR,
             },
-            '/[a-z]\S+/' => {
+            '/[a-z]+/' => {
                 _doc => 'Any key value settings appropriate for the instance at hand'
             },
-            '/[A-Z]\S+/' => {
+            '/[a-z]+_pl/' => {
+                _doc => 'Compiled Perl with access to the record in %R',
+                _sub => $compileR
+            },
+            '/[A-Z]+/' => {
                 _doc => 'Grouped configuraiton for complex visualization modules',
                 _vars => [ '/[a-z]\S+/' ],
-                '/[a-z]\S+/' => {             
+                '/[a-z]+/' => {             
                     _doc => 'Any key value settings appropriate for the instance at hand'
                 }        
+                '/[a-z]+_pl/' => {
+                    _doc => 'Comipled Perl with access to the record in %R',
+                    _sub => $compileR
+                },
             },
-            '/Tx[A-Z]\S+/' => {
+            '/[A-Z]+_TX/' => {
                 _doc => 'Text Section',
                 _text => {}
+            },
+            '/[A-Z]+_PL/' => {
+                _doc => 'Compiled Text Section with access to the record in %R',
+                _text => {
+                    _sub => $compileR
+                }
             },
         },
     };
