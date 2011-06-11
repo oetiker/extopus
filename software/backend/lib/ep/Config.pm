@@ -205,8 +205,7 @@ sub _make_parser {
        if ($@){
            return "Failed to compile $code: $@ ";
        }
-           undef;
-       }
+       return undef;
     };
     my $compileI = sub { 
        my $code = $_[0];
@@ -216,8 +215,7 @@ sub _make_parser {
        if ($@){
            return "Failed to compile $code: $@ ";
        }
-           undef;
-       }
+       return undef;
     };
 
 
@@ -269,44 +267,44 @@ sub _make_parser {
         '/INVENTORY:\s+\S+/' => {
             _order => 1,
             _doc => 'Instanciate an inventory object',
-            _vars => [ qw(module /[a-z]+_pl/ /[a-z]+/) ],
+            _vars => [ qw(module /[-._a-z]+_pl/ /[-._a-z]+/) ],
             _mandatory => [ 'module' ],
             module => {
                 _doc => 'The inventory module to load'
             },
-            _sections => [ qw(TREE MAP /[A-Z]+_TX/ /[A-Z]+_PL/ /[A-Z]+/) ],
-            '/[a-z]+_pl/' => {
+            _sections => [ qw(TREE MAP /[-._A-Z]+_TX/ /[-._A-Z]+_PL/ /[-._A-Z]+/) ],
+            '/[-._a-z]+_pl/' => {
                 _doc => 'Comipled Perl with access to incoming data in %I',
                 _sub => $compileI
             },
-            '/[a-z]+/' => {
+            '/[-._a-z]+/' => {
                 _doc => 'Any key value settings appropriate for the instance at hand'
             },
-            '/[A-Z]+/' => {
+            '/[-._A-Z]+/' => {
                 _doc => 'Grouped configuraiton options for complex inventory driver configurations',
                 _vars => [ '/[a-z]\S+/' ],
-                '/[a-z]\S+/' => {             
+                '/[-._a-z]\S+/' => {             
                     _doc => 'Any key value settings appropriate for the instance at hand'
                 },
-                '/[a-z]+_pl/' => {
+                '/[-._a-z]+_pl/' => {
                     _doc => 'Comipled Perl with access to incoming data in %I',
                     _sub => $compileI
                 },
             },
-            '/[A-Z]+_TX/' => {
+            '/[-._A-Z]+_TX/' => {
                 _doc => 'Text Section',
                 _text => {}
             },
-            '/[A-Z]+_PL/' => {
-                _doc => 'Compiled Text Section with access to the record in %R',
+            '/[-._A-Z]+_PL/' => {
+                _doc => 'Compiled Text Section with access to the record in %I',
                 _text => {
-                    _sub => $compileR
+                    _sub => $compileI
                 }
             },
             'MAP' => {
                 _doc => 'Mapping between inventory attributes and extopus attribute names.',
                 _vars => [ '/[a-z]\S+/' ],
-                '/[a-z]\S+/' => {             
+                '/[-_.a-z]\S+/' => {             
                     _doc => <<'DOC',
 The value of an extopus attribute can either be the name of a inventory attribute OR a perl snippet refering the the inventory attributes via the %I hash.
 The perl snippet mode gets activated if [$"'{;] appears in the value.
@@ -342,9 +340,9 @@ EX
         '/VISUALIZER:\s+\S+/' => {
             _order => 1,
             _doc => 'Instanciate a visualizer object',
-            _vars => [ qw(module title caption.pl /[a-z]+_pl/ /[a-z]+/) ],
+            _vars => [ qw(module title caption /[-._a-z]+_pl/ /[-._a-z]+/) ],
             _mandatory => [ qw(module title caption) ],
-            _sections => [qw(/[A-Z]+_TX/ /[A-Z]+_PL/ /[A-Z]+/) ],
+            _sections => [qw(/[-._A-Z]+_TX/ /[-._A-Z]+_PL/ /[-._A-Z]+/) ],
             module => {
                 _doc => 'The visualization module to load'
             },
@@ -355,29 +353,29 @@ EX
                 _doc => 'Caption for the window if the tab gets broken out. Access Record via %R',
                 _sub => $compileR,
             },
-            '/[a-z]+/' => {
+            '/[-._a-z]+/' => {
                 _doc => 'Any key value settings appropriate for the instance at hand'
             },
-            '/[a-z]+_pl/' => {
+            '/[-._a-z]+_pl/' => {
                 _doc => 'Compiled Perl with access to the record in %R',
                 _sub => $compileR
             },
-            '/[A-Z]+/' => {
+            '/[-._A-Z]+/' => {
                 _doc => 'Grouped configuraiton for complex visualization modules',
                 _vars => [ '/[a-z]\S+/' ],
-                '/[a-z]+/' => {             
+                '/[-._a-z]+/' => {             
                     _doc => 'Any key value settings appropriate for the instance at hand'
-                }        
-                '/[a-z]+_pl/' => {
+                },
+                '/[-._a-z]+_pl/' => {
                     _doc => 'Comipled Perl with access to the record in %R',
                     _sub => $compileR
                 },
             },
-            '/[A-Z]+_TX/' => {
+            '/[-._A-Z]+_TX/' => {
                 _doc => 'Text Section',
                 _text => {}
             },
-            '/[A-Z]+_PL/' => {
+            '/[-._A-Z]+_PL/' => {
                 _doc => 'Compiled Text Section with access to the record in %R',
                 _text => {
                     _sub => $compileR
