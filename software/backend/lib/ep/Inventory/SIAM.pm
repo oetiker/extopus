@@ -14,8 +14,18 @@ Thie ep::Inventory::SIAM grabs information from a SIAM inventory.
 
  *** INVENTORY: siam1 ***
  module=SIAM
- siam_cfg=test.yaml
- # load_all = true
+ siam_cfg=test.yaml 
+
+ # load all data regardles of user
+ load_all = true
+
+ # do not add nodes satisfying this condition
+ skipnode_pl = $I{'cablecom.port.display'} eq 'skip'
+
+ +TREE
+ 'Location',$R{country}, $R{city}, $R{street}.' '.($R{number}||'')
+ $R{cust},$R{svc_type},$R{car}
+
  +MAP
  prod = siam.svc.product_name
  country = cablecom.svc.loc.country
@@ -31,9 +41,6 @@ Thie ep::Inventory::SIAM grabs information from a SIAM inventory.
  torrus.nodeid = torrus.nodeid
  car = cablecom.svc.car_name
 
- +TREE
- 'Location',$R{country}, $R{city}, $R{street}.' '.($R{number}||'')
- $R{cust},$R{svc_type},$R{car}
 
 =cut
 
@@ -85,6 +92,7 @@ sub walkInventory {
         $contracts = $siam->get_contracts_by_user_privilege($user, 'ViewContract');
     }
     my $count = 0;
+    my $skip = $self->cfg->{skipnode_pl};
     for my $cntr ( @{$contracts} ){
         my %cntr = (%{$cntr->attributes});
         for my $srv ( @{$cntr->get_services} ){
@@ -98,6 +106,7 @@ sub walkInventory {
                     my $raw_data = {
                         %user,%cntr,%srv, %unit, %data, %device 
                     };
+                    next if defined $skip and $skip->($raw_data);
                     my $data = $self->buildRecord($raw_data);
                     $storeCallback->($data);
                     $count++;
