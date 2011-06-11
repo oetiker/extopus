@@ -70,22 +70,22 @@ qx.Class.define("ep.visualizer.ChartImage", {
             var range = this.getTimeRange();
             var end = this.getEndTime() || ( Math.round( new Date().getTime() / 1000 / 60 ) * 60);
             var el = this.getContainerElement().getDomElement();
-            var that = this;
             if (range && end && el){
                 // sync screen before we measure things
                 qx.html.Element.flush();
                 var width = qx.bom.element.Dimension.getWidth(el);
                 var height = qx.bom.element.Dimension.getHeight(el)
                 if (width > 0 && height > 0){
-                    that.setViewMode('loading');
-                    that.__img.setSource(
-                        url
+                    var src = url
                         +'&start='+(end-range)
                         +'&end='+end
                         +'&width=' + width
                         +'&height=' + height
-                        +'&format=.png'
-                    );
+                        +'&format=.png';
+                    this.__img.setSource(src);
+                    if (!qx.io.ImageLoader.isLoaded(src)){
+                        this.setViewMode('loading');
+                    }                    
                 }
             }
         }
