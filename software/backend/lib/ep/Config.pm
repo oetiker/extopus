@@ -303,8 +303,8 @@ sub _make_parser {
             },
             'MAP' => {
                 _doc => 'Mapping between inventory attributes and extopus attribute names.',
-                _vars => [ '/[a-z]\S+/' ],
-                '/[-_.a-z]\S+/' => {             
+                _vars => [ '/[-._a-z]+/' ],
+                '/[-._a-z]+/' => {             
                     _doc => <<'DOC',
 The value of an extopus attribute can either be the name of a inventory attribute OR a perl snippet refering the the inventory attributes via the %I hash.
 The perl snippet mode gets activated if [$"'{;] appears in the value.
