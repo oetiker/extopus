@@ -60,14 +60,25 @@ qx.Class.define("ep.visualizer.ChartImage", {
     members: {
         __timer: null,
         __img: null,
+        __lastEnd: 0,
+        __lastUrl: 0,
         reloadChart: function (){
             var url = this.getBaseUrl();
             if (url == null){
+                this.setViewMode('nodata');
                 this.__img.setSource(null);
                 return;
             };
             var range = this.getTimeRange();
             var end = this.getEndTime() || Math.round( new Date().getTime() / 1000 );
+            // in 'now mode' only reload after 60 seconds        
+            if (url != this.__lastUrl){
+                this.__lastEnd = 0;
+            }
+            if ( end - this.__lastEnd < 60){
+                 return;
+            }
+
             var el = this.getContainerElement().getDomElement();
             var that = this;
             if (range && end && el){
@@ -85,6 +96,8 @@ qx.Class.define("ep.visualizer.ChartImage", {
                         +'&height=' + height
                         +'&format=.png'
                     );
+                    that.__lastEnd = end;                
+                    that.__lastUrl = url;
                 }
             }
         }
