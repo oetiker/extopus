@@ -37,6 +37,7 @@ use warnings;
 use DBI;
 use Mojo::Base -base;
 use Mojo::JSON::Any;
+use Encode;
 
 has cacheKey    => sub { 'instance'.int(rand(1000000)) };
 has cacheRoot   => '/tmp/';
@@ -77,6 +78,7 @@ sub new {
          PrintError => 1,
          AutoCommit => 1,
          ShowErrorStatement => 1,
+         sqlite_unicode => 1,
     });
     $self->dbh($dbh);  
     if ($new){  
@@ -160,7 +162,7 @@ sub getNodeCount {
     my $self = shift;
     my $expression = shift;
     my $dbh = $self->dbh;
-    return (($dbh->selectrow_array("SELECT count(docid) FROM node WHERE data MATCH ?",{},$expression))[0]);
+    return (($dbh->selectrow_array("SELECT count(docid) FROM node WHERE data MATCH ?",{},encode('utf8',$expression)))[0]);
 }
 
     
@@ -177,7 +179,7 @@ sub getNodes {
     my $offset = shift || 0;
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare("SELECT docid,data FROM node WHERE data MATCH ? LIMIT ? OFFSET ?");
-    $sth->execute($expression,$limit,$offset);
+    $sth->execute(encode('utf8',$expression),$limit,$offset);
     my $json = $self->json;
     my @return;
     while (my $row = $sth->fetchrow_hashref){
