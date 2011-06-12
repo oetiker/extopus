@@ -82,9 +82,12 @@ qx.Class.define("ep.visualizer.ChartImage", {
                         +'&width=' + width
                         +'&height=' + height
                         +'&format=.png';
-                    this.__img.setSource(src);
                     if (!qx.io.ImageLoader.isLoaded(src)){
                         this.setViewMode('loading');
+                        this.__img.setSource(src);
+                    } else {
+                        this.__img.setSource(src);
+                        this.setViewMode('ready');
                     }                    
                 }
             }
