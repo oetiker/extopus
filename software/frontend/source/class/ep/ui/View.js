@@ -72,7 +72,10 @@ qx.Class.define("ep.ui.View", {
                 active[key] = true;
                 var control = cache[key];
                 if (control){
-                    control.getChildControl('button').show();
+                    control.getButton().set({
+                        visibility: 'visible',
+                        enabled: true
+                    });              
                     control.setArgs(viz.arguments);                    
                 }
                 else {
@@ -91,7 +94,10 @@ qx.Class.define("ep.ui.View", {
             }
             for (var vizKey in cache){
                 if (!active[vizKey]){
-                    cache[vizKey].getChildControl('button').exclude();
+                    cache[vizKey].getButton().set({
+                        visibility: 'excluded',
+                        enabled: false
+                    });                    
                     if (this.isSelected(cache[vizKey])){                        
                         this.setSelection([this.getSelectables(true)[0]]);
                     }
