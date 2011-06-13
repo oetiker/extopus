@@ -27,9 +27,11 @@ qx.Class.define("ep.ui.View", {
             },this);
         },this);        
         this.__pageCache = {};
+        this.__breakOutKids = {};
     },
     members: {
         __pageCache: null,
+        __breakOutKids: null,
         _createVisualizer: function(viz){
             var control;
             switch(viz.visualizer){
@@ -53,7 +55,17 @@ qx.Class.define("ep.ui.View", {
         },
         _showVisualizers: function(vizList){
             var active = {};
+            for (var kid in this.__breakOutKids){
+                if (! this.__breakOutKids[kid].isDisposed()){
+                    this.__breakOutKids[kid].set({
+                        showClose: true,
+                        showMinimize: false
+                    });
+                }
+            }             
+            this.__breakOutKids = {};
             var cache = this.__pageCache;
+            var bar = this.getChildControl('bar');
             for (var i = 0; i< vizList.length;i++) {
                 var viz = vizList[i];
                 var key = viz.visualizer + ':' + viz.title;
@@ -67,10 +79,15 @@ qx.Class.define("ep.ui.View", {
                     control = this._createVisualizer(viz);
                     control.setUserData('key',key);
                     this.add(control);
-                    control.addListenerOnce('breakout',this._onBreakOut,this);
+                    control.addListener('breakout',this._onBreakOut,this);
                     cache[key] = control;
                 }
                 control.setUserData('caption',viz.caption);
+                var button = control.getButton();
+                if (bar.indexOf(button) != i){
+                    bar.remove(button);
+                    bar.addAt(button,i);
+                }
             }
             for (var vizKey in cache){
                 if (!active[vizKey]){
@@ -82,19 +99,20 @@ qx.Class.define("ep.ui.View", {
             }
         },
         _onBreakOut: function(e){
-            var page = e.getData();         
+            var page = e.getData();
             var el = page.getContainerElement().getDomElement();
             var width = qx.bom.element.Dimension.getWidth(el);
             var height = qx.bom.element.Dimension.getHeight(el)
-   
+            var key = page.getUserData('key');   
             /// figure size and set on window
             this.remove(page);
-            delete this.__pageCache[page.getUserData('key')];
+            delete this.__pageCache[key];
             var win = new qx.ui.window.Window(page.getUserData('caption')).set({
-                showMinimize: false,
+                showClose: false,
                 width: width,
                 height: height
             });
+            this.__breakOutKids[key]=win;
             win.setLayout(new qx.ui.layout.Grow());
             page.show();
             page.remove
@@ -105,8 +123,18 @@ qx.Class.define("ep.ui.View", {
                 win.center()
             },this);
             win.addListenerOnce('close',function(e){
+                delete this.__breakOutKids[key];
                 page.getButton().dispose();
                 page.dispose();
+                this.getApplicationRoot().remove(win);
+                win.dispose();
+            },this);
+            win.addListenerOnce('minimize',function(e){
+                win.remove(page);
+                delete this.__breakOutKids[key];
+                this.add(page);
+                this.setSelection([page]);
+                this.__pageCache[page.getUserData('key')] = page;
                 this.getApplicationRoot().remove(win);
                 win.dispose();
             },this);

@@ -4,6 +4,10 @@
    Authors:   Tobi Oetiker <tobi@oetiker.ch>
    Utf8Check: äöü
 ************************************************************************ */
+/*
+#asset(ep/view-fullscreen.png)
+*/
+
 /**
  * Visualization widgets they are re-usable by calling .setArgs(args)
 **/
@@ -13,7 +17,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
     construct : function(title) {                
         this.base(arguments,this['tr'](title));        
         var breakOutButton = this._breakOutButton = new qx.ui.basic.Atom().set({
-            icon: 'decoration/window/maximize.gif',
+            icon: 'ep/view-fullscreen.png',
             show: 'icon',
             cursor: 'pointer'            
         });
@@ -48,8 +52,9 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
         _applyArgs: function(newArgs,oldArgs){
             this.error('overwrite _applyArgs in the child object');
         },
-        _onBreakOutButtonClick : function() {
+        _onBreakOutButtonClick : function(e) {
             this.fireDataEvent("breakout", this);
+            e.stop();
         },
         _updateBreakOutButton : function(){
             var button = this.getChildControl('button');
