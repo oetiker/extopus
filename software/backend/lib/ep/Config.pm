@@ -117,6 +117,7 @@ ${E}head1 SYNOPSIS
  mojo_secret = Secret Cookie
  log_file = /tmp/dbtoria.log
  open_branches = 5
+ update_interval = 86400 
  # default_user = admin
  
  *** ATTRIBUTES ***
@@ -220,13 +221,14 @@ sub _make_parser {
         _mandatory => [qw(GENERAL ATTRIBUTES TABLES)],
         GENERAL => {
             _doc => 'Global configuration settings for Extopus',
-            _vars => [ qw(cache_dir mojo_secret log_file log_level default_user open_branches) ],
+            _vars => [ qw(cache_dir mojo_secret log_file log_level default_user open_branches update_interval) ],
             _mandatory => [ qw(cache_dir mojo_secret log_file) ],
             cache_dir => { _doc => 'directory to cache information gathered via the inventory plugins' },
             mojo_secret => { _doc => 'secret for signing mojo cookies' },
             log_file => { _doc => 'write a log file to this location (unless in development mode)'},
             log_level => { _doc => 'what to write to the logfile'},
             open_branches => { _doc => 'how many branches to open initially in the tree' },
+            update_interval => { _doc => 'check for updates every x seconds. 1 day by default'},
         },
         ATTRIBUTES => {
             _vars => [ '/[-._a-z0-9]+/' ],

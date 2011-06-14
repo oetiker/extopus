@@ -59,15 +59,24 @@ sub allow_rpc_access {
     );
     $self->cache($cache);
     $self->inventory->user($user);
-    if (! $cache->populated ){
-        $self->log->debug("loading nodes into $cfg->{GENERAL}{cache_dir} for $user");
-        my $tree = $cfg->{TREE};
-        $cache->tree({            
-            map { $_ => [ split /\s*,\s*/, $tree->{$_} ] } grep !/^_/, keys %$tree 
-        });
-        $self->inventory->walkInventory($cache);
-        $self->log->debug("nodes for $user loaded");
-        $cache->populated(1);
+    if (! $cache->meta->{version} or time - $cache->meta->{lastup} > ($cfg->{GENERAL}{update_interval} || 86400) ){
+        my $oldVersion = $cache->meta->{version};
+        my $version = $self->inventory->getVersion();
+        if ($oldVersion || '' ne  $version){
+            $cache->dbh->begin_work;
+            $cache->dbh->do("PRAGMA synchronous = 0");
+            if ($oldVersion){
+                $cache->dropTables;
+            }
+            $cache->createTables;
+            $cache->setMeta('version',$version);
+            $cache->setMeta('lastup',time);
+            $self->log->debug("loading nodes into $cfg->{GENERAL}{cache_dir} for $user");
+            $self->inventory->walkInventory($cache);
+            $self->log->debug("nodes for $user loaded");
+            $cache->dbh->commit;
+            $cache->dbh->do("PRAGMA synchronous = 1");
+        }
     }
     return $allow{$method}; 
 }

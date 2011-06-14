@@ -19,6 +19,7 @@ The base class for inventory modules.
 
 =cut
 
+use Mojo::Util qw(md5_sum);
 use Mojo::Base -base;
 
 has 'cfg';
@@ -28,6 +29,7 @@ has 'log';
 has 'routes';
 has 'secret';
 
+
 =head2 new
 
 create new inventory instance
@@ -36,7 +38,7 @@ create new inventory instance
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    for my $entry ( grep /^INVENTORY:/, keys %{$self->cfg} ){
+    for my $entry ( grep /^INVENTORY:/, sort keys %{$self->cfg} ){
         my $drvCfg = $self->cfg->{$entry};
         require 'ep/Inventory/'.$drvCfg->{module}.'.pm';
         do {
@@ -46,6 +48,23 @@ sub new {
         }
     }
     return $self;
+}
+
+=head2 getVersion
+
+return a md5 hash of all inventory versions
+
+=cut
+
+sub getVersion {
+    my $self = shift;
+    my $text = '';
+    for my $driver (@{$self->drivers}){        
+        $driver->user($self->user);
+        $text .= ">".$driver->getVersion;
+    }
+    $self->log->debug("inventory version check: $text");
+    return md5_sum($text);
 }
 
 =head2 walkInventory(callback)

@@ -46,6 +46,7 @@ Thie ep::Inventory::SIAM grabs information from a SIAM inventory.
 
 use Mojo::Base 'ep::Inventory::base';
 use ep::Exception qw(mkerror);
+use Mojo::Util qw(md5_sum);
 
 use SIAM;
 use YAML;
@@ -63,34 +64,69 @@ sub new {
     return $self;
 }
 
+=head2 _getContracts
+
+return a SIAM contract handler
+
+=cut 
+
+sub _getContracts {
+    my $self = shift;
+    my $siam = $self->siam;    
+    my %user = ();
+    my $contracts;
+    if ($self->cfg->{load_all}){
+        $self->log->debug('opening ALL contracts');
+        $contracts = $siam->get_all_contracts();
+    }
+    else {
+        $self->log->debug('open contracts for '.$self->user);
+        my $user = $siam->get_user($self->user) or do {
+            $self->log->debug($self->cfg->{driver}.' has no information on '.$self->user);
+            return [];
+        };
+        %user = (%{$user->attributes});
+        $contracts = $siam->get_contracts_by_user_privilege($user, 'ViewContract');
+    }
+    return $contracts;    
+}
+
+=head2 getVersion
+
+returns a md5 sum built from all the contract md5 hashes in the cache
+
+=cut
+
+sub getVersion {
+    my $self = shift;
+    my $siam = $self->siam;
+    $siam->connect;
+    my $contracts = $self->_getContracts();
+    my $text = '';
+    for my $cntr ( @{$contracts} ){
+        $text .= $cntr->computable('siam.contract.content_md5hash');
+    }
+    $siam->disconnect;
+    return md5_sum($text);
+}
+
 =head2 walkInventory(sub { my $hash = shift; ... })
 
 call the data loading function for each data object retrieved from the inventory.
 
 =cut
 
+
+    
 sub walkInventory {
 #   DB::enable_profile();
 #   $ENV{DBI_PROFILE}=2;
     my $self = shift;
     my $storeCallback = shift;
     my $siam = $self->siam;    
-    $siam->connect();
+    $siam->connect;
     my %user = ();
-    my $contracts;
-    if ($self->cfg->{load_all}){
-        $self->log->debug('loading ALL nodes');
-        $contracts = $siam->get_all_contracts();
-    }
-    else {
-        $self->log->debug('loading nodes for '.$self->user);
-        my $user = $siam->get_user($self->user) or do {
-            $self->log->debug($self->cfg->{driver}.' has no information on '.$self->user);
-            return;
-        };
-        %user = (%{$user->attributes});
-        $contracts = $siam->get_contracts_by_user_privilege($user, 'ViewContract');
-    }
+    my $contracts = $self->_getContracts;
     my $count = 0;
     my $skip = $self->cfg->{skipnode_pl};
     for my $cntr ( @{$contracts} ){
@@ -114,7 +150,7 @@ sub walkInventory {
             }
         }
     }
-    $siam->disconnect();
+    $siam->disconnect;
     $self->log->debug('loaded '.$count.' nodes');
 #   DB::disable_profile();
 #   DB::finish_profile();
