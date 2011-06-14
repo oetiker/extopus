@@ -345,24 +345,24 @@ sub addProxyRoute {
         $name =~ s/[^-_0-9a-z]+/_/ig;
         $name .= '-'.strftime('%Y-%m-%d',localtime($end));               
         my $fileData;
-        $format = 'csv'; # debugging
+        $format = 'xlsx'; # debugging
         for ($format) {
             /csv/ && do {
                 $fileData = $self->csvBuilder($data,$name);
-                next;
-            };
-            /xls/ && do {
-                $fileData = $self->xlsBuilder($data,$name);
                 next;
             };
             /xlsx/ && do {
                 $fileData = $self->xlsxBuilder($data,$name);
                 next;
             };
+            /xls/ && do {
+                $fileData = $self->xlsBuilder($data,$name);
+                next;
+            };
         }
-        $rp->headers->content_type($fileData->contentType);
-        $rp->headers->add('Content-Disposition', $fileData->contentDisposition);
-        $rp->body($fileData->body);   
+        $rp->headers->content_type($fileData->{contentType});
+        $rp->headers->add('Content-Disposition',$fileData->{contentDisposition});
+        $rp->body($fileData->{body});   
         $ctrl->tx->res($rp);
         $ctrl->rendered;
     });
@@ -378,9 +378,10 @@ sub csvBuilder {
    my $self = shift;
    my $data = shift;
    my $name = shift; 
-   my $fileData;
-   $fileData->contentType = 'application/csv';
-   $fileData->contentDisposition = "attachement; filename=$name.csv";
+   my $fileData = {
+        'contentType'        => 'application/csv',
+        'contentDisposition' => "attachement; filename=$name.csv"
+   };
    my @cnames;
    for (my $c=0;$self->cfg->{col_names}[$c];$c++){
         my $name = $self->cfg->{col_names}[$c];
@@ -391,7 +392,7 @@ sub csvBuilder {
    for my $row (@{$data->{data}}){
        $body .= join(",",map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row)."\r\n";
    }
-   $fileData->body = $body; 
+   $fileData->{body} = $body; 
    return $fileData;
 }
 
@@ -406,9 +407,10 @@ sub xlsBuilder {
    my $self = shift; 
    my $data = shift;
    my $name = shift; 
-   my $fileData;
-   $fileData->contentType = 'application/vnd.ms-excel';
-   $fileData->contentDisposition = "attachement; filename=$name.xls";
+   my $fileData = {
+        'contentType'        => 'application/vnd.ms-excel',
+        'contentDisposition' => "attachement; filename=$name.xls"
+   };
    my @cnames;
    for (my $c=0;$self->cfg->{col_names}[$c];$c++){
 	my $name = $self->cfg->{col_names}[$c];
@@ -416,19 +418,21 @@ sub xlsBuilder {
 	push @cnames, qq{"$name [$unit]"};
    }
    open my $fh, '>', \my $xlsbody or die "Failed to open filehandle: $!";
-   my $workbook = Spreadsheet::WriteExcel->new($fh);
-   # my $workbook = Spreadsheet::WriteExcel->new('test.xls');
+   my $workbook = Spreadsheet::WriteExcel->new($fh); 
    my $worksheet = $workbook->add_worksheet();  
+   $worksheet->set_column('A:I',18);
    my $cnames_ref = \@cnames;
-   $worksheet->write_row(0, 0, $cnames_ref);
-   my $counter = 1;
+   my $header_format = $workbook->add_format();
+   $header_format->set_bold();
+   $worksheet->write_row(0, 0,$cnames_ref,$header_format);
+   my $rowcounter = 1;
    for my $row (@{$data->{data}}){ 
-       my @line = map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row;
+       my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_||'') } @$row;
        my $line_ref = \@line;
-       $worksheet->write_row(0,$counter, $line_ref);
+       $worksheet->write_row($rowcounter,0,$line_ref);
    }
    $workbook->close();   
-   $fileData->body = $xlsbody;
+   $fileData->{body} = $xlsbody;
    return $fileData;
 }
 
@@ -442,9 +446,10 @@ sub xlsxBuilder {
    my $self = shift;
    my $data = shift;
    my $name = shift;
-   my $fileData;
-   $fileData->contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-   $fileData->contentDisposition = "attachement; filename=$name.xlsx";
+   my $fileData = {
+        'contentType'        =>  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'contentDisposition' => "attachement; filename=$name.xlsx"
+   };
    my @cnames;
    for (my $c=0;$self->cfg->{col_names}[$c];$c++){
         my $name = $self->cfg->{col_names}[$c];   
@@ -453,17 +458,21 @@ sub xlsxBuilder {
    }
    open my $fh, '>', \my $xlsxbody or die "Failed to open filehandle: $!";
    my $workbook = Excel::Writer::XLSX->new($fh);
-   my $worksheet = $workbook->add_worksheet();  
+   my $worksheet = $workbook->add_worksheet();
+   $worksheet->set_column('A:I',18);
    my $cnames_ref = \@cnames;
-   $worksheet->write_row(0, 0, $cnames_ref);
+   my $header_format = $workbook->add_format();
+   $header_format->set_bold();
+   $worksheet->write_row(0, 0,$cnames_ref,$header_format);
+   my $rowcounter = 1;
    my $counter = 1; 
    for my $row (@{$data->{data}}){
-       my @line = map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row;
+       my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_||'') } @$row;
        my $line_ref = \@line;
-       $worksheet->write_row(0,$counter, $line_ref);
+       $worksheet->write_row($rowcounter,0,$line_ref);
    }
    $workbook->close(); 
-   $fileData->body = $xlsxbody;
+   $fileData->{body} = $xlsxbody;
    return $fileData;
 }
 
