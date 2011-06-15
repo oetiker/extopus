@@ -80,12 +80,13 @@ qx.Class.define("ep.ui.View", {
                 }
                 else {
                     control = this._createVisualizer(viz);
-                    control.setUserData('key',key);
+                    control.setUserData('key',key);                    
                     this.add(control);
                     control.addListener('breakout',this._onBreakOut,this);
                     cache[key] = control;
                 }
                 control.setUserData('caption',viz.caption);
+                control.setUserData('position',i);
                 var button = control.getButton();
                 if (bar.indexOf(button) != i){
                     bar.remove(button);
@@ -137,12 +138,20 @@ qx.Class.define("ep.ui.View", {
             },this);
             win.addListenerOnce('minimize',function(e){
                 win.remove(page);
-                delete this.__breakOutKids[key];
-                this.add(page);
-                this.setSelection([page]);
-                this.__pageCache[page.getUserData('key')] = page;
                 this.getApplicationRoot().remove(win);
                 win.dispose();
+
+                delete this.__breakOutKids[key];
+                this.add(page);
+                var button = page.getButton();
+                var bar = this.getChildControl('bar');
+                var pos = page.getUserData('position');
+                if (bar.indexOf(button) != pos){
+                    bar.remove(button); 
+                    bar.addAt(button,pos);
+                }
+                this.setSelection([page]);
+                this.__pageCache[page.getUserData('key')] = page;
             },this);
         }                        
     }    
