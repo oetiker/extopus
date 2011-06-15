@@ -94,6 +94,7 @@ sub getConfig {
         openBranches => $self->cfg->{GENERAL}{open_branches},
         treeCols => $self->getTableColumnDef('tree'),
         searchCols => $self->getTableColumnDef('search'),
+        frontend => $self->cfg->{FRONTEND},
     }
 }
 

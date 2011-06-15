@@ -20,11 +20,19 @@ qx.Class.define("ep.ui.View", {
         var tm = table.getTableModel();
         var rpc=ep.data.Server.getInstance();
         sm.addListener('changeSelection',function(e){
+            var empty = true;
             sm.iterateSelection(function(ind){
                 // this will only iterate once since we are in single selection 
                 // mode ... the first column holds the nodeId               
                 rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers,this),'getVisualizers',tm.getValue(0,ind));
+                empty = false;
             },this);
+            if (empty){
+                this.__hideTimer = qx.event.Timer.once(function(){
+                    this.__hideTimer = null;
+                    this.hide();
+                },this,200);
+            }
         },this);        
         this.__pageCache = {};
         this.__breakOutKids = {};
@@ -32,6 +40,7 @@ qx.Class.define("ep.ui.View", {
     members: {
         __pageCache: null,
         __breakOutKids: null,
+        __hideTimer: null,
         _createVisualizer: function(viz){
             var control;
             switch(viz.visualizer){
@@ -55,6 +64,13 @@ qx.Class.define("ep.ui.View", {
         },
         _showVisualizers: function(vizList){
             var active = {};
+            if (this.__hideTimer){
+                this.__hideTimer.stop();
+                this.__hideTimer=null;
+            }    
+            if (this.isHidden()){
+                this.show();
+            }
             for (var kid in this.__breakOutKids){
                 if (! this.__breakOutKids[kid].isDisposed()){
                     this.__breakOutKids[kid].set({

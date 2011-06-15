@@ -129,9 +129,26 @@ qx.Class.define("ep.ui.TreeView", {
             return control;
         },
         _createView: function(){
+            var box = new qx.ui.core.Widget();
+            box._setLayout(new qx.ui.layout.Grow());
+            var url = ep.data.FrontendConfig.getInstance().getConfig().logo_large;
+            if (url){            
+                var logo = new qx.ui.basic.Atom(null,url).set({
+                    show: 'icon',
+                    allowGrowX: true,
+                    allowGrowY: true,
+                    allowShrinkX: true,
+                    allowShrinkY: true,
+                    alignX: 'center',
+                    alignY: 'middle',
+                    center: true
+                });
+                box._add(logo);            
+            }
             var control = new ep.ui.View(this.getTable());
+            box._add(control);
             this.setView(control);
-            return control;
+            return box;
         },
         _addNodeKids : function(node){
             var rpc=ep.data.Server.getInstance();

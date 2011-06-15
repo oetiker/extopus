@@ -41,7 +41,16 @@ qx.Class.define("ep.Application", {
             });       
             var rpc=ep.data.Server.getInstance();
             rpc.callAsyncSmart(function(cfg){
-                desktop.populate(cfg);
+                if (cfg.frontend.title){
+                    root.add(new qx.ui.basic.Label(cfg.frontend.title).set({
+                        font: 'bold'
+                    }),{
+                        top    : 8,
+                        right  : 8
+                    });
+                };
+                ep.data.FrontendConfig.getInstance().setConfig(cfg.frontend);
+                desktop.populate(cfg);                
             },'getConfig');
         }
     }

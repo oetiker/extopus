@@ -119,7 +119,11 @@ ${E}head1 SYNOPSIS
  open_branches = 5
  update_interval = 86400 
  # default_user = admin
- 
+
+ *** FRONTEND ***
+ logo_large = http://www.upc-cablecom.biz/en/cablecom_logo_b2b.jpg
+ title = test title
+  
  *** ATTRIBUTES ***
  prod = Product
  country = Country
@@ -217,8 +221,8 @@ sub _make_parser {
     };
 
     my $grammar = {
-        _sections => [ qw{GENERAL /INVENTORY:\s+\S+/ /VISUALIZER:\s+\S+/ ATTRIBUTES TABLES }],
-        _mandatory => [qw(GENERAL ATTRIBUTES TABLES)],
+        _sections => [ qw{GENERAL FRONTEND /INVENTORY:\s+\S+/ /VISUALIZER:\s+\S+/ ATTRIBUTES TABLES }],
+        _mandatory => [qw(GENERAL FRONTEND ATTRIBUTES TABLES)],
         GENERAL => {
             _doc => 'Global configuration settings for Extopus',
             _vars => [ qw(cache_dir mojo_secret log_file log_level default_user open_branches update_interval) ],
@@ -229,6 +233,12 @@ sub _make_parser {
             log_level => { _doc => 'what to write to the logfile'},
             open_branches => { _doc => 'how many branches to open initially in the tree' },
             update_interval => { _doc => 'check for updates every x seconds. 1 day by default'},
+        },
+        FRONTEND => {
+            _doc => 'Frontend tuneing parameters',
+            _vars => [ qw(logo_large title) ],
+            logo_large => { _doc => 'url for logo to show when no visualizers are selected' },
+            title => { _doc => 'tite to show in the top right corner of the app' },
         },
         ATTRIBUTES => {
             _vars => [ '/[-._a-z0-9]+/' ],
