@@ -3,6 +3,10 @@ cache_dir = /scratch/extopus
 mojo_secret = my_secret
 log_file = /tmp/extopus-tobi.log
 
+*** FRONTEND ***
+logo_large = http://www.upc-cablecom.biz/en/cablecom_logo_b2b.jpg
+title = upc cablecom b2b - extopus BETA
+
 *** ATTRIBUTES ***
 prod = Product
 country = Country
