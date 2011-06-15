@@ -39,6 +39,16 @@ qx.Class.define("ep.ui.Desktop", {
             searchPage.setLayout(new qx.ui.layout.Grow());
             searchPage.add(searchView);
             tabView.add(searchPage);
+
+            /* add title */
+            if (cfg.frontend.title){
+               this.getApplicationRoot().add(new qx.ui.basic.Label(cfg.frontend.title).set({
+                    font: 'bold'
+               }),{
+                    top    : 8,
+                    right  : 8
+               });
+            };
         }
     }
 });

@@ -9,12 +9,17 @@
  * Show page from monitoring System.
 **/
 qx.Class.define("ep.ui.View", {
-    extend : qx.ui.tabview.TabView,
+    extend : qx.ui.core.Widget,
     construct : function(table) {                
-        this.base(arguments,'top');
-        this.set({
-            minHeight: 250
+        this.base(arguments);
+        this._setLayout(new qx.ui.layout.Grow());        
+        var tabView = this.__tabView = new qx.ui.tabview.TabView('top').set({
+            minHeight: 250                        
         });
+        tabView.hide();
+        this._add(new ep.ui.Logo());
+        this._add(tabView);
+
         var sm = table.getSelectionModel();
         sm.setSelectionMode(qx.ui.table.selection.Model.SINGLE_SELECTION);
         var tm = table.getTableModel();
@@ -30,7 +35,7 @@ qx.Class.define("ep.ui.View", {
             if (empty){
                 this.__hideTimer = qx.event.Timer.once(function(){
                     this.__hideTimer = null;
-                    this.hide();
+                    tabView.hide();
                 },this,200);
             }
         },this);        
@@ -41,6 +46,7 @@ qx.Class.define("ep.ui.View", {
         __pageCache: null,
         __breakOutKids: null,
         __hideTimer: null,
+        __tabView: null,
         _createVisualizer: function(viz){
             var control;
             switch(viz.visualizer){
@@ -64,12 +70,13 @@ qx.Class.define("ep.ui.View", {
         },
         _showVisualizers: function(vizList){
             var active = {};
+            var tabView = this.__tabView;
             if (this.__hideTimer){
                 this.__hideTimer.stop();
                 this.__hideTimer=null;
             }    
-            if (this.isHidden()){
-                this.show();
+            if (tabView.isHidden()){
+                tabView.show();
             }
             for (var kid in this.__breakOutKids){
                 if (! this.__breakOutKids[kid].isDisposed()){
@@ -81,7 +88,7 @@ qx.Class.define("ep.ui.View", {
             }             
             this.__breakOutKids = {};
             var cache = this.__pageCache;
-            var bar = this.getChildControl('bar');
+            var bar = tabView.getChildControl('bar');
             for (var i = 0; i< vizList.length;i++) {
                 var viz = vizList[i];
                 var key = viz.visualizer + ':' + viz.title;
@@ -97,7 +104,7 @@ qx.Class.define("ep.ui.View", {
                 else {
                     control = this._createVisualizer(viz);
                     control.setUserData('key',key);                    
-                    this.add(control);
+                    tabView.add(control);
                     control.addListener('breakout',this._onBreakOut,this);
                     cache[key] = control;
                 }
@@ -115,8 +122,8 @@ qx.Class.define("ep.ui.View", {
                         visibility: 'excluded',
                         enabled: false
                     });                    
-                    if (this.isSelected(cache[vizKey])){                        
-                        this.setSelection([this.getSelectables(true)[0]]);
+                    if (tabView.isSelected(cache[vizKey])){                        
+                        tabView.setSelection([tabView.getSelectables(true)[0]]);
                     }
                 }
             }
@@ -127,8 +134,9 @@ qx.Class.define("ep.ui.View", {
             var width = qx.bom.element.Dimension.getWidth(el);
             var height = qx.bom.element.Dimension.getHeight(el)
             var key = page.getUserData('key');   
+            var tabView = this.__tabView;
             /// figure size and set on window
-            this.remove(page);
+            tabView.remove(page);
             delete this.__pageCache[key];
             var win = new qx.ui.window.Window(page.getUserData('caption')).set({
                 showClose: false,
@@ -158,15 +166,15 @@ qx.Class.define("ep.ui.View", {
                 win.dispose();
 
                 delete this.__breakOutKids[key];
-                this.add(page);
+                tabView.add(page);
                 var button = page.getButton();
-                var bar = this.getChildControl('bar');
+                var bar = tabView.getChildControl('bar');
                 var pos = page.getUserData('position');
                 if (bar.indexOf(button) != pos){
                     bar.remove(button); 
                     bar.addAt(button,pos);
                 }
-                this.setSelection([page]);
+                tabView.setSelection([page]);
                 this.__pageCache[page.getUserData('key')] = page;
             },this);
         }                        

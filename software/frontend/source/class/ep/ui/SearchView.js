@@ -23,8 +23,7 @@ qx.Class.define("ep.ui.SearchView", {
     },
     properties: {
         searchBox: {},
-        table: {},
-        view: {}
+        table: {}
     },
     members: {
         __vPane: null,
@@ -47,7 +46,6 @@ qx.Class.define("ep.ui.SearchView", {
         _createView: function(){
             var control = new ep.ui.View(this.getTable());
             this.__vPane.add(control,3);
-            this.setView(control);
         },
         _setSearch: function(e){
             var value = e.getData();

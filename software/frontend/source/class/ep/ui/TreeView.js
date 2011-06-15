@@ -32,13 +32,12 @@ qx.Class.define("ep.ui.TreeView", {
         hPane.add(tree,1);
         this._openTree(tree,tree.getModel(),true);
         hPane.add(vPane,3);
-        vPane.add(this._createView(),3);            
+        vPane.add(new ep.ui.View(this.getTable()),3);            
     },
 
     properties: {
         tree: {},
-        table: {},
-        view: {}
+        table: {}
     },
     members : {
         __initial_open: null,
@@ -127,28 +126,6 @@ qx.Class.define("ep.ui.TreeView", {
             var control = new ep.ui.Table(tm,widths);
             this.setTable(control);
             return control;
-        },
-        _createView: function(){
-            var box = new qx.ui.core.Widget();
-            box._setLayout(new qx.ui.layout.Grow());
-            var url = ep.data.FrontendConfig.getInstance().getConfig().logo_large;
-            if (url){            
-                var logo = new qx.ui.basic.Atom(null,url).set({
-                    show: 'icon',
-                    allowGrowX: true,
-                    allowGrowY: true,
-                    allowShrinkX: true,
-                    allowShrinkY: true,
-                    alignX: 'center',
-                    alignY: 'middle',
-                    center: true
-                });
-                box._add(logo);            
-            }
-            var control = new ep.ui.View(this.getTable());
-            box._add(control);
-            this.setView(control);
-            return box;
         },
         _addNodeKids : function(node){
             var rpc=ep.data.Server.getInstance();
