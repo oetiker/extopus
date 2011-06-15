@@ -139,7 +139,7 @@ qx.Class.define("ep.ui.TreeView", {
             rpc.callAsyncSmart(function(ret){
                 var kids = node.getKids();
                 kids.removeAll();
-                ret.map(function(branch){                
+                qx.lang.Core.arrayForEach(function(branch){                
                     var newNode = {
                         nodeId: branch[0],
                         name: branch[1],
@@ -157,7 +157,7 @@ qx.Class.define("ep.ui.TreeView", {
                     // keep the data array as a normal array and don't have it qooxdooified
                     kid.setLeaves(branch[3]); 
                     kids.push(kid);
-                });
+                },ret);
                 node.setLoaded(true);
             },'getBranch',node.getNodeId());
         },
