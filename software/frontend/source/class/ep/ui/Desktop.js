@@ -42,9 +42,10 @@ qx.Class.define("ep.ui.Desktop", {
 
             /* add title */
             if (cfg.frontend.title){
-               this.getApplicationRoot().add(new qx.ui.basic.Label(cfg.frontend.title).set({
+                document.title = cfg.frontend.title;
+                this.getApplicationRoot().add(new qx.ui.basic.Label(cfg.frontend.title).set({
                     font: 'bold'
-               }),{
+                }),{
                     top    : 8,
                     right  : 8
                });

@@ -39,7 +39,7 @@ qx.Class.define("ep.Application", {
                 right  : 0,
                 bottom : 0
             });       
-            var rpc=ep.data.Server.getInstance();
+            var rpc=ep.data.Server.getInstance();        
             rpc.callAsyncSmart(function(cfg){
                 ep.data.FrontendConfig.getInstance().setConfig(cfg.frontend);
                 desktop.populate(cfg);                
