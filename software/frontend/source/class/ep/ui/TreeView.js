@@ -32,13 +32,12 @@ qx.Class.define("ep.ui.TreeView", {
         hPane.add(tree,1);
         this._openTree(tree,tree.getModel(),true);
         hPane.add(vPane,3);
-        vPane.add(this._createView(),3);            
+        vPane.add(new ep.ui.View(this.getTable()),3);            
     },
 
     properties: {
         tree: {},
-        table: {},
-        view: {}
+        table: {}
     },
     members : {
         __initial_open: null,
@@ -128,18 +127,13 @@ qx.Class.define("ep.ui.TreeView", {
             this.setTable(control);
             return control;
         },
-        _createView: function(){
-            var control = new ep.ui.View(this.getTable());
-            this.setView(control);
-            return control;
-        },
         _addNodeKids : function(node){
             var rpc=ep.data.Server.getInstance();
             var that = this;
             rpc.callAsyncSmart(function(ret){
                 var kids = node.getKids();
                 kids.removeAll();
-                ret.map(function(branch){                
+                ret.forEach(function(branch){                
                     var newNode = {
                         nodeId: branch[0],
                         name: branch[1],

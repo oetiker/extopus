@@ -47,7 +47,7 @@ sub new {
         my $instance = $1;
         do {
             no strict 'refs';
-            my $visObj = "ep::Visualizer::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,instance=>$instance,prefix=>$self->prefix});
+            my $visObj = "ep::Visualizer::$drvCfg->{module}"->new({completeCfg=>$self->cfg,cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,instance=>$instance,prefix=>$self->prefix});
             push @{$self->visualizers}, $visObj;
             $self->vismap->{$instance} = $visObj;
         }

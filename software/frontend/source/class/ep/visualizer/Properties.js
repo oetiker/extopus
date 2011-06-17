@@ -15,13 +15,15 @@ qx.Class.define("ep.visualizer.Properties", {
         var scroller = new qx.ui.container.Scroll();
         this.setLayout(new qx.ui.layout.Grow());
         scroller.set({
-            padding: 10
+            padding: 10,
+            width: 400
         });
-        var pane = this._pane = new qx.ui.container.Composite().set({
-            layout: new qx.ui.layout.Grid(5,5),
-            padding: 10
+        var l = this._label = new qx.ui.basic.Label().set({
+            rich: true,
+            padding: 10,
+            selectable: true
         });
-        scroller.add(pane);
+        scroller.add(l);
         this.add(scroller);
         this.setArgs(args);
     },
@@ -29,18 +31,15 @@ qx.Class.define("ep.visualizer.Properties", {
         KEY: 'properties'
     },
     members: {
-        _pane: null,
+        _label: null,
         _applyArgs: function(newArgs,oldArgs){
-            var pane = this._pane;
-            var labels = pane._removeAll();
-            var row = 0;
-            for (var key in  newArgs){
-                 var l = (labels.pop() || new qx.ui.basic.Label()).set({ value: key + ': ', selectable: true});
-                 var v = (labels.pop() || new qx.ui.basic.Label()).set({ value: newArgs[key], selectable: true});
-                 pane.add(l,{row:row,column:0});
-                 pane.add(v,{row:row,column:1});
-                 row++;
-            }
+            var l = this._label;
+            var data = '<table>';
+            newArgs.map(function(row){
+                data += '<tr><td>'+qx.bom.String.escape(row[0])+':&nbsp;</td><td>'+qx.bom.String.escape(row[1])+'</td></tr>';
+            });
+            data += '</table>';
+            this._label.setValue(data);
         }
     }    
 });

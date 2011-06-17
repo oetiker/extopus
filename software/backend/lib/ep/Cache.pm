@@ -37,16 +37,17 @@ use warnings;
 use DBI;
 use Mojo::Base -base;
 use Mojo::JSON::Any;
+use Encode;
 
-has cacheKey    => sub { 'instance'.int(rand(1000000)) };
+has cacheKey    => sub { die "cacheKey is a mandatory argument" };
 has cacheRoot   => '/tmp/';
-has tree       => sub { [] };
+has tree        => sub { [] };
 has json        => sub {Mojo::JSON::Any->new};
-has populated   => 0;
 has searchCols  => sub {[]};
 has treeCols    => sub {[]};
-
+has encodeUtf8  => sub { find_encoding('utf8') };
 has 'dbh';
+has 'meta'      => sub { {} };
 
 =head2 B<new>(I<config>)
 
@@ -71,29 +72,57 @@ A hash pointer for a list of tree building configurations.
 sub new {
     my $self =  shift->SUPER::new(@_);
     my $path = $self->cacheRoot.'/'.$self->cacheKey.'.sqlite';
-    my $new = not -r $path;
     my $dbh = DBI->connect_cached("dbi:SQLite:dbname=$path","","",{
          RaiseError => 1,
          PrintError => 1,
          AutoCommit => 1,
          ShowErrorStatement => 1,
+         sqlite_unicode => 1,
     });
-    $self->dbh($dbh);  
-    if ($new){  
+    $self->dbh($dbh); 
+    do { 
+        local $dbh->{RaiseError};
+        local $dbh->{PrintError};
+        $self->meta({ map { @$_ } @{$dbh->selectall_arrayref("select key,value from meta")||[]}});
+    };
+    if ($dbh->err and $dbh->err == 1){ # no such table
         $dbh->begin_work;
-        $dbh->do("CREATE TABLE branch ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
-        $dbh->do("CREATE INDEX branch_idx ON branch ( parent,name )");
-        $dbh->do("CREATE TABLE leaf ( parent INTEGER, node INTEGER)");
-        $dbh->do("CREATE INDEX leaf_idx ON leaf (parent )");
-        $dbh->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
-        $dbh->commit;
-    } else {
-        $self->populated(1);
-    }
-    $dbh->do("PRAGMA synchronous = 0");
+        $dbh->do("CREATE TABLE meta ( key TEXT PRIMARY KEY, value TEXT)");
+        $dbh->commit;        
+    } 
     $self->{treeCache} = {};
     $self->{nodeId} = 0;
     return $self;
+}
+
+=head2 createTables
+
+crate the cache tables
+
+=cut
+
+sub createTables {
+    my $self = shift;
+    my $dbh = $self->dbh;
+    $dbh->do("CREATE TABLE branch ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
+    $dbh->do("CREATE INDEX branch_idx ON branch ( parent,name )");
+    $dbh->do("CREATE TABLE leaf ( parent INTEGER, node INTEGER)");
+    $dbh->do("CREATE INDEX leaf_idx ON leaf (parent )");
+    $dbh->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
+}
+
+=head2 dropTables
+
+drop data tables
+
+=cut
+
+sub dropTables {
+    my $self = shift;
+    my $dbh = $self->dbh;
+    $dbh->do("DROP TABLE branch");
+    $dbh->do("DROP TABLE leaf");
+    $dbh->do("DROP TABLE node");            
 }
  
 =head2 add({...})
@@ -110,6 +139,21 @@ sub add {
     # should use $dbh->last_insert_id("","","",""); but it seems not to work with FTS3 tables :-(
     # glad we are doing the adding in one go so getting the number is pretty simple
     $self->addTreeNode($self->{nodeId},$nodeData);
+}
+
+=head2 setMeta(key,value)
+
+save a key value pair to the meta table, replaceing any existing value
+
+=cut
+
+sub setMeta {
+    my $self = shift;
+    my $key = shift;
+    my $value = shift;
+    my $dbh = $self->dbh;
+    $dbh->do("INSERT OR REPLACE INTO meta (key,value) VALUES (?,?)",{},$key,$value);
+    $self->meta->{$key} = $value;
 }
 
 =head2 addTreeNode(nodeId,nodeData)
@@ -160,7 +204,7 @@ sub getNodeCount {
     my $self = shift;
     my $expression = shift;
     my $dbh = $self->dbh;
-    return (($dbh->selectrow_array("SELECT count(docid) FROM node WHERE data MATCH ?",{},$expression))[0]);
+    return (($dbh->selectrow_array("SELECT count(docid) FROM node WHERE data MATCH ?",{},$self->encodeUtf8->encode($expression)))[0]);
 }
 
     
@@ -177,7 +221,7 @@ sub getNodes {
     my $offset = shift || 0;
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare("SELECT docid,data FROM node WHERE data MATCH ? LIMIT ? OFFSET ?");
-    $sth->execute($expression,$limit,$offset);
+    $sth->execute($self->encodeUtf8->encode($expression),$limit,$offset);
     my $json = $self->json;
     my @return;
     while (my $row = $sth->fetchrow_hashref){

@@ -38,10 +38,33 @@ Example configuration snipped
 
  *** VISUALIZER: chart ***
  module = TorrusChart
- name = Traffic
+ title = Traffic
+ caption = $R{name}
  mode = traffic
- # mode = qos
- +TxPrintTemplate
+ skiprec_pl = $R{port.display} eq 'data_unavailable'  
+
+ # in qos mode
+ mode = qos
+ extra_params=cbqos-class-map-name,cbqos-parent-name                       
+ +VIEW_MAPPER_PL   
+ # use this section to remap the names provided by torrus to something
+ # more 'end user friendly'. Return 'undef' to supress an entry
+ return undef unless $R{'cbqos-parent-name'} =~ /^cos-po2-cos-SAP\@/;
+ my $label;
+ for ($R{'cbqos-class-map-name'}){
+     $label = 'Voice' if /-vo-/;
+     $label = 'Business' if /-bu-/;
+     $label = 'Economy' if /-ec-/;   
+ }
+ my $kind;
+ for ($R{nodeid}){
+     $kind = 'Data' if m|//summary$|;
+     $kind = 'Dropped Packets' if m|//droppkt$|;
+ }
+ return undef unless $kind and $label;
+ return "$label $kind";
+
+ +PRINTTEMPLATE_TX
  <!doctype html><html>
   <head><title><%= $R{name} $R{location} %></title></head>
   <body>
@@ -81,10 +104,10 @@ sub new {
     if ($self->cfg->{mode}){
         $self->mode($self->cfg->{mode});
     }    
-    if ($self->cfg->{TxPrintTemplate}){
+    if ($self->cfg->{PRINTTEMPLATE_TX}){
         my $mt = Mojo::Template->new;
 #       $mt->prepend('my $self=shift; my %R = (%{$_[0]});');
-        $mt->parse('% my %R = (%{$_[0]});'."\n".$self->cfg->{TxPrintTemplate}{_text});
+        $mt->parse('% my %R = (%{$_[0]});'."\n".$self->cfg->{PRINTTEMPLATE_TX}{_text});
         $mt->build;
         my $exception = $mt->compile;
         die "Compiling Template: ".$exception if $exception;
@@ -108,6 +131,17 @@ sub matchRecord {
     if ($self->mode eq 'qos'){
         return undef unless $rec->{'torrus.qos-enabled'};
     };
+    if ($self->cfg->{skiprec_pl} and $self->cfg->{skiprec_pl}->($rec)){
+        return {  
+            visualizer => 'chart',
+            title => $self->cfg->{title},
+            caption => $self->cfg->{caption}($rec),
+            arguments => {
+                views => [], 
+                template => undef
+            }
+        }
+    }
     my $url = $rec->{'torrus.tree-url'};
     my $leaves;
     if ($self->mode eq 'traffic'){
@@ -117,12 +151,20 @@ sub matchRecord {
         $leaves = $self->getLeaves($url,'SEARCH_NODEID', {PREFIX => 'qos//'.$rec->{'torrus.nodeid'}});
     }    
     my @nodes;
+    my $mapper = $self->cfg->{VIEW_MAPPER_PL}{_text};
     for my $token (sort { ($leaves->{$b}{precedence} || 0) <=> ($leaves->{$a}{precedence} || 0) } keys %$leaves){        
         my $leaf = $leaves->{$token};
         next unless ref $leaf; # skip emtpy leaves
         my $nodeid = $leaf->{nodeid} or next; # skip leaves without nodeid
+
+        my $title = $leaf->{'cbqos-object-descr'} || $leaf->{comment};
+        if ($mapper){
+            $title = $mapper->($leaf);
+            next unless $title;
+        }
+
         my $hash = $self->calcHash($url,$nodeid);
-        $self->log->debug('adding '.$leaf->{comment},$leaf->{nodeid});
+        $self->log->debug('adding '.$title.' - '.$leaf->{nodeid});
         my $src = Mojo::URL->new();
         $src->path($self->root);
         $src->query(
@@ -133,18 +175,20 @@ sub matchRecord {
         $src->base->path($self->root);
         my $plain_src = $src->to_rel;
         url_unescape $plain_src;
+                
         push @nodes, {
             src => $plain_src,
-            title => $leaf->{'cbqos-object-descr'} || $leaf->{comment},
+            title => $title
         },
     };
     my $template;
     if ($self->printtemplate){
         $template = $self->printtemplate->interpret($rec)
-    }
+    }    
     return {
         visualizer => 'chart',
-        title => $self->cfg->{name} || 'Chart',
+        title => $self->cfg->{title},
+        caption => $self->cfg->{caption}->($rec),
         arguments => {
             views => \@nodes,
             template => $template
@@ -164,12 +208,17 @@ sub getLeaves {
     my $rpcCall = shift;
     my $callParams = shift;
     my $url = Mojo::URL->new($tree_url);
+    my $extraParams = '';
+    if ($self->cfg->{extra_params}){
+         $extraParams= ','.$self->cfg->{extra_params};
+         $extraParams=~ s/\s+//g;
+    }    
     $url->query(
         view=> 'rpc',
         RPCCALL => $rpcCall,
-        GET_PARAMS => 'precedence,cbqos-object-descr',
+        GET_PARAMS => 'precedence,cbqos-object-descr'.$extraParams,
         %$callParams
-    );    
+    );
     $self->log->debug("getting ".$url->to_string);
     my $tx = Mojo::UserAgent->new->get($url);
     if (my $res=$tx->success) {
@@ -271,7 +320,7 @@ Returns a hash for authenticating access to the ref
 
 sub calcHash {
     my $self = shift;
-    $self->log->debug('HASH '.join(',',@_));    
+    # $self->log->debug('HASH '.join(',',@_));    
     my $hash = hmac_md5_sum(join('::',@_),$self->secret);
     return $hash;
 }

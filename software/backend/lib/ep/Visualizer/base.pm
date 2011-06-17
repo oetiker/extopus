@@ -17,6 +17,7 @@ The base class for extopus visualizers
 use Mojo::Base -base;
 
 has 'cfg';
+has 'completeCfg';
 has 'log';
 has 'routes';
 has 'prefix' => '';

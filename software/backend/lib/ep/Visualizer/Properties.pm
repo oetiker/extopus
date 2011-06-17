@@ -2,7 +2,7 @@ package ep::Visualizer::Properties;
 
 =head1 NAME
 
-ep::Visualizer::Plain - show the record as-is
+ep::Visualizer::Properties - show the record as-is
 
 =head1 SYNOPSIS
 
@@ -11,7 +11,14 @@ my $viz = ep::Visualizer::Plain->new();
 
 =head1 DESCRIPTION
 
-Matches any record and shows its content
+Matches any record and shows its content. With the properties attribute
+you can limit the properties which are shown to the user.
+
+ *** VISUALIZER: prop ***
+ module=Properties
+ title=Properties
+ caption="$R{prod} $R{inv_id} $R{device_name}:$R{port}"
+ properties = cust,street,city,country,prod,svc_type,data_type
 
 =cut
 
@@ -30,10 +37,25 @@ can we handle this type of record
 sub matchRecord {
     my $self = shift;
     my $rec = shift;
+    my $cfg = $self->cfg;
+    my $attr = $self->completeCfg->{ATTRIBUTES};
+    my @list;
+    if ($cfg->{properties}){
+        my @propList = split /\s*,\s*/, $cfg->{properties};
+        @list = map {
+            [ $attr->{$_} || $_, defined $rec->{$_} ? "$rec->{$_}" : '-' ]
+        } @propList;        
+    }
+    else {
+        @list = map {
+            [ "$attr->{$_}" || "$_", defined $rec->{$_} ? "$rec->{$_}" : '-' ]
+        } sort { ($attr->{$a} || $a) cmp ($attr->{$b} || $b) } keys %$rec;        
+    }
     return {
         visualizer =>  'properties',
-        title => 'Properties',
-        arguments => $rec
+        title => $cfg->{title},
+        caption => $cfg->{caption}->($rec),
+        arguments => \@list,
     };
 }
 

@@ -43,17 +43,17 @@ qx.Class.define("ep.visualizer.Chart", {
         var viewSelection = viewSelector.getSelection();
         viewSelection.addListener("change",function(e){
             var item = viewSelection.getItem(0);
-            if (item == null){    
+            if (item == null){                
                 chart.setBaseUrl(null);
                 titleContainer.setEnabled(false);
-                this.__printBtn.setEnabled(false);
-                chart.setState('nodata');
+                this.__printBtn.setEnabled(false);    
+                chart.setViewMode('nodata');
             }
             else {                
                 var url = item.getSrc();
-                chart.setBaseUrl(url);
                 titleContainer.setEnabled(true);
                 this.__printBtn.setEnabled(this.__template != null );            
+                chart.setBaseUrl(url);
             }
        },this);
 

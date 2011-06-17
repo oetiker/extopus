@@ -29,6 +29,17 @@ sub walkInventory {
     die;
 }
 
+=head2 getVersion()
+
+show some version for the inventory for extopus to decide if it should reload the data. By default the function returns
+a random number, meaning that every time extopus checks, there will be a reload.
+
+=cut
+
+sub getVersion {
+    return rand;
+}
+
 =head2 $recordHash = buildRecord($dataHash)
 
 Builds a record, using data from the MAP section. Executing snipped as necessary.
@@ -41,12 +52,7 @@ sub buildRecord {
     my $map = $self->cfg->{MAP};
     my %rec;
     for my $attr ( keys %$map ){
-        if (ref $map->{$attr} eq 'CODE'){
-            $rec{$attr} = $map->{$attr}($raw);
-        }
-        else {
-            $rec{$attr} = $raw->{$map->{$attr}};
-        }
+        $rec{$attr} = $map->{$attr}($raw);
     }
     return \%rec;
 }

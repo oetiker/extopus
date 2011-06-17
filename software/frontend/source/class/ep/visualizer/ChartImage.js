@@ -31,10 +31,10 @@ qx.Class.define("ep.visualizer.ChartImage", {
         },this);
         img.addListener('loaded',function(){
             timer.restart();
-            this.setState('ready');
+            this.setViewMode('ready');
         },this);
         img.addListener('loadingFailed',function(){
-            this.setState('nodata');
+            this.setViewMode('nodata');
         },this);
         timer.start();
     },
@@ -63,28 +63,32 @@ qx.Class.define("ep.visualizer.ChartImage", {
         reloadChart: function (){
             var url = this.getBaseUrl();
             if (url == null){
+                this.setViewMode('nodata');
                 this.__img.setSource(null);
                 return;
             };
             var range = this.getTimeRange();
-            var end = this.getEndTime() || Math.round( new Date().getTime() / 1000 );
+            var end = this.getEndTime() || ( Math.round( new Date().getTime() / 1000 / 60 ) * 60);
             var el = this.getContainerElement().getDomElement();
-            var that = this;
             if (range && end && el){
                 // sync screen before we measure things
                 qx.html.Element.flush();
                 var width = qx.bom.element.Dimension.getWidth(el);
                 var height = qx.bom.element.Dimension.getHeight(el)
                 if (width > 0 && height > 0){
-                    that.setState('loading');
-                    that.__img.setSource(
-                        url
+                    var src = url
                         +'&start='+(end-range)
                         +'&end='+end
                         +'&width=' + width
                         +'&height=' + height
-                        +'&format=.png'
-                    );
+                        +'&format=.png';
+                    if (!qx.io.ImageLoader.isLoaded(src)){
+                        this.setViewMode('loading');
+                        this.__img.setSource(src);
+                    } else {
+                        this.__img.setSource(src);
+                        this.setViewMode('ready');
+                    }                    
                 }
             }
         }
