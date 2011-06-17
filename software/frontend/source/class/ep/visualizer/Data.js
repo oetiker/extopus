@@ -8,6 +8,8 @@
 /* ***************
 #asset(qx/icon/${qx.icontheme}/16/actions/document-save.png)
 #asset(qx/icon/${qx.icontheme}/16/actions/document-print.png)
+#asset(qx/icon/${qx.icontheme}/16/apps/office-spreadsheet.png)
+#asset(qx/icon/${qx.icontheme}/16/mimetypes/office-spreadsheet.png)
 ****************/
 
 /**
@@ -36,7 +38,7 @@ qx.Class.define("ep.visualizer.Data", {
         var intervalSelection = intervalSelector.getSelection();
         intervalSelection.addListener("change",function(e){
             var item = intervalSelection.getItem(0);
-            if (item == null){    
+            if (item == null){
                 titleContainer.setEnabled(false);
                 dataTable.setInterval(null);
             }
@@ -45,7 +47,7 @@ qx.Class.define("ep.visualizer.Data", {
             }
        },this);
 
-       
+
         // time span
         titleContainer.add(new qx.ui.basic.Label(this.tr('rows')).set({paddingLeft: 8}));
         var rowCount = new qx.ui.form.TextField("1").set({
@@ -67,10 +69,10 @@ qx.Class.define("ep.visualizer.Data", {
                     valid: true
                 });
             }
-            dataTable.setCount(parseInt(e.getData(),10));   
+            dataTable.setCount(parseInt(e.getData(),10));
         },this);
         dataTable.setCount(1);
-            
+
         titleContainer.add(new qx.ui.basic.Label(this.tr('end date')).set({paddingLeft: 5}));
 
         var dateField = new qx.ui.form.DateField().set({
@@ -87,23 +89,42 @@ qx.Class.define("ep.visualizer.Data", {
             dataTable.setEndDate(date);
         },this);
 
-        titleContainer.add(new qx.ui.core.Spacer(20),{flex: 1});                      
-        var saveCsv = new qx.ui.form.Button(this.tr('Save CSV'),"icon/16/actions/document-save.png");
-        saveCsv.addListener('execute',this._downloadCsv,this);
-        titleContainer.add(saveCsv);
+        titleContainer.add(new qx.ui.core.Spacer(20),{flex: 1});
+
+        // create main menu and buttons
+        var menu = new qx.ui.menu.Menu();
+
+        var csvButton  = new qx.ui.menu.Button(this.tr('Save CSV'),             "icon/16/actions/document-save.png");
+        var xlsButton  = new qx.ui.menu.Button(this.tr('Save Excel 2003 XLS'),  "icon/16/apps/office-spreadsheet.png");
+        var xlsxButton = new qx.ui.menu.Button(this.tr('Save Excel 2010 XLSX'), "icon/16/mimetypes/office-spreadsheet.png");
+
+        // add execute listeners
+        csvButton.addListener("execute",  function(){this._downloadAction('csv')},  this);
+        xlsButton.addListener("execute",  function(){this._downloadAction('xls')},  this);
+        xlsxButton.addListener("execute", function(){this._downloadAction('xlsx')}, this);
+
+        // add buttons to menu
+        menu.add(csvButton);
+        menu.addSeparator();
+        menu.add(xlsButton);
+        menu.add(xlsxButton);
+
+        var menuButton = new qx.ui.form.MenuButton(this.tr('Save'), null, menu);
+
+        titleContainer.add(menuButton);
 
         this.setArgs(args);
     },
     statics: {
         KEY: 'data'
     },
-    members: {    
+    members: {
         __dataTable:  null,
         __csvUrl: null,
         _applyArgs: function(newArgs,oldArgs){
             var intervalModel = qx.data.marshal.Json.createModel(newArgs.intervals);
             this.__intervalSelector.setModel(intervalModel);
-            var dt = this.__dataTable;        
+            var dt = this.__dataTable;
             dt.set({
                 treeUrl: newArgs.treeUrl,
                 hash: newArgs.hash
@@ -112,24 +133,23 @@ qx.Class.define("ep.visualizer.Data", {
             dt.setNodeId(newArgs.nodeId);
             this.__csvUrl = newArgs.csvUrl;
         },
-        _downloadCsv: function(){
+        _downloadAction: function(format){
             var data = this.__dataTable;
             var end = Math.round(new Date().getTime()/1000);
             if (data.getEndDate()){
                 end = Math.round(data.getEndDate().getTime()/1000);
             }
-            var url = this.__csvUrl+'&interval='+data.getInterval()+'&end='+end+'&count='+data.getCount();
+            var url = this.__csvUrl+'&format='+format+'&interval='+data.getInterval()+'&end='+end+'&count='+data.getCount();
             var win = qx.bom.Window.open(url, '_blank');
             qx.bom.Event.addNativeListener(win,'load', function(e) {
                 var body = qx.dom.Node.getBodyElement(win);
                 var doc  = qx.dom.Node.getDocumentElement(win);
                 /* if the window is empty, then it got opened externally */
-                if ((doc && qx.dom.Hierarchy.isEmpty(doc)) 
+                if ((doc && qx.dom.Hierarchy.isEmpty(doc))
                     || (body && qx.dom.Hierarchy.isEmpty(body))) {
                     win.close();
                 }
             });
-
         }
-    }    
+    }
 });

@@ -426,9 +426,11 @@ sub xlsBuilder {
         'contentType'        => 'application/vnd.ms-excel',
         'contentDisposition' => "attachment; filename=$name.xls"
     };
-    open my $fh, '>', \my $xlsbody or die "Failed to open filehandle: $!";
+    my $xlsbody;
+    my $xlsbody_ref = \$xlsbody;
+    open my $fh, '>', $xlsbody_ref or die "Failed to open filehandle: $!";
     my $workbook = Spreadsheet::WriteExcel->new($fh);
-    return $self->_excelBuilder($data,$name,$fileData,$xlsbody,$workbook);
+    return $self->_excelBuilder($data,$name,$fileData,$xlsbody_ref,$workbook);
 }
 
 =head2 xlsxBuilder(data,filename)
@@ -445,9 +447,11 @@ sub xlsxBuilder {
         'contentType'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'contentDisposition' => "attachment; filename=$name.xlsx"
    };
-   open my $fh, '>', \my $xlsxbody or die "Failed to open filehandle: $!";
+   my $xlsxbody;
+   my $xlsxbody_ref = \$xlsxbody;
+   open my $fh, '>', $xlsxbody_ref or die "Failed to open filehandle: $!";
    my $workbook = Excel::Writer::XLSX->new($fh);
-   return $self->_excelBuilder($data,$name,$fileData,$xlsxbody,$workbook);
+   return $self->_excelBuilder($data,$name,$fileData,$xlsxbody_ref,$workbook);
 }
 
 =head2 _excelBuilder(data,filename)
@@ -460,9 +464,9 @@ sub _excelBuilder {
     my $self      = shift;
     my $data      = shift;
     my $name      = shift;
-    my $fileData  = shift;
-    my $excelBody = shift;
-    my $workbook  = shift;
+    my $fileData      = shift;
+    my $excelBody_ref = shift; 
+    my $workbook      = shift;
     my @cnames;
     for (my $c=0;$self->cfg->{col_names}[$c];$c++){
         my $name = $self->cfg->{col_names}[$c];
@@ -476,13 +480,15 @@ sub _excelBuilder {
     $header_format->set_bold();
     $worksheet->write_row(0, 0,$cnames_ref,$header_format);
     my $rowcounter = 1;
+    use Data::Dumper;
+    print STDERR Dumper $data;
     for my $row (@{$data->{data}}){ 
         my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_||'') } @$row;
         my $line_ref = \@line;
-        $worksheet->write_row($rowcounter,0,$line_ref);
+        $worksheet->write_row($rowcounter++,0,$line_ref);
     }
     $workbook->close();
-    $fileData->{body} = $excelBody;
+    $fileData->{body} = $$excelBody_ref; # deref
     return $fileData;
 }
 
