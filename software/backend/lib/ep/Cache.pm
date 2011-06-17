@@ -203,7 +203,8 @@ how many nodes match the given expression
 sub getNodeCount {
     my $self = shift;
     my $expression = shift;
-    my $dbh = $self->dbh;
+    return 0 unless defined $expression;
+    my $dbh = $self->dbh;    
     return (($dbh->selectrow_array("SELECT count(docid) FROM node WHERE data MATCH ?",{},$self->encodeUtf8->encode($expression)))[0]);
 }
 
@@ -216,7 +217,8 @@ Return nodes matching the given search term
 
 sub getNodes {
     my $self = shift;
-    my $expression = shift;    
+    my $expression = shift;
+    return [] unless defined $expression;
     my $limit = shift || 100;
     my $offset = shift || 0;
     my $dbh = $self->dbh;
