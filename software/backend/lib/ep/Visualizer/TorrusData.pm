@@ -338,14 +338,13 @@ sub addProxyRoute {
             );
             $self->log->error("faild getting data $data->{error}");
             return;
-        }       
+        }
         my $rp = Mojo::Message::Response->new;
         $rp->code(200);
         my $name = $nodeid;
         $name =~ s/[^-_0-9a-z]+/_/ig;
-        $name .= '-'.strftime('%Y-%m-%d',localtime($end));               
+        $name .= '-'.strftime('%Y-%m-%d',localtime($end));
         my $fileData;
-        $format = 'xlsx'; # debugging
         for ($format) {
             /csv/ && do {
                 $fileData = $self->csvBuilder($data,$name);
@@ -362,7 +361,7 @@ sub addProxyRoute {
         }
         $rp->headers->content_type($fileData->{contentType});
         $rp->headers->add('Content-Disposition',$fileData->{contentDisposition});
-        $rp->body($fileData->{body});   
+        $rp->body($fileData->{body});
         $ctrl->tx->res($rp);
         $ctrl->rendered;
     });
@@ -377,10 +376,10 @@ creates a csv data list
 sub csvBuilder {
    my $self = shift;
    my $data = shift;
-   my $name = shift; 
+   my $name = shift;
    my $fileData = {
         'contentType'        => 'application/csv',
-        'contentDisposition' => "attachement; filename=$name.csv"
+        'contentDisposition' => "attachment; filename=$name.csv"
    };
    my @cnames;
    for (my $c=0;$self->cfg->{col_names}[$c];$c++){
@@ -388,11 +387,11 @@ sub csvBuilder {
         my $unit = $self->cfg->{col_units}[$c] || '';
         push @cnames, qq{"$name [$unit]"};
    }
-   my $body = join(",",@cnames)."\r\n";
+   my $body = join(";",@cnames)."\r\n";
    for my $row (@{$data->{data}}){
-       $body .= join(",",map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row)."\r\n";
+       $body .= join(";",map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row)."\r\n";
    }
-   $fileData->{body} = $body; 
+   $fileData->{body} = $body;
    return $fileData;
 }
 
@@ -404,36 +403,16 @@ creates a xls data list
 =cut
 
 sub xlsBuilder {
-   my $self = shift; 
-   my $data = shift;
-   my $name = shift; 
-   my $fileData = {
+    my $self = shift;
+    my $data = shift;
+    my $name = shift;
+    my $fileData = {
         'contentType'        => 'application/vnd.ms-excel',
-        'contentDisposition' => "attachement; filename=$name.xls"
-   };
-   my @cnames;
-   for (my $c=0;$self->cfg->{col_names}[$c];$c++){
-	my $name = $self->cfg->{col_names}[$c];
-        my $unit = $self->cfg->{col_units}[$c] || '';
-	push @cnames, qq{"$name [$unit]"};
-   }
-   open my $fh, '>', \my $xlsbody or die "Failed to open filehandle: $!";
-   my $workbook = Spreadsheet::WriteExcel->new($fh); 
-   my $worksheet = $workbook->add_worksheet();  
-   $worksheet->set_column('A:I',18);
-   my $cnames_ref = \@cnames;
-   my $header_format = $workbook->add_format();
-   $header_format->set_bold();
-   $worksheet->write_row(0, 0,$cnames_ref,$header_format);
-   my $rowcounter = 1;
-   for my $row (@{$data->{data}}){ 
-       my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_||'') } @$row;
-       my $line_ref = \@line;
-       $worksheet->write_row($rowcounter,0,$line_ref);
-   }
-   $workbook->close();   
-   $fileData->{body} = $xlsbody;
-   return $fileData;
+        'contentDisposition' => "attachment; filename=$name.xls"
+    };
+    open my $fh, '>', \my $xlsbody or die "Failed to open filehandle: $!";
+    my $workbook = Spreadsheet::WriteExcel->new($fh);
+    return $self->_excelBuilder($data,$name,$fileData,$xlsbody,$workbook);
 }
 
 =head2 xlsxBuilder(data,filename)
@@ -447,37 +426,49 @@ sub xlsxBuilder {
    my $data = shift;
    my $name = shift;
    my $fileData = {
-        'contentType'        =>  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'contentDisposition' => "attachement; filename=$name.xlsx"
+        'contentType'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'contentDisposition' => "attachment; filename=$name.xlsx"
    };
-   my @cnames;
-   for (my $c=0;$self->cfg->{col_names}[$c];$c++){
-        my $name = $self->cfg->{col_names}[$c];   
-	my $unit = $self->cfg->{col_units}[$c] || '';
-	push @cnames, qq{"$name [$unit]"};
-   }
    open my $fh, '>', \my $xlsxbody or die "Failed to open filehandle: $!";
    my $workbook = Excel::Writer::XLSX->new($fh);
-   my $worksheet = $workbook->add_worksheet();
-   $worksheet->set_column('A:I',18);
-   my $cnames_ref = \@cnames;
-   my $header_format = $workbook->add_format();
-   $header_format->set_bold();
-   $worksheet->write_row(0, 0,$cnames_ref,$header_format);
-   my $rowcounter = 1;
-   my $counter = 1; 
-   for my $row (@{$data->{data}}){
-       my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_||'') } @$row;
-       my $line_ref = \@line;
-       $worksheet->write_row($rowcounter,0,$line_ref);
-   }
-   $workbook->close(); 
-   $fileData->{body} = $xlsxbody;
-   return $fileData;
+   return $self->_excelBuilder($data,$name,$fileData,$xlsxbody,$workbook);
 }
 
+=head2 _excelBuilder(data,filename)
 
+creates a excel data list (unified part for old and new excel format)
 
+=cut
+
+sub _excelBuilder {
+    my $self      = shift;
+    my $data      = shift;
+    my $name      = shift;
+    my $fileData  = shift;
+    my $excelBody = shift;
+    my $workbook  = shift;
+    my @cnames;
+    for (my $c=0;$self->cfg->{col_names}[$c];$c++){
+        my $name = $self->cfg->{col_names}[$c];
+        my $unit = $self->cfg->{col_units}[$c] || '';
+        push @cnames, qq{"$name [$unit]"};
+    }
+    my $worksheet = $workbook->add_worksheet();
+    $worksheet->set_column('A:I',18);
+    my $cnames_ref = \@cnames;
+    my $header_format = $workbook->add_format();
+    $header_format->set_bold();
+    $worksheet->write_row(0, 0,$cnames_ref,$header_format);
+    my $rowcounter = 1;
+    for my $row (@{$data->{data}}){ 
+        my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_||'') } @$row;
+        my $line_ref = \@line;
+        $worksheet->write_row($rowcounter,0,$line_ref);
+    }
+    $workbook->close();
+    $fileData->{body} = $excelBody;
+    return $fileData;
+}
 
 =head2 calcHash(ref)
 
@@ -487,7 +478,7 @@ Returns a hash for authenticating access to the ref
 
 sub calcHash {
     my $self = shift;
-    $self->log->debug('HASH '.join(',',@_));    
+    $self->log->debug('HASH '.join(',',@_));
     my $hash = hmac_md5_sum(join('::',@_),$self->secret);
     return $hash;
 }
@@ -521,6 +512,7 @@ Copyright (c) 2011 by OETIKER+PARTNER AG. All rights reserved.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+S<Roman Plessl E<lt>roman.plessl@oetiker.chE<gt>>
 
 =head1 HISTORY
 
