@@ -41,7 +41,7 @@ our %allow = (
 has 'cfg';
 has 'inventory';
 has 'visualizer';
-has 'contoller';
+has 'controller';
 has 'cache';
 has 'log';
 
