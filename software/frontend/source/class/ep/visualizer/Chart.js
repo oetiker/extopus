@@ -101,13 +101,22 @@ qx.Class.define("ep.visualizer.Chart", {
             }            
         });
         titleContainer.add(new qx.ui.core.Spacer(10),{flex: 1});                      
-        var savePdf = new qx.ui.form.Button(this.tr('Save PDF'),"icon/16/actions/document-save.png");
-        savePdf.addListener('execute',this._downloadPdf,this);
-        titleContainer.add(savePdf);
- 
-        var printBtn = this.__printBtn = new qx.ui.form.Button(this.tr('Print'),"icon/16/actions/document-print.png");
-        printBtn.addListener('execute',this._popupPrintPage,this);
-        titleContainer.add(printBtn);
+        var menu = new qx.ui.menu.Menu();
+
+        var pdfButton  = new qx.ui.menu.Button(this.tr('Save PDF'),             "icon/16/actions/document-save.png");
+        var printButton  = this.__printBtn = new qx.ui.menu.Button(this.tr('Print'),  "icon/16/actions/document-print.png");
+
+        // add execute listeners
+        pdfButton.addListener("execute",  this._downloadPdf,  this);
+        printButton.addListener("execute",  this._popupPrintPage,  this);
+
+        // add buttons to menu
+        menu.add(pdfButton);
+        menu.add(printButton);
+
+        var menuButton = new qx.ui.form.MenuButton(this.tr('File'), null, menu);
+
+        titleContainer.add(menuButton);
         this.setArgs(args);
     },
     statics: {

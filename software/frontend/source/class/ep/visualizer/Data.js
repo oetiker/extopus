@@ -109,7 +109,7 @@ qx.Class.define("ep.visualizer.Data", {
         menu.add(xlsButton);
         menu.add(xlsxButton);
 
-        var menuButton = new qx.ui.form.MenuButton(this.tr('Save'), null, menu);
+        var menuButton = new qx.ui.form.MenuButton(this.tr('File'), null, menu);
 
         titleContainer.add(menuButton);
 
