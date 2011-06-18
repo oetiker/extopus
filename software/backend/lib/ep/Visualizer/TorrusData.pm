@@ -480,8 +480,6 @@ sub _excelBuilder {
     $header_format->set_bold();
     $worksheet->write_row(0, 0,$cnames_ref,$header_format);
     my $rowcounter = 1;
-    use Data::Dumper;
-    print STDERR Dumper $data;
     for my $row (@{$data->{data}}){ 
         my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_||'') } @$row;
         my $line_ref = \@line;
