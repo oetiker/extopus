@@ -12,7 +12,7 @@ my $viz = ep::Visualizer::TorrusData->new();
 =head1 DESCRIPTION
 
 Works in conjunction with the Data frontend visualizer. Data can be
-presented in tabular form and as a csv download.
+presented in tabular form, as a csv download and as an Excel Worksheet.
 
 This visualizer will match records that have the following attributes:
 
@@ -52,15 +52,20 @@ use Mojo::URL;
 use Mojo::JSON::Any;
 use Mojo::UserAgent;
 use Mojo::Template;
+
 use Time::Local qw(timelocal_nocheck);
+
+use Spreadsheet::WriteExcel;
+use Excel::Writer::XLSX;
 
 use ep::Exception qw(mkerror);
 use POSIX qw(strftime);
 
 has 'hostauth';
-has view => 'embedded';
-has json        => sub {Mojo::JSON::Any->new};
 has 'root';
+
+has view => 'embedded';
+has json => sub {Mojo::JSON::Any->new};
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -331,6 +336,7 @@ sub addProxyRoute {
         my $end = $req->param('end');
         my $interval = $req->param('interval');
         my $count = $req->param('count');
+        my $format = $req->param('format');
         my $newHash = $self->calcHash($url,$nodeid);
         if ($hash ne $newHash){
             $ctrl->render(
@@ -340,7 +346,7 @@ sub addProxyRoute {
             $self->log->warn("Request for $url?nodeid=$nodeid denied ($hash ne $newHash)");
             return;
         }
-        my $data =  $self->getData($url,$nodeid,$end,$interval,$count);
+        my $data = $self->getData($url,$nodeid,$end,$interval,$count);
         if (not $data->{status}){
             $ctrl->render(
                  status => 401,
@@ -349,28 +355,141 @@ sub addProxyRoute {
             $self->log->error("faild getting data $data->{error}");
             return;
         }
-        
         my $rp = Mojo::Message::Response->new;
         $rp->code(200);
-        $rp->headers->content_type('application/csv');
         my $name = $nodeid;
         $name =~ s/[^-_0-9a-z]+/_/ig;
-        $name .= '-'.strftime('%Y-%m-%d',localtime($end));               
-        $rp->headers->add('Content-Disposition',"attachement; filename=$name.csv");
-        my @cnames;
-        for (my $c=0;$self->cfg->{col_names}[$c];$c++){
-            my $name = $self->cfg->{col_names}[$c];
-            my $unit = $self->cfg->{col_units}[$c] || '';
-            push @cnames, qq{"$name [$unit]"};
+        $name .= '-'.strftime('%Y-%m-%d',localtime($end));
+        my $fileData;
+        for ($format) {
+            /csv/ && do {
+                $fileData = $self->csvBuilder($data,$name);
+                next;
+            };
+            /xlsx/ && do {
+                $fileData = $self->xlsxBuilder($data,$name);
+                next;
+            };
+            /xls/ && do {
+                $fileData = $self->xlsBuilder($data,$name);
+                next;
+            };
         }
-        my $body = join(",",@cnames)."\r\n";
-        for my $row (@{$data->{data}}){
-            $body .= join(",",map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row)."\r\n";
-        }
-        $rp->body($body);
+        $rp->headers->content_type($fileData->{contentType});
+        $rp->headers->add('Content-Disposition',$fileData->{contentDisposition});
+        $rp->body($fileData->{body});
         $ctrl->tx->res($rp);
         $ctrl->rendered;
     });
+}
+
+=head2 csvBuilder(data,filename)
+
+creates a csv data list
+
+=cut
+
+sub csvBuilder {
+   my $self = shift;
+   my $data = shift;
+   my $name = shift;
+   my $fileData = {
+        'contentType'        => 'application/csv',
+        'contentDisposition' => "attachment; filename=$name.csv"
+   };
+   my @cnames;
+   for (my $c=0;$self->cfg->{col_names}[$c];$c++){
+        my $name = $self->cfg->{col_names}[$c];
+        my $unit = $self->cfg->{col_units}[$c] || '';
+        push @cnames, qq{"$name [$unit]"};
+   }
+   my $body = join(";",@cnames)."\r\n";
+   for my $row (@{$data->{data}}){
+       $body .= join(";",map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row)."\r\n";
+   }
+   $fileData->{body} = $body;
+   return $fileData;
+}
+
+
+=head2 xlsBuilder(data,filename)
+
+creates a xls data list
+
+=cut
+
+sub xlsBuilder {
+    my $self = shift;
+    my $data = shift;
+    my $name = shift;
+    my $fileData = {
+        'contentType'        => 'application/vnd.ms-excel',
+        'contentDisposition' => "attachment; filename=$name.xls"
+    };
+    my $xlsbody;
+    my $xlsbody_ref = \$xlsbody;
+    open my $fh, '>', $xlsbody_ref or die "Failed to open filehandle: $!";
+    my $workbook = Spreadsheet::WriteExcel->new($fh);
+    return $self->_excelBuilder($data,$name,$fileData,$xlsbody_ref,$workbook);
+}
+
+=head2 xlsxBuilder(data,filename)
+
+creates a xls data list
+
+=cut
+
+sub xlsxBuilder {
+   my $self = shift;
+   my $data = shift;
+   my $name = shift;
+   my $fileData = {
+        'contentType'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'contentDisposition' => "attachment; filename=$name.xlsx"
+   };
+   my $xlsxbody;
+   my $xlsxbody_ref = \$xlsxbody;
+   open my $fh, '>', $xlsxbody_ref or die "Failed to open filehandle: $!";
+   my $workbook = Excel::Writer::XLSX->new($fh);
+   return $self->_excelBuilder($data,$name,$fileData,$xlsxbody_ref,$workbook);
+}
+
+=head2 _excelBuilder(data,filename)
+
+creates a excel data list (unified part for old and new excel format)
+
+=cut
+
+sub _excelBuilder {
+    my $self      = shift;
+    my $data      = shift;
+    my $name      = shift;
+    my $fileData      = shift;
+    my $excelBody_ref = shift; 
+    my $workbook      = shift;
+    my @cnames;
+    for (my $c=0;$self->cfg->{col_names}[$c];$c++){
+        my $name = $self->cfg->{col_names}[$c];
+        my $unit = $self->cfg->{col_units}[$c] || '';
+        push @cnames, qq{"$name [$unit]"};
+    }
+    my $worksheet = $workbook->add_worksheet();
+    $worksheet->set_column('A:I',18);
+    my $cnames_ref = \@cnames;
+    my $header_format = $workbook->add_format();
+    $header_format->set_bold();
+    $worksheet->write_row(0, 0,$cnames_ref,$header_format);
+    my $rowcounter = 1;
+    use Data::Dumper;
+    print STDERR Dumper $data;
+    for my $row (@{$data->{data}}){ 
+        my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_||'') } @$row;
+        my $line_ref = \@line;
+        $worksheet->write_row($rowcounter++,0,$line_ref);
+    }
+    $workbook->close();
+    $fileData->{body} = $$excelBody_ref; # deref
+    return $fileData;
 }
 
 =head2 calcHash(ref)
@@ -381,7 +500,7 @@ Returns a hash for authenticating access to the ref
 
 sub calcHash {
     my $self = shift;
-    $self->log->debug('HASH '.join(',',@_));    
+    $self->log->debug('HASH '.join(',',@_));
     my $hash = hmac_md5_sum(join('::',@_),$self->secret);
     return $hash;
 }
@@ -415,6 +534,7 @@ Copyright (c) 2011 by OETIKER+PARTNER AG. All rights reserved.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+S<Roman Plessl E<lt>roman.plessl@oetiker.chE<gt>>
 
 =head1 HISTORY
 
