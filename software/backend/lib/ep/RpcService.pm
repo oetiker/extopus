@@ -41,14 +41,14 @@ our %allow = (
 has 'cfg';
 has 'inventory';
 has 'visualizer';
-has 'mojo_session';
+has 'contoller';
 has 'cache';
 has 'log';
 
 sub allow_rpc_access {
     my $self = shift;
     my $method = shift;
-    my $user = $self->mojo_session->{'epUser'};
+    my $user = $self->controller->session('epUser');
     die mkerror(3993,q{Your session has expired. Please re-connect.}) unless defined $user;
     my $cfg = $self->cfg;
     my $cache = ep::Cache->new(
