@@ -32,9 +32,9 @@ use vars qw(@EXPORT_OK);
 use overload ('""' => 'stringify');
 
 
-use base qw(Mojo::Base);
-__PACKAGE__->attr('code');
-__PACKAGE__->attr('message');
+use Mojo::Base -base;
+has 'code';
+has 'message';
 
 
 
