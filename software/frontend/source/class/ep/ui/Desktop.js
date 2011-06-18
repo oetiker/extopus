@@ -14,7 +14,7 @@ qx.Class.define("ep.ui.Desktop", {
 
     construct : function() {
         this.base(arguments);
-        this.setLayout(new qx.ui.layout.Grow());
+        this.setLayout(new qx.ui.layout.VBox(5));
     },
     properties: {
         treeView: {},
@@ -22,8 +22,11 @@ qx.Class.define("ep.ui.Desktop", {
     },
     members: {
         populate: function(cfg){
+            /* large logo */
+            this._addLogo(cfg.frontend.logo_top);
+            /* tab view */
             var tabView = new qx.ui.tabview.TabView();
-            this.add(tabView);
+            this.add(tabView,{flex: 1});
             /* add tree */       
             var treeView = new ep.ui.TreeView(cfg.treeCols,cfg.openBranches);
             this.setTreeView(treeView);
@@ -50,6 +53,35 @@ qx.Class.define("ep.ui.Desktop", {
                     right  : 8
                });
             };
-        }
+            /* about line */
+            this._addAbout();
+        },
+        _addLogo: function(url){
+            if (!url){
+                return;
+            }
+            var logo = new qx.ui.basic.Atom(null,url).set({
+                alignX: 'left',
+                padding: 8,
+                show: 'icon',
+                toolTipText: 'click to hide'
+            });
+            logo.addListener('click',function(){
+                this.remove(logo);
+            },this);
+            this.add(logo);
+        },
+        _addAbout: function(){
+            var about = new qx.ui.basic.Label(this.tr('Built on Extopus, an OETIKER+PARTNER AG OpenSource Project')).set({
+                cursor: 'pointer',
+                alignX: 'right',
+                paddingRight: 5,
+                paddingBottom: 3,
+                font: 'small',
+                toolTipText: 'www.extopus.org'
+            });
+            about.addListener('click',function(){qx.bom.Window.open('http://extopus.org/', '_blank')});
+            this.add(about);
+        }                
     }
 });

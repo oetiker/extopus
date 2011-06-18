@@ -122,6 +122,7 @@ ${E}head1 SYNOPSIS
 
  *** FRONTEND ***
  logo_large = http://www.upc-cablecom.biz/en/cablecom_logo_b2b.jpg
+ logo_top = http://www.upc-cablecom.biz/en/cablecom_logo_b2b.jpg
  title = test title
   
  *** ATTRIBUTES ***
@@ -237,8 +238,9 @@ sub _make_parser {
         },
         FRONTEND => {
             _doc => 'Frontend tuneing parameters',
-            _vars => [ qw(logo_large title) ],
+            _vars => [ qw(logo_large logo_top title) ],
             logo_large => { _doc => 'url for logo to show when no visualizers are selected' },
+            logo_top => { _doc => 'url for logo to show in the top row of the screen' },
             title => { _doc => 'tite to show in the top right corner of the app' },
         },
         ATTRIBUTES => {
