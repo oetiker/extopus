@@ -91,7 +91,6 @@ get some gloabal configuration information into the interface
 sub getConfig {
     my $self = shift;
     return {
-        openBranches => $self->cfg->{GENERAL}{open_branches},
         treeCols => $self->getTableColumnDef('tree'),
         searchCols => $self->getTableColumnDef('search'),
         frontend => $self->cfg->{FRONTEND},

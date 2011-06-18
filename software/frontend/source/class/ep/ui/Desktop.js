@@ -28,7 +28,7 @@ qx.Class.define("ep.ui.Desktop", {
             var tabView = new qx.ui.tabview.TabView();
             this.add(tabView,{flex: 1});
             /* add tree */       
-            var treeView = new ep.ui.TreeView(cfg.treeCols,cfg.openBranches);
+            var treeView = new ep.ui.TreeView(cfg.treeCols,cfg.frontend.open_branches);
             this.setTreeView(treeView);
             var treePage = new qx.ui.tabview.Page(this.tr("Tree"));
             treePage.setLayout(new qx.ui.layout.Grow());

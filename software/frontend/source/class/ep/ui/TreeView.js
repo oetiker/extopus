@@ -29,9 +29,9 @@ qx.Class.define("ep.ui.TreeView", {
         var vPane = new qx.ui.splitpane.Pane("vertical");
         vPane.add(this._createTable(colDef.names,colDef.ids,colDef.widths),1);
         var tree = this._createTree();
-        hPane.add(tree,1);
+        hPane.add(tree,parseInt(ep.data.FrontendConfig.getInstance().getConfig().tree_width));
         this._openTree(tree,tree.getModel(),true);
-        hPane.add(vPane,3);
+        hPane.add(vPane,30);
         vPane.add(new ep.ui.View(this.getTable()),3);            
     },
 

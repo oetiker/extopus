@@ -116,7 +116,6 @@ ${E}head1 SYNOPSIS
  cache_dir = /scratch/extopus
  mojo_secret = Secret Cookie
  log_file = /tmp/dbtoria.log
- open_branches = 5
  update_interval = 86400 
  # default_user = admin
 
@@ -124,7 +123,8 @@ ${E}head1 SYNOPSIS
  logo_large = http://www.upc-cablecom.biz/en/cablecom_logo_b2b.jpg
  logo_top = http://www.upc-cablecom.biz/en/cablecom_logo_b2b.jpg
  title = test title
-  
+ open_branches = 5
+ tree_width =  10
  *** ATTRIBUTES ***
  prod = Product
  country = Country
@@ -226,22 +226,23 @@ sub _make_parser {
         _mandatory => [qw(GENERAL FRONTEND ATTRIBUTES TABLES)],
         GENERAL => {
             _doc => 'Global configuration settings for Extopus',
-            _vars => [ qw(cache_dir mojo_secret log_file log_level default_user open_branches update_interval) ],
+            _vars => [ qw(cache_dir mojo_secret log_file log_level default_user update_interval) ],
             _mandatory => [ qw(cache_dir mojo_secret log_file) ],
             cache_dir => { _doc => 'directory to cache information gathered via the inventory plugins' },
             default_user => { _doc => 'use this user for inventory authentication' },
             mojo_secret => { _doc => 'secret for signing mojo cookies' },
             log_file => { _doc => 'write a log file to this location (unless in development mode)'},
             log_level => { _doc => 'what to write to the logfile'},
-            open_branches => { _doc => 'how many branches to open initially in the tree' },
             update_interval => { _doc => 'check for updates every x seconds. 1 day by default'},
         },
         FRONTEND => {
             _doc => 'Frontend tuneing parameters',
-            _vars => [ qw(logo_large logo_top title) ],
+            _vars => [ qw(logo_large logo_top title open_branches tree_width) ],
             logo_large => { _doc => 'url for logo to show when no visualizers are selected' },
             logo_top => { _doc => 'url for logo to show in the top row of the screen' },
             title => { _doc => 'tite to show in the top right corner of the app' },
+            open_branches => { _doc => 'how many branches to open initially in the tree', _re => '\d+', _re_error => 'use an integer for the number of open branches' },
+            tree_width => { _doc => 'how wide is the tree in relationship to the content area ... default is 10 (content is 30)' , _re => '\d+', _re_error => 'use an integer for the width of the tree' },
         },
         ATTRIBUTES => {
             _vars => [ '/[-._a-z0-9]+/' ],
