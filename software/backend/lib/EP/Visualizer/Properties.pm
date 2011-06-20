@@ -6,8 +6,11 @@ EP::Visualizer::Properties - show the record as-is
 
 =head1 SYNOPSIS
 
-use EP::Visualizer::Plain;
-my $viz = EP::Visualizer::Plain->new();
+ *** VISUALIZER: prop ***
+ module=Properties
+ title=Properties
+ caption="$R{prod} $R{inv_id} $R{device_name}:$R{port}"
+ properties = cust,street,city,country,prod,svc_type,data_type
 
 =head1 DESCRIPTION
 

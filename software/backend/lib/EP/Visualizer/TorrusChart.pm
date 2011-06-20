@@ -6,36 +6,6 @@ EP::Visualizer::TorrusChart - provide access to appropriate torrus pages via a p
 
 =head1 SYNOPSIS
 
-use EP::Visualizer::TorrusIframe;
-my $viz = EP::Visualizer::TorrusIframe->new();
-
-=head1 DESCRIPTION
-
-The proxy will only deliver pages with a valid hash. As it ships html pages,
-it can rewrite internal img refs to include appropriate hash keys.
-
-This visualizer will match any records that have the following attributes:
-
- torrus.tree-url
- torrus.nodeid
-
-in qos mode  you also need
-
- torrus.qos_enabled
-
-The visualizer allows to configure a template for printing graphs.
-It uses the L<Mojo::Template> to render the content server side. Via the %R you have
-access to all node properties. Client side the following items will be replaced in the resulting
-html prior to displaying it. See L<http://demo.qooxdoo.org/current/apiviewer/#qx.util.format.DateFormat>
-for information on date format strings (according to unicode tr35).
-
- @@SRC@@ the image src  path to the current chart
- @@START(format)@@ Start date of the chart
- @@END(format)@@ End date of the chart
- @@VIEW@@ The selected view
-
-Example configuration snipped
-
  *** VISUALIZER: chart ***
  module = TorrusChart
  title = Traffic
@@ -74,6 +44,34 @@ Example configuration snipped
     <p><img src="@@SRC@@"/></p>
   </body>
  </html>
+
+=head1 DESCRIPTION
+
+The proxy will only deliver pages with a valid hash. As it ships html pages,
+it can rewrite internal img refs to include appropriate hash keys.
+
+This visualizer will match any records that have the following attributes:
+
+ torrus.tree-url
+ torrus.nodeid
+
+in qos mode  you also need
+
+ torrus.qos_enabled
+
+The visualizer allows to configure a template for printing graphs.
+It uses the L<Mojo::Template> to render the content server side. Via the %R you have
+access to all node properties. Client side the following items will be replaced in the resulting
+html prior to displaying it. See L<http://demo.qooxdoo.org/current/apiviewer/#qx.util.format.DateFormat>
+for information on date format strings (according to unicode tr35).
+
+ @@SRC@@ the image src  path to the current chart
+ @@START(format)@@ Start date of the chart
+ @@END(format)@@ End date of the chart
+ @@VIEW@@ The selected view
+
+Example configuration snipped
+
 
 =cut
 

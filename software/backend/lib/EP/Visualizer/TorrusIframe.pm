@@ -6,8 +6,10 @@ EP::Visualizer::TorrusIframe - provide access to appropriate torrus pages via a 
 
 =head1 SYNOPSIS
 
-use EP::Visualizer::TorrusIframe;
-my $viz = EP::Visualizer::TorrusIframe->new();
+ *** VISUALIZER: iframe ***
+ module=TorrusIframe
+ title=Torrus
+ caption="$R{prod} $R{inv_id} $R{device_name}:$R{port}"
 
 =head1 DESCRIPTION
 

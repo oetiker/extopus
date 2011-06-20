@@ -6,23 +6,6 @@ EP::Visualizer::TorrusData - pull numeric data associated with torrus data sourc
 
 =head1 SYNOPSIS
 
-use EP::Visualizer::TorrusData;
-my $viz = EP::Visualizer::TorrusData->new();
-
-=head1 DESCRIPTION
-
-Works in conjunction with the Data frontend visualizer. Data can be
-presented in tabular form, as a csv download and as an Excel Worksheet.
-
-This visualizer will match records that have the following attributes:
-
- torrus.url-prefix
- torrus.nodeid
-
-The visualizer fetches data from torrus through the AGGREGATE_DS rpc call.
-
-It determines further processing by evaluation additional configurable attributes
-
  *** VISUALIZER: data ***
  module = TorrusData
  selector = data_type
@@ -40,6 +23,20 @@ It determines further processing by evaluation additional configurable attribute
             $D{outbytes}{AVG} * $DURATION / 100 * $D{outbytes}{AVAIL}, \
             $D{inbytes}{MAX}, \
             $D{outbytes}{MAX}
+
+=head1 DESCRIPTION
+
+Works in conjunction with the Data frontend visualizer. Data can be
+presented in tabular form, as a csv download and as an Excel Worksheet.
+
+This visualizer will match records that have the following attributes:
+
+ torrus.url-prefix
+ torrus.nodeid
+
+The visualizer fetches data from torrus through the AGGREGATE_DS rpc call.
+
+It determines further processing by evaluation additional configurable attributes
 
 =head1 METHODS
 
