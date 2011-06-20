@@ -90,7 +90,6 @@
       %= content_for 'perldoc'
     </div>
     <div id="footer">
-      extopus.org
     </div>
   </body>
 </html>
