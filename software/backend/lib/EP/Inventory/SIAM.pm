@@ -10,7 +10,8 @@ EP::Inventory::SIAM - read data from a SIAM connector
 
 =head1 DESCRIPTION
 
-Thie EP::Inventory::SIAM grabs information from a SIAM inventory.
+Import informaton from a L<SIAM> inventory. The module uses the following
+configuration information from the main config file.
 
  *** INVENTORY: siam1 ***
  module=SIAM
@@ -41,7 +42,6 @@ Thie EP::Inventory::SIAM grabs information from a SIAM inventory.
  torrus.nodeid = torrus.nodeid
  car = cablecom.svc.car_name
 
-
 =cut
 
 use Mojo::Base 'EP::Inventory::base';
@@ -51,8 +51,13 @@ use Mojo::Util qw(md5_sum);
 use SIAM;
 use YAML;
 
-has 'user';
 has 'siam';
+
+=head1 METHODS
+
+Has all the methods and attributes of L<EP::Inventory::base> and the following:
+
+=cut
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -66,7 +71,7 @@ sub new {
 
 =head2 _getContracts
 
-return a SIAM contract handler
+internal ... return a SIAM contract handler
 
 =cut 
 
@@ -76,13 +81,13 @@ sub _getContracts {
     my %user = ();
     my $contracts;
     if ($self->cfg->{load_all}){
-        $self->log->debug('opening ALL contracts');
+        $self->app->log->debug('opening ALL contracts');
         $contracts = $siam->get_all_contracts();
     }
     else {
-        $self->log->debug('open contracts for '.$self->user);
+        $self->app->log->debug('open contracts for '.$self->user);
         my $user = $siam->get_user($self->user) or do {
-            $self->log->debug($self->cfg->{driver}.' has no information on '.$self->user);
+            $self->app->log->debug($self->cfg->{driver}.' has no information on '.$self->user);
             return [];
         };
         %user = (%{$user->attributes});
@@ -93,7 +98,7 @@ sub _getContracts {
 
 =head2 getVersion
 
-returns a md5 sum built from all the contract md5 hashes in the cache
+returns an md5 hash of all $cntr->computable('siam.contract.content_md5hash') values.
 
 =cut
 
@@ -151,7 +156,7 @@ sub walkInventory {
         }
     }
     $siam->disconnect;
-    $self->log->debug('loaded '.$count.' nodes');
+    $self->app->log->debug('loaded '.$count.' nodes');
 #   DB::disable_profile();
 #   DB::finish_profile();
 }

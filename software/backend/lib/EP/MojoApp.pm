@@ -83,10 +83,7 @@ sub startup {
     $routes->get('/' => sub { shift->redirect_to($me->prefix.'/')});
 
     my $inventory = EP::Inventory->new(
-        cfg=>$self->cfg,
-        log=>$self->log,
-        routes=>$self->routes,
-        secret=>$gcfg->{mojo_secret}
+        app => $self
     );
 
     my $visualizer = EP::Visualizer->new(

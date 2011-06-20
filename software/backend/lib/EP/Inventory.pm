@@ -15,35 +15,54 @@ EP::Inventory - inventory manager
 
 =head1 DESCRIPTION
 
-The base class for inventory modules.
+Instanciate and manage all configured inventory modules.
+
+=head1 PROPERTIES
 
 =cut
 
 use Mojo::Util qw(md5_sum);
 use Mojo::Base -base;
 
-has 'cfg';
 has 'drivers' => sub { [] };
+
+=head2 user
+
+the name of the current user. Set this before walking the inventories.
+
+=cut
+
 has 'user';
-has 'log';
-has 'routes';
-has 'secret';
 
+=head2 app
 
-=head2 new
+a pointer to the app object
 
-create new inventory instance
+=cut
+
+has 'app';
+
+=head1 METHODS
+
+All methods provided by L<Mojo::base> plus the following:
+
+=cut
+
+=head2 new(app)
+
+create new inventory manager.
+
 
 =cut
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    for my $entry ( grep /^INVENTORY:/, sort keys %{$self->cfg} ){
-        my $drvCfg = $self->cfg->{$entry};
+    for my $entry ( grep /^INVENTORY:/, sort keys %{$self->app->cfg} ){
+        my $drvCfg = $self->app->cfg->{$entry};
         require 'EP/Inventory/'.$drvCfg->{module}.'.pm';
         do {
             no strict 'refs';
-            push @{$self->drivers}, "EP::Inventory::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret});
+            push @{$self->drivers}, "EP::Inventory::$drvCfg->{module}"->new({cfg=>$drvCfg,app=>$self->app});
 
         }
     }
@@ -52,7 +71,8 @@ sub new {
 
 =head2 getVersion
 
-return a md5 hash of all inventory versions
+return a md5 hash of all inventory versions to see if any of the inventories has new data. We use this information
+to decide when to re-inventory the data.
 
 =cut
 
@@ -69,7 +89,8 @@ sub getVersion {
 
 =head2 walkInventory(callback)
 
-Walk all the configured inventories and add them to the cache.
+Walk all the configured inventories and add them to the cache by calling the callback with the available data.
+Before walking the inventory, make sure to set the 'user' property on the inventory manager object.
 
 =cut
 

@@ -16,8 +16,37 @@ The base class for inventory modules.
 
 use Mojo::Base -base;
 
+=head1 PROPERTIES
+
+=head2 cfg
+
+a hash pointer to the inventory module configuration section
+
+=cut
+
 has 'cfg';
-has 'log';
+
+=head2 app
+
+a pointer to the application object
+
+=cut
+
+has 'app';
+
+=head2 user
+
+the current user get set by L<EP::Inventory> before calling the walkInventory method.
+
+=cut
+
+has 'user';
+
+=head1 METHODS
+
+Has all the methods of L<Mojo::base> and the follogin:
+
+=cut
 
 =head2 walkInventory(callback)
 
@@ -49,7 +78,7 @@ Builds a record, using data from the MAP section. Executing snipped as necessary
 sub buildRecord {
     my $self = shift;    
     my $raw = shift;
-    my $map = $self->cfg->{MAP};
+    my $map = $self->app->cfg->{MAP};
     my %rec;
     for my $attr ( keys %$map ){
         $rec{$attr} = $map->{$attr}($raw);
