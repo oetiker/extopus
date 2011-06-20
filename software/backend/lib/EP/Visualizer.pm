@@ -36,7 +36,7 @@ has 'app';
 
 =head1 METHODS
 
-All the methods of L<Mojo::base> plus:
+All the methods of L<Mojo::Base> plus:
 
 =cut
 

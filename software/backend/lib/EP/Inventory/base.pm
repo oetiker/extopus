@@ -36,7 +36,7 @@ has 'app';
 
 =head1 METHODS
 
-Has all the methods of L<Mojo::base> and the follogin:
+Has all the methods of L<Mojo::Base> and the following:
 
 =cut
 
