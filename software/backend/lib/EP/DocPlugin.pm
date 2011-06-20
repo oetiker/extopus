@@ -125,6 +125,7 @@ sub register {
 
       # Combine everything to a proper response
       $self->content_for(perldoc => "$dom");
+      $self->content_for(index_link => $root.'/');
       # $self->app->plugins->run_hook(before_perldoc => $self);
       $self->render(
         inline   => $template,
@@ -133,7 +134,7 @@ sub register {
       );
       $self->res->headers->content_type('text/html;charset="UTF-8"');
     }
-  ) unless $conf->{no_perldoc};
+  );
 }
 
 sub _pod_to_html {
@@ -170,64 +171,44 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Plugin::PodRenderer - POD Renderer Plugin
+EP::DocPlugin - Extopus Documentation Plugin
 
 =head1 SYNOPSIS
 
-  # Mojolicious
-  $self->plugin('pod_renderer');
-  $self->plugin(pod_renderer => {name => 'foo'});
-  $self->plugin(pod_renderer => {preprocess => 'epl'});
-  $self->render('some_template', handler => 'pod');
-  <%= pod_to_html "=head1 TEST\n\nC<123>" %>
-
-  # Mojolicious::Lite
-  plugin 'pod_renderer';
-  plugin pod_renderer => {name => 'foo'};
-  plugin pod_renderer => {preprocess => 'epl'};
-  $self->render('some_template', handler => 'pod');
-  <%= pod_to_html "=head1 TEST\n\nC<123>" %>
+  $self->plugin('EP::DocPlugin',{
+      root => '/doc',
+      index => 'EP::Index',
+      template => Mojo::Asset::File->new(
+          path=>$self->home->rel_file('templates/doc.html.ep')
+      )->slurp,
+  }); 
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Plugin::PodRenderer> is a renderer for true Perl hackers,
-rawr!
+This is a modified version of L<Mojolicious::Plugin::PodRenderer> to rende
+extopus documentation.
 
 =head1 OPTIONS
 
 =head2 C<name>
 
-  # Mojolicious::Lite
-  plugin pod_renderer => {name => 'foo'};
-
 Handler name.
 
-=head2 C<no_perldoc>
-
-  # Mojolicious::Lite
-  plugin pod_renderer => {no_perldoc => 1};
-
-Disable perldoc browser.
-Note that this option is EXPERIMENTAL and might change without warning!
-
 =head2 C<preprocess>
-
-  # Mojolicious::Lite
-  plugin pod_renderer => {preprocess => 'epl'};
 
 Handler name of preprocessor.
 
 =head2 C<index>
 
-Name of the page to show when called without module name. Default F<Mojolicious::Guides>
+Name of the page to show when called without module name. (mandatory)
 
 =head2 C<root>
 
-Where to show this in the webtree.
+Where to show this in the webtree. (mandatory)
 
 =head2 C<template>
 
-A template string.
+A ep template string to render documentation pages. (mandatory)
 
 =head1 HELPERS
 
@@ -240,7 +221,7 @@ Render POD to HTML.
 
 =head1 METHODS
 
-L<Mojolicious::Plugin::PodRenderer> inherits all methods from
+L<EP::DocPlugin> inherits all methods from
 L<Mojolicious::Plugin> and implements the following new ones.
 
 =head2 C<register>
@@ -249,8 +230,33 @@ L<Mojolicious::Plugin> and implements the following new ones.
 
 Register renderer in L<Mojolicious> application.
 
-=head1 SEE ALSO
+=head1 LICENSE
 
-L<Mojolicious>, L<Mojolicious::Guides>, L<http://mojolicio.us>.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=head1 COPYRIGHT
+
+Copyright (c) 2011 by OETIKER+PARTNER AG. All rights reserved.
+
+=head1 AUTHOR
+
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+Based on original code by Sebastian Riedel
+
+=head1 HISTORY
+
+ 2011-06-20 to 1.0 first version
 
 =cut

@@ -11,14 +11,14 @@
       a { color: inherit; }
       a img { border: 0; }
       body {
-        background-color: #f5f6f8;
+        background-color: #bfbfbf;
         color: #333;
         font: 0.9em Verdana, sans-serif;
         margin: 0;
         text-shadow: #ddd 0 1px 0;
       }
       h1, h2, h3 {
-        font: 1.5em Georgia, Times, serif;
+        font-size: 1.5em;
         margin: 0;
       }
       h1 a, h2 a, h3 a { text-decoration: none; }
@@ -64,41 +64,29 @@
         -webkit-box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.6);
         box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.6);
         color: #eee;
-        height: 40px;
+        height: 60px;
         padding-left: 20px;
         overflow: hidden;
         text-align: left;
-        text-shadow: 0;
+        text-shadow: none;
         color: #bfbfbf;
-        font-size: 30px;
         vertical-align: middle;
         width: 100%;
         z-index: 1000;
+      }
+      #extopus-title {
+        font-size: 30px;
       }
     % end
   </head>
   <body onload="prettyPrint()">
     <div id="extopus-positioner">
-        <div id="extopus-header">Extopus Documentation Browser</div>
+        <div id="extopus-header">
+           <div id="extopus-title">Extopus Documentation Browser</div>
+           <div id="extopus-link"><a href="<%= content_for 'index_link'%>">Index</a> | <a href="http://www.extopus.org">Extopus Homepage</a></div>
+        </div>
     </div>
     <div id="perldoc">
-      <h1><a id="toc">TABLE OF CONTENTS</a></h1>
-      <ul>
-        % for my $section (@$sections) {
-          <li>
-            %= $link->(splice @$section, 0, 2)
-            % if (@$section) {
-              <ul>
-                % while (@$section) {
-                  <li>
-                    %= $link->(splice @$section, 0, 2)
-                  </li>
-                % }
-              </ul>
-            % }
-          </li>
-        % }
-      </ul>
       %= content_for 'perldoc'
     </div>
     <div id="footer">
