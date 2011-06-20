@@ -12,7 +12,7 @@
 
 /**
  * A container with the ability to overlay its prime content with either
- * a loading animation or the message No Data. Configure the widget by setting the {@link #viewMode}.
+ * a loading animation or the message No Data. Configure the widget by setting the {@link #ep.ui.LoadingBox~setViewMode}.
  */
 qx.Class.define("ep.ui.LoadingBox", {
     extend : qx.ui.core.Widget,
