@@ -17,12 +17,6 @@ EP::Visualizer::Properties - show the record as-is
 Matches any record and shows its content. With the properties attribute
 you can limit the properties which are shown to the user.
 
- *** VISUALIZER: prop ***
- module=Properties
- title=Properties
- caption="$R{prod} $R{inv_id} $R{device_name}:$R{port}"
- properties = cust,street,city,country,prod,svc_type,data_type
-
 =cut
 
 use strict;
