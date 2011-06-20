@@ -55,7 +55,7 @@ L<EP::Cache> - extopus data cache
 
 =item *
 
-L<EP::Config> - The Extopus File Parser
+L<EP::Config> - extopus configuration file parser
 
 =item *
 
