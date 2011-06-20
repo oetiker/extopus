@@ -28,6 +28,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
             show   : 'icon',
             cursor : 'pointer'
         });
+        breakOutButton.addListener("click", this._onBreakOutButtonClick, this);
 
         breakOutButton.exclude();
         var button = this.getChildControl('button');
@@ -36,8 +37,6 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
             row    : 0,
             column : 5
         });
-
-        breakOutButton.addListener("click", this._onBreakOutButtonClick, this);
         button.addListener('syncAppearance', this._updateBreakOutButton, this);
     },
 
@@ -55,7 +54,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
     properties : {
         /**
          * arguments defining the visualizers configuration.
-         *        
+         */
         args : {
             nullable : true,
             init     : null,

@@ -39,7 +39,7 @@ qx.Class.define("ep.visualizer.Chart", {
         this.add(titleContainer);
 
         // the chart
-        var chart = this.__chart = new ep.visualizer.ChartImage();
+        var chart = this.__chart = new ep.ui.ChartImage();
         this.add(chart, { flex : 1 });
 
         // view selector

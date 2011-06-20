@@ -41,7 +41,7 @@ qx.Class.define("ep.visualizer.Data", {
         this.set({ layout : new qx.ui.layout.VBox(10) });
         var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(8).set({ alignY : 'middle' }));
         this.add(titleContainer);
-        var dataTable = this.__dataTable = new ep.visualizer.DataTable(args.instance, args.columns, args.column_widths, args.column_units);
+        var dataTable = this.__dataTable = new ep.ui.DataTable(args.instance, args.columns, args.column_widths, args.column_units);
         this.add(dataTable, { flex : 1 });
 
         // view selector

@@ -10,7 +10,7 @@
 /**
  * Create a table widget for the Data visualizer.
  */
-qx.Class.define("ep.visualizer.DataTable", {
+qx.Class.define("ep.ui.DataTable", {
     extend : ep.ui.LoadingBox,
 
     /**
