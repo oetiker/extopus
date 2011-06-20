@@ -13,11 +13,9 @@ qx.Class.define('ep.data.FrontendConfig', {
 
     properties : {
         /**
-         * when set to null all records show
-         * when set to 'none' no records get selected
-         */
-        config : {
-            nullable : true
-        }
+                 * when set to null all records show
+                 * when set to 'none' no records get selected
+                 */
+        config : { nullable : true }
     }
 });

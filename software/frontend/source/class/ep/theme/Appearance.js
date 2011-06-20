@@ -9,16 +9,17 @@
  * Qooxdoo has no apperance overrides.
  */
 qx.Theme.define("ep.theme.Appearance", {
-    extend      : qx.theme.simple.Appearance,
+    extend : qx.theme.simple.Appearance,
+
     appearances : {
-        'epnavigator' : 'widget',
+        'epnavigator'           : 'widget',
         'epnavigator/eptabview' : 'tabview',
-        'epnavigator/eptree' : 'eptree',
-        'epnavigator/epsearch' : 'eptable',
-        'eptree' : 'widget',
-        'eptree/tree': 'treevirtual',
-        'eptable' : 'widget',
-        'eptable/table': 'table',
-        'eptable/search-box': 'textfield'
+        'epnavigator/eptree'    : 'eptree',
+        'epnavigator/epsearch'  : 'eptable',
+        'eptree'                : 'widget',
+        'eptree/tree'           : 'treevirtual',
+        'eptable'               : 'widget',
+        'eptable/table'         : 'table',
+        'eptable/search-box'    : 'textfield'
     }
 });

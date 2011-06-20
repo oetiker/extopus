@@ -17,41 +17,46 @@ qx.Class.define('ep.data.NodeTableModel', {
 
 
     /**
-     * Create an instance of Rpc.
-     */
+         * Create an instance of Rpc.
+         */
     construct : function(columns) {
         this.base(arguments);
     },
 
     properties : {
         /**
-         * when set to null all records show
-         * when set to 'none' no records get selected
-         */
+                 * when set to null all records show
+                 * when set to 'none' no records get selected
+                 */
         search : {
             nullable : true,
             apply    : '_applySearch'
         }
-    },    
+    },
 
     members : {
         /**
          * Provid our implementation to make remote table work
+         *
+         * @return {void} 
          */
         _loadRowCount : function() {
             var rpc = ep.data.Server.getInstance();
             var that = this;
             var search = this.getSearch();
-            rpc.callAsync(function(ret,exc) {
+
+            rpc.callAsync(function(ret, exc) {
                 if (exc) {
                     ep.ui.MsgBox.getInstance().exc(exc);
                     ret = 0;
                 }
-                // call this even when we had issues from 
+
+                // call this even when we had issues from
                 // remote. without it the remote table gets its
                 // undies in a twist.
                 that._onRowCountLoaded(ret);
-            }, 'getNodeCount', search);
+            },
+            'getNodeCount', search);
         },
 
 
@@ -60,9 +65,10 @@ qx.Class.define('ep.data.NodeTableModel', {
          *
          * @param newValue {Integer} New TagId
          * @param oldValue {Integer} Old TagId
+         * @return {void} 
          */
         _applySearch : function(newValue, oldValue) {
-            if (newValue != oldValue){
+            if (newValue != oldValue) {
                 this.reloadData();
             }
         },
@@ -73,21 +79,24 @@ qx.Class.define('ep.data.NodeTableModel', {
          *
          * @param firstRow {Integer} first row to load
          * @param lastRow {Integer} last row to load
+         * @return {void} 
          */
         _loadRowData : function(firstRow, lastRow) {
             var rpc = ep.data.Server.getInstance();
             var that = this;
-            rpc.callAsync(function(ret,exc) {
+
+            rpc.callAsync(function(ret, exc) {
                 if (exc) {
                     ep.ui.MsgBox.getInstance().exc(exc);
                     ret = {};
                 }
-                // call this even when we had issues from 
+
+                // call this even when we had issues from
                 // remote. without it the remote table gets its
                 // undies in a twist.
                 that._onRowDataLoaded(ret);
             },
-            'getNodes', this.getSearch(),lastRow-firstRow+1,firstRow);
+            'getNodes', this.getSearch(), lastRow - firstRow + 1, firstRow);
         }
     }
 });

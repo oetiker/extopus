@@ -22,28 +22,34 @@ qx.Class.define("ep.Application", {
         main : function() {
             // Call super class
             this.base(arguments);
-            qx.Class.include(qx.ui.treevirtual.TreeVirtual,
-                             qx.ui.treevirtual.MNode);
+            qx.Class.include(qx.ui.treevirtual.TreeVirtual, qx.ui.treevirtual.MNode);
+
             // Enable logging in debug variant
             if (qx.core.Environment.get("qx.debug")) {
                 // support native logging capabilities, e.g. Firebug for Firefox
                 qx.log.appender.Native;
+
                 // support additional cross-browser console. Press F7 to toggle visibility
                 qx.log.appender.Console;
             }
+
             var root = this.getRoot();
             var desktop = ep.ui.Desktop.getInstance();
-            root.add(desktop,{
+
+            root.add(desktop, {
                 left   : 0,
                 top    : 0,
                 right  : 0,
                 bottom : 0
-            });       
-            var rpc=ep.data.Server.getInstance();        
-            rpc.callAsyncSmart(function(cfg){
+            });
+
+            var rpc = ep.data.Server.getInstance();
+
+            rpc.callAsyncSmart(function(cfg) {
                 ep.data.FrontendConfig.getInstance().setConfig(cfg.frontend);
-                desktop.populate(cfg);                
-            },'getConfig');
+                desktop.populate(cfg);
+            },
+            'getConfig');
         }
     }
 });

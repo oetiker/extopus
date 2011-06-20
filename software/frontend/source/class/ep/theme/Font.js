@@ -4,12 +4,11 @@
    Authors:   Tobi Oetiker <tobi@oetiker.ch>
    Utf8Check: öï
 ************************************************************************ */
+
 /**
  * Two custom fonts for ep. <code>hugeTitle</code> and <code>smallTitle</code>.
  */
 qx.Theme.define("ep.theme.Font", {
     extend : qx.theme.simple.Font,
-
-    fonts : {
-    }
+    fonts  : {}
 });

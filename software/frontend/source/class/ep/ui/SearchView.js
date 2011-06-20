@@ -10,44 +10,78 @@
  */
 qx.Class.define("ep.ui.SearchView", {
     extend : qx.ui.core.Widget,
+
     construct : function(colDef) {
         this.base(arguments);
         this._setLayout(new qx.ui.layout.VBox());
         this._createSearchBox();
         this.__vPane = new qx.ui.splitpane.Pane("vertical");
-        this._add(this.__vPane,{flex: 1});
+        this._add(this.__vPane, { flex : 1 });
         var tm = ep.data.NodeTableModel.getInstance();
-        tm.setColumns(colDef.names,colDef.ids);
+        tm.setColumns(colDef.names, colDef.ids);
         this._createTable(colDef.widths);
         this._createView();
     },
-    properties: {
-        searchBox: {},
-        table: {}
+
+    properties : {
+        searchBox : {},
+        table     : {}
     },
-    members: {
-        __vPane: null,
+
+    members : {
+        __vPane : null,
+
+
+        /**
+         * TODOC
+         *
+         * @return {void} 
+         */
         _createSearchBox : function() {
             var control = new qx.ui.form.TextField().set({
-                placeholder: this.tr('search ...'),
-                enabled: false
+                placeholder : this.tr('search ...'),
+                enabled     : false
             });
+
             this._add(control);
-            control.addListener("changeValue",this._setSearch,this);
+            control.addListener("changeValue", this._setSearch, this);
             this.setSearchBox(control);
         },
-        _createTable: function(widths){
+
+
+        /**
+         * TODOC
+         *
+         * @param widths {var} TODOC
+         * @return {void} 
+         */
+        _createTable : function(widths) {
             var model = ep.data.NodeTableModel.getInstance();
-            var control = new ep.ui.Table(model,widths);
-            this.__vPane.add(control,1);
+            var control = new ep.ui.Table(model, widths);
+            this.__vPane.add(control, 1);
             this.getSearchBox().setEnabled(true);
             this.setTable(control);
         },
-        _createView: function(){
+
+
+        /**
+         * TODOC
+         *
+         * @return {void} 
+         */
+        _createView : function() {
             var control = new ep.ui.View(this.getTable());
-            this.__vPane.add(control,3);
+            this.__vPane.add(control, 3);
         },
-        _setSearch: function(e){
+
+
+        /**
+         * TODOC
+         *
+         * @param e {Event} TODOC
+         * @return {void} 
+         */
+        _setSearch : function(e) {
             var value = e.getData();
             this.getTable().getSelectionModel().resetSelection();
             ep.data.NodeTableModel.getInstance().setSearch(value);

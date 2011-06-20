@@ -24,6 +24,7 @@ qx.Class.define('ep.data.Server', {
             serviceName : 'ep'
         });
     },
+
     members : {
         /**
          * A variant of the asyncCall method which pops up error messages
