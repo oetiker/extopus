@@ -1,12 +1,12 @@
-package ep::Exception;
+package EP::Exception;
 
 =head1 NAME
 
-ep::Exception - a simple exception class
+EP::Exception - a simple exception class
 
 =head1 SYNOPSIS
 
- use ep::Exception qw(mkerror);
+ use EP::Exception qw(mkerror);
 
  eval { die error(22,'Bad Error'); }
  if ($@){

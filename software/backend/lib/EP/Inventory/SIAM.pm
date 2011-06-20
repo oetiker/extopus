@@ -1,16 +1,16 @@
-package ep::Inventory::SIAM;
+package EP::Inventory::SIAM;
 
 =head1 NAME
 
-ep::Inventory::SIAM - read data from a SIAM connector
+EP::Inventory::SIAM - read data from a SIAM connector
 
 =head1 SYNOPSIS
 
- use ep::Inventory::SIAM;
+ use EP::Inventory::SIAM;
 
 =head1 DESCRIPTION
 
-Thie ep::Inventory::SIAM grabs information from a SIAM inventory.
+Thie EP::Inventory::SIAM grabs information from a SIAM inventory.
 
  *** INVENTORY: siam1 ***
  module=SIAM
@@ -44,8 +44,8 @@ Thie ep::Inventory::SIAM grabs information from a SIAM inventory.
 
 =cut
 
-use Mojo::Base 'ep::Inventory::base';
-use ep::Exception qw(mkerror);
+use Mojo::Base 'EP::Inventory::base';
+use EP::Exception qw(mkerror);
 use Mojo::Util qw(md5_sum);
 
 use SIAM;

@@ -1,15 +1,15 @@
-package ep::Config;
+package EP::Config;
 use strict;
 
 =head1 NAME
 
-ep::Config - The Extopus File
+EP::Config - The Extopus File
 
 =head1 SYNOPSIS
 
- use ep::Config;
+ use EP::Config;
 
- my $parser = ep::Config->new(file=>'/etc/extopus/system.cfg');
+ my $parser = EP::Config->new(file=>'/etc/extopus/system.cfg');
 
  my $cfg = $parser->parse_config();
  my $pod = $parser->make_pod();
@@ -69,7 +69,7 @@ ${E}head1 LICENSE
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
+the Free Software Foundation; either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -96,7 +96,7 @@ FOOTER
 
 
 
-=item $x->B<_make_pod_header>()
+=head2 $x->B<_make_pod_header>()
 
 Returns the header of the cfg pod file.
 
@@ -187,13 +187,11 @@ ${E}head1 DESCRIPTION
 
 Configuration overview
 
-${E}head1 CONFIGURATION
-
 HEADER
 
 }
 
-=item $x->B<_make_parser>()
+=head2 $x->B<_make_parser>()
 
 Create a config parser for DbToRia.
 
@@ -402,8 +400,6 @@ EX
 1;
 __END__
 
-=back
-
 =head1 COPYRIGHT
 
 Copyright (c) 2011 by OETIKER+PARTNER AG. All rights reserved.
@@ -412,7 +408,7 @@ Copyright (c) 2011 by OETIKER+PARTNER AG. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
+the Free Software Foundation; either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,

@@ -1,14 +1,14 @@
-package ep::Cache;
+package EP::Cache;
 
 =head1 NAME
 
-ep::Cache - extopus data cache
+EP::Cache - extopus data cache
 
 =head1 SYNOPSIS
 
- use ep::Cache;
+ use EP::Cache;
 
- my $es = ep::Cache->new(
+ my $es = EP::Cache->new(
     cacheKey => 'unique name for the store',
     tree => sub { my %R = ( %$_[0] );
             [ [ $R{country}, $R{state} ],
@@ -51,7 +51,7 @@ has 'meta'      => sub { {} };
 
 =head2 B<new>(I<config>)
 
-Create an ep::nodeCache object.
+Create an EP::nodeCache object.
 
 =over
 
@@ -66,6 +66,8 @@ An identifier for this cache ... probably the name of the current user. If a cac
 =item B<tree>
 
 A hash pointer for a list of tree building configurations.
+
+=back
 
 =cut
 
@@ -294,13 +296,11 @@ sub getBranch {
 
 __END__
 
-=back
-
 =head1 LICENSE
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
+the Free Software Foundation; either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,

@@ -1,0 +1,140 @@
+=head1 NAME
+
+EP::Index - Extopus Documentation Index
+
+=head1 ADMIN DOCUMENTAION
+
+Extopus consists of two main components. A backend written in perl and a
+frontend written in javascript. The frontend talks to the backend via web
+requests. Mostly JSON-RPC but also some normal GET requests for graphcs and
+other downloads.
+
+All frontend configuration comes from the backend, so unless you are
+about to add additional visualization modules to the frontend, all you need to
+handle as an extopus admin is the backend configuration.
+
+=over
+
+=item L<EP::Cfg> - Configuration Syntax
+
+Extopus configuration syntax.
+
+=item L<EP::Inventory::SIAM> - SIAM Inventory Plugin
+
+How to attach Extopus to L<SIAM>.
+
+=item L<EP::Visualizer::TorrusChart> - Torrus Chart Visualizer
+
+Show torrus charts in extopus.
+
+=item L<EP::Visualizer::TorrusData> - Torrus Data Visualizer
+
+Fetch data analysis from torrus and present as a table
+
+=item L<EP::Visualizer::Properties> - Properties Visualizer
+
+Show node properties
+
+=back
+
+=head1 TECH DOCUMENTATION
+
+The Extopus backend is writting in perl, using the the Mojolicious
+framework. Mojolicious comes with its own documentation. See
+L<Mojolicious::Guides> for details.
+
+=over
+
+=item *
+
+L<EP::MojoApp> - the mojo application starting point
+
+=item * 
+
+L<EP::Cache> - extopus data cache
+
+=item *
+
+L<EP::Config> - The Extopus File Parser
+
+=item *
+
+L<EP::Exception> - a simple exception class
+
+=item *
+
+L<EP::RpcService> - RPC services for ep
+
+=item * 
+
+L<EP::Inventory> - inventory managemer
+
+=item *
+
+L<EP::Inventory::base> - base inventory class
+
+=item *
+
+L<EP::Inventory::SIAM> - read data from a SIAM connector
+
+=item * 
+
+L<EP::Visualizer> - visualizer managemer
+
+=item * 
+
+L<EP::Visualizer::base> - visualizer base class
+
+=item * 
+
+L<EP::Visualizer::TorrusIframe> - provide access to appropriate torrus pages via a proxy
+
+=item * 
+
+L<EP::Visualizer::TorrusData> - pull numeric data associated with torrus data source
+
+=item * 
+
+L<EP::Visualizer::TorrusChart> - provide access to appropriate torrus pages via a proxy
+
+=item * 
+
+L<EP::Visualizer::Properties> - show the record as-is
+
+=back
+
+=cut
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or   
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the  
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=head1 COPYRIGHT
+
+Copyright (c) 2011 by OETIKER+PARTNER AG. All rights reserved.
+
+=head1 AUTHOR
+
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+
+=head1 HISTORY
+
+ 2011-06-20 to 1.0 first version
+
+=cut
+
+
+
+

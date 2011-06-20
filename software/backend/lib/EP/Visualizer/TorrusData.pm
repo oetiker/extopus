@@ -1,13 +1,13 @@
-package ep::Visualizer::TorrusData;
+package EP::Visualizer::TorrusData;
 
 =head1 NAME
 
-ep::Visualizer::TorrusData - pull numeric data associated with torrus data source
+EP::Visualizer::TorrusData - pull numeric data associated with torrus data source
 
 =head1 SYNOPSIS
 
-use ep::Visualizer::TorrusData;
-my $viz = ep::Visualizer::TorrusData->new();
+use EP::Visualizer::TorrusData;
+my $viz = EP::Visualizer::TorrusData->new();
 
 =head1 DESCRIPTION
 
@@ -46,7 +46,7 @@ It determines further processing by evaluation additional configurable attribute
 use strict;
 use warnings;
 
-use Mojo::Base 'ep::Visualizer::base';
+use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(hmac_md5_sum url_unescape);
 use Mojo::URL;
 use Mojo::JSON::Any;
@@ -58,7 +58,7 @@ use Time::Local qw(timelocal_nocheck);
 use Spreadsheet::WriteExcel;
 use Excel::Writer::XLSX;
 
-use ep::Exception qw(mkerror);
+use EP::Exception qw(mkerror);
 use POSIX qw(strftime);
 
 has 'hostauth';
@@ -513,7 +513,7 @@ __END__
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
+the Free Software Foundation; either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,

@@ -11,9 +11,9 @@ use lib "$FindBin::Bin/../../thirdparty/lib/perl5";
 use Encode;
 use SIAM;
 use YAML;
-use ep::Config;
+use EP::Config;
 
-my $cfg = ep::Config->new( 
+my $cfg = EP::Config->new( 
    file=> ( $ENV{EXTOPUS_CONF} || "$FindBin::Bin/../etc/extopus.cfg" )
 )->parse_config();
 

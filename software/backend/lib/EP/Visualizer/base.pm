@@ -1,8 +1,8 @@
-package ep::Visualizer::base;
+package EP::Visualizer::base;
 
 =head1 NAME
 
-ep::Visualizer::base - visualizer base class
+EP::Visualizer::base - visualizer base class
 
 =head1 SYNOPSIS
 

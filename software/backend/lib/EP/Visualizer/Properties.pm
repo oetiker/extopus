@@ -1,13 +1,13 @@
-package ep::Visualizer::Properties;
+package EP::Visualizer::Properties;
 
 =head1 NAME
 
-ep::Visualizer::Properties - show the record as-is
+EP::Visualizer::Properties - show the record as-is
 
 =head1 SYNOPSIS
 
-use ep::Visualizer::Plain;
-my $viz = ep::Visualizer::Plain->new();
+use EP::Visualizer::Plain;
+my $viz = EP::Visualizer::Plain->new();
 
 =head1 DESCRIPTION
 
@@ -25,7 +25,7 @@ you can limit the properties which are shown to the user.
 use strict;
 use warnings;
 
-use Mojo::Base 'ep::Visualizer::base';
+use Mojo::Base 'EP::Visualizer::base';
 
   
 =head2 matchRecord(rec)
@@ -69,7 +69,7 @@ __END__
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
+the Free Software Foundation; either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,

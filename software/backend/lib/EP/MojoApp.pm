@@ -1,15 +1,15 @@
-package ep::MojoApp;
+package EP::MojoApp;
 
 =head1 NAME
 
-ep::MojoApp - the mojo application starting point
+EP::MojoApp - the mojo application starting point
 
 =head1 SYNOPSIS
 
- use ep::MojoApp;
+ use EP::MojoApp;
  use Mojolicious::Commands;
 
- $ENV{MOJO_APP} = ep::MojoApp->new;
+ $ENV{MOJO_APP} = EP::MojoApp->new;
  # Start commands
  Mojolicious::Commands->start;
 
@@ -27,16 +27,17 @@ use MojoX::Dispatcher::Qooxdoo::Jsonrpc;
 use Mojolicious::Plugin::QooxdooJsonrpc;
 use Mojo::URL;
 
-use ep::RpcService;
-use ep::Config;
-use ep::Inventory;
-use ep::Visualizer;
+use EP::RpcService;
+use EP::Config;
+use EP::Inventory;
+use EP::Visualizer;
+use EP::DocPlugin;
 
 use Mojo::Base 'Mojolicious';
 
 has 'cfg' => sub {
     my $self = shift;
-    my $conf = ep::Config->new( 
+    my $conf = EP::Config->new( 
         file=> ( $ENV{EXTOPUS_CONF} || $self->home->rel_file('etc/extopus.cfg') )
     );
     return $conf->parse_config();
@@ -44,12 +45,18 @@ has 'cfg' => sub {
 
 has 'prefix' => '/app';
 
+=head2 startup
+
+Mojolicious calls the startup method at initialization time.
+
+=cut
+
 sub startup {
     my $self = shift;
     my $me = $self;
     my $gcfg = $self->cfg->{GENERAL};
     $self->secret($gcfg->{mojo_secret});
-    if ($self->app->mode ne 'development'){
+    if ($self->mode ne 'development'){
         $self->log->path($gcfg->{log_file});
         if ($gcfg->{log_level}){    
             $self->log->level($gcfg->{log_level});
@@ -60,7 +67,7 @@ sub startup {
     $self->sessions->default_expiration(1*24*3600);
     # run /setUser/oetiker to launch the application for a particular user
     if ($gcfg->{default_user}){
-        $self->app->hook(before_dispatch => sub {
+        $self->hook(before_dispatch => sub {
             my $self = shift;
             $self->session(epUser =>  $gcfg->{default_user});
         });
@@ -75,14 +82,14 @@ sub startup {
 
     $routes->get('/' => sub { shift->redirect_to($me->prefix.'/')});
 
-    my $inventory = ep::Inventory->new(
+    my $inventory = EP::Inventory->new(
         cfg=>$self->cfg,
         log=>$self->log,
         routes=>$self->routes,
         secret=>$gcfg->{mojo_secret}
     );
 
-    my $visualizer = ep::Visualizer->new(
+    my $visualizer = EP::Visualizer->new(
         prefix=>$self->prefix,
         cfg=>$self->cfg,
         log=>$self->log,
@@ -90,12 +97,20 @@ sub startup {
         secret=>$gcfg->{mojo_secret}
     );
 
-    my $service = ep::RpcService->new(
+    my $service = EP::RpcService->new(
         cfg => $self->cfg,
         inventory => $inventory,
         visualizer => $visualizer,
         log => $self->log,
     );
+
+    $self->plugin('EP::DocPlugin',{
+        root => '/doc',
+        index => 'EP::Index',
+        template => Mojo::Asset::File->new(
+            path=>$self->home->rel_file('templates/doc.html.ep')
+        )->slurp,
+    }); 
 
     $self->plugin('qooxdoo_jsonrpc',{
         prefix => $self->prefix,
@@ -110,13 +125,11 @@ sub startup {
 
 __END__
 
-=back
-
 =head1 LICENSE
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
+the Free Software Foundation; either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,

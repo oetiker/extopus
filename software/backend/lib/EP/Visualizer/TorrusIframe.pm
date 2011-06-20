@@ -1,13 +1,13 @@
-package ep::Visualizer::TorrusIframe;
+package EP::Visualizer::TorrusIframe;
 
 =head1 NAME
 
-ep::Visualizer::TorrusIframe - provide access to appropriate torrus pages via a proxy
+EP::Visualizer::TorrusIframe - provide access to appropriate torrus pages via a proxy
 
 =head1 SYNOPSIS
 
-use ep::Visualizer::TorrusIframe;
-my $viz = ep::Visualizer::TorrusIframe->new();
+use EP::Visualizer::TorrusIframe;
+my $viz = EP::Visualizer::TorrusIframe->new();
 
 =head1 DESCRIPTION
 
@@ -25,12 +25,12 @@ This visualizer will match any records that have the following attributes:
 use strict;
 use warnings;
 
-use Mojo::Base 'ep::Visualizer::base';
+use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(hmac_md5_sum url_unescape);
 use Mojo::URL;
 use Mojo::JSON::Any;
 use Mojo::UserAgent;
-use ep::Exception qw(mkerror);
+use EP::Exception qw(mkerror);
 
 
 has 'hostauth';
@@ -266,7 +266,7 @@ __END__
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
+the Free Software Foundation; either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,

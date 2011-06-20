@@ -6,9 +6,9 @@ use FindBin;
 use lib "$FindBin::Bin/../../thirdparty/lib/perl5";
 use lib "$FindBin::Bin/../lib";
 use Mojolicious::Commands;
-use ep::MojoApp;
+use EP::MojoApp;
 
-$ENV{MOJO_APP} = ep::MojoApp->new;
+$ENV{MOJO_APP} = EP::MojoApp->new;
 
 # Start commands
 Mojolicious::Commands->start;

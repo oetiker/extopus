@@ -1,16 +1,16 @@
-package ep::Inventory;
+package EP::Inventory;
 
 =head1 NAME
 
-ep::Inventory::base - base inventory class
+EP::Inventory - inventory manager
 
 =head1 SYNOPSIS
 
- use ep::Inventory;
+ use EP::Inventory;
 
- my $inv = ep::Inventory->new(cfg=>$cfg);
+ my $inv = EP::Inventory->new(cfg=>$cfg);
  $inv->user('oetiker');
- my $cache = ep::Cache->new(...);
+ my $cache = EP::Cache->new(...);
  $inv->walkInventory(sub { $cache->add(shift) });
 
 =head1 DESCRIPTION
@@ -40,10 +40,10 @@ sub new {
     my $self = shift->SUPER::new(@_);
     for my $entry ( grep /^INVENTORY:/, sort keys %{$self->cfg} ){
         my $drvCfg = $self->cfg->{$entry};
-        require 'ep/Inventory/'.$drvCfg->{module}.'.pm';
+        require 'EP/Inventory/'.$drvCfg->{module}.'.pm';
         do {
             no strict 'refs';
-            push @{$self->drivers}, "ep::Inventory::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret});
+            push @{$self->drivers}, "EP::Inventory::$drvCfg->{module}"->new({cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret});
 
         }
     }
@@ -91,6 +91,22 @@ sub walkInventory {
 
 1;
 __END__
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 =head1 COPYRIGHT
 

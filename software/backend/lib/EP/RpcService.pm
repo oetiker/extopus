@@ -1,20 +1,20 @@
-package ep::RpcService;
+package EP::RpcService;
 
 use strict;
 
-use ep::Exception qw(mkerror);
-use ep::Cache;
+use EP::Exception qw(mkerror);
+use EP::Cache;
 
 use Mojo::Base -base;
 
 =head1 NAME
 
-ep::RpcService - RPC services for ep
+EP::RpcService - RPC services for ep
 
 =head1 SYNOPSIS
 
-This module gets instantiated by L<ep::MojoApp> and provides backend functionality for Extopus.
-It relies on an L<ep::Cache> instance for accessing the data.
+This module gets instantiated by L<EP::MojoApp> and provides backend functionality for Extopus.
+It relies on an L<EP::Cache> instance for accessing the data.
 
 =head1 DESCRIPTION
 
@@ -51,7 +51,7 @@ sub allow_rpc_access {
     my $user = $self->controller->session('epUser');
     die mkerror(3993,q{Your session has expired. Please re-connect.}) unless defined $user;
     my $cfg = $self->cfg;
-    my $cache = ep::Cache->new(
+    my $cache = EP::Cache->new(
         cacheRoot => $cfg->{GENERAL}{cache_dir},
         cacheKey => $user,
         treeCols => $self->getTableColumnDef('tree')->{ids},

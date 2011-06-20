@@ -1,14 +1,14 @@
-package ep::Visualizer;
+package EP::Visualizer;
 
 =head1 NAME
 
-ep::Visualizer - visualizer management object
+EP::Visualizer - visualizer management object
 
 =head1 SYNOPSIS
 
- use ep::Visualizer;
+ use EP::Visualizer;
 
- my $viz = ep::Visualizer->new(cfg,user,log,router,secret)
+ my $viz = EP::Visualizer->new(cfg,user,log,router,secret)
  my $matches = $viz->matchRecord(rec);
  
  # call $viz->visualizers->{'instance'}->XYZ
@@ -42,12 +42,12 @@ sub new {
 
     for my $entry ( sort { $cfg->{$a}{_order} <=> $cfg->{$b}{_order} } grep /^VISUALIZER:/, keys %{$self->cfg} ){
         my $drvCfg = $cfg->{$entry};
-        require 'ep/Visualizer/'.$drvCfg->{module}.'.pm';
+        require 'EP/Visualizer/'.$drvCfg->{module}.'.pm';
         $entry =~ m/VISUALIZER:\s*(\S+)/ or die "Could not match $entry";
         my $instance = $1;
         do {
             no strict 'refs';
-            my $visObj = "ep::Visualizer::$drvCfg->{module}"->new({completeCfg=>$self->cfg,cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,instance=>$instance,prefix=>$self->prefix});
+            my $visObj = "EP::Visualizer::$drvCfg->{module}"->new({completeCfg=>$self->cfg,cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,instance=>$instance,prefix=>$self->prefix});
             push @{$self->visualizers}, $visObj;
             $self->vismap->{$instance} = $visObj;
         }
@@ -58,7 +58,7 @@ sub new {
 =head2 getVisualizers(record)
 
 Find which visualizers consider themselves capable of visualizing this record.
-See L<ep::Visualizer::base::matchRecord>.
+See L<EP::Visualizer::base::matchRecord>.
 
 =cut
 
@@ -87,6 +87,22 @@ sub visualize {
 
 1;
 __END__
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 =head1 COPYRIGHT
 

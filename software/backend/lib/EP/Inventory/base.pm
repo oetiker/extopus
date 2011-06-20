@@ -1,12 +1,12 @@
-package ep::Inventory::base;
+package EP::Inventory::base;
 
 =head1 NAME
 
-ep::Inventory::base - base inventory class
+EP::Inventory::base - base inventory class
 
 =head1 SYNOPSIS
 
- use ep::Inventory::base;
+ use EP::Inventory::base;
 
 =head1 DESCRIPTION
 
