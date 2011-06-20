@@ -79,7 +79,7 @@
   </head>
   <body onload="prettyPrint()">
     <div id="extopus-positioner">
-        <div id="extopus-header">Extopux Documentation Browser</div>
+        <div id="extopus-header">Extopus Documentation Browser</div>
     </div>
     <div id="perldoc">
       <h1><a id="toc">TABLE OF CONTENTS</a></h1>
