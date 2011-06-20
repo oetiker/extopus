@@ -27,10 +27,9 @@ use warnings;
 
 use Mojo::Base 'EP::Visualizer::base';
 
-  
-=head2 matchRecord(rec)
+=head1 METHODS
 
-can we handle this type of record
+all the methods from L<EP::Visualizer::base>.
 
 =cut
 
@@ -38,7 +37,7 @@ sub matchRecord {
     my $self = shift;
     my $rec = shift;
     my $cfg = $self->cfg;
-    my $attr = $self->completeCfg->{ATTRIBUTES};
+    my $attr = $self->app->cfg->{ATTRIBUTES};
     my @list;
     if ($cfg->{properties}){
         my @propList = split /\s*,\s*/, $cfg->{properties};

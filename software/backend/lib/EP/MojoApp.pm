@@ -111,11 +111,7 @@ sub startup {
     );
 
     my $visualizer = EP::Visualizer->new(
-        prefix=>$self->prefix,
-        cfg=>$self->cfg,
-        log=>$self->log,
-        routes=>$self->routes,
-        secret=>$self->secret
+        app=>$self
     );
 
     my $service = EP::RpcService->new(

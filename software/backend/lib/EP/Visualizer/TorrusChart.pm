@@ -77,11 +77,17 @@ Example configuration snipped
 
 =cut
 
+=head1 METHODS
+
+all the methods from L<EP::Visualizer::base>. As well as these:               
+
+=cut
+
 use strict;
 use warnings;
 
 use Mojo::Base 'EP::Visualizer::base';
-use Mojo::Util qw(hmac_md5_sum url_unescape);
+use Mojo::Util qw(url_unescape);
 use Mojo::URL;
 use Mojo::JSON::Any;
 use Mojo::UserAgent;
@@ -164,7 +170,7 @@ sub matchRecord {
         }
 
         my $hash = $self->calcHash($url,$nodeid);
-        $self->log->debug('adding '.$title.' - '.$leaf->{nodeid});
+        $self->app->log->debug('adding '.$title.' - '.$leaf->{nodeid});
         my $src = Mojo::URL->new();
         $src->path($self->root);
         $src->query(
@@ -209,6 +215,7 @@ sub getLeaves {
     my $callParams = shift;
     my $url = Mojo::URL->new($tree_url);
     my $extraParams = '';
+    my $log = $self->app->log;
     if ($self->cfg->{extra_params}){
          $extraParams= ','.$self->cfg->{extra_params};
          $extraParams=~ s/\s+//g;
@@ -219,7 +226,7 @@ sub getLeaves {
         GET_PARAMS => 'precedence,cbqos-object-descr'.$extraParams,
         %$callParams
     );
-    $self->log->debug("getting ".$url->to_string);
+    $log->debug("getting ".$url->to_string);
     my $tx = Mojo::UserAgent->new->get($url);
     if (my $res=$tx->success) {
         if ($res->headers->content_type =~ m'application/json'i){
@@ -227,18 +234,18 @@ sub getLeaves {
             if ($ret->{success}){
                 return $ret->{data};
             } else {
-                $self->log->error("Running $rpcCall on ".join(', ',map{"$_: $callParams->{$_}"} keys %$callParams).$ret->{error});
+                $log->error("Running $rpcCall on ".join(', ',map{"$_: $callParams->{$_}"} keys %$callParams).$ret->{error});
                 return {};
             }
         }
         else {
-            $self->log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
+            $log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
             return {};
         }
     }
     else {
         my ($msg,$error) = $tx->error;
-        $self->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
+        $log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
         return {};
     }
 }
@@ -251,9 +258,9 @@ create a proxy route with the given properties of the object
 
 sub addProxyRoute {
     my $self = shift;
-    my $routes = $self->routes;
+    my $routes = $self->app->routes;
 
-    $routes->get($self->prefix.$self->root, sub {
+    $routes->get($self->app->prefix.$self->root, sub {
         my $ctrl = shift;
         my $req = $ctrl->req;
         my $hash =  $req->param('hash');
@@ -272,7 +279,7 @@ sub addProxyRoute {
                  status => 401,
                  text => "Supplied hash ($hash) does not match our expectations",
             );
-            $self->log->warn("Request for $url?nodeid=$nodeid;view=$view denied ($hash ne $newHash)");
+            $self->app->log->warn("Request for $url?nodeid=$nodeid;view=$view denied ($hash ne $newHash)");
             return;
         }
         my $baseUrl = $pxReq->to_string;
@@ -283,7 +290,7 @@ sub addProxyRoute {
         if ($format =~ /pdf$/){
             $pxReq->query({Gimgformat=>'PDF'})
         }
-        $self->log->debug("Fetching ".$pxReq->to_string);
+        $self->app->log->debug("Fetching ".$pxReq->to_string);
         my $tx = $ctrl->ua->get($pxReq);
         if (my $res=$tx->success) {
            my $body = $res->body;
@@ -310,19 +317,6 @@ sub addProxyRoute {
             );
         }
     });
-}
-
-=head2 calcHash(ref)
-
-Returns a hash for authenticating access to the ref
-
-=cut
-
-sub calcHash {
-    my $self = shift;
-    # $self->log->debug('HASH '.join(',',@_));    
-    my $hash = hmac_md5_sum(join('::',@_),$self->secret);
-    return $hash;
 }
 
 1;

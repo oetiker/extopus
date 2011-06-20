@@ -12,27 +12,56 @@ EP::Visualizer::base - visualizer base class
 
 The base class for extopus visualizers
 
+=head1 ATTRIBUTES
+
 =cut
 
 use Mojo::Base -base;
+use Mojo::Util qw(hmac_md5_sum);
+
+=head2 cfg
+
+A hash pointer to the instance configuration.
+
+=cut
 
 has 'cfg';
-has 'completeCfg';
-has 'log';
-has 'routes';
-has 'prefix' => '';
-has 'secret';
+
+=head2 app
+
+a pointer to the application object
+
+=cut
+
+has 'app';
+
+=head2 instance
+
+the name of the instance
+
+=cut
+
 has 'instance';
+
+=head1 METHODS
+
+all the methods of L<Mojo::Base> as well as these:
+
+=cut
 
 =head2 matchRecord(rec)
 
 Given a database record (hash) this method decides if it is capable of
 visualizing this information and if so, what visualization widget should be
-used on extopus side. It returns either undef (no match) or a map:
+used on extopus side. It returns either undef (no match) or an array of maps:
 
- { visualizer: '...',
-   properties: { }
- }
+ [
+    { visualizer => '...',
+      properties => { }
+    },
+    ...
+
+ ]
 
 =cut
 
@@ -44,7 +73,7 @@ sub matchRecord {
 
 =head2 rpcService
 
-accessible via the C<visualize(visualizerInstance,args)> rpc call
+custom rpc service of this visualizer. accessible via the C<visualize(visualizerInstance,args)> rpc call
 
 =cut
 
@@ -52,6 +81,19 @@ sub rpcService {
     my $self = shift;
     my @args = @_;
     die "sorry, no rpc service support";   
+}
+
+=head2 calcHash(ref)
+
+Returns a hash for authenticating access to the ref
+
+=cut
+
+sub calcHash {
+    my $self = shift;
+    # $self->log->debug('HASH '.join(',',@_));    
+    my $hash = hmac_md5_sum(join('::',@_),$self->app->secret);
+    return $hash;
 }
 
 1;

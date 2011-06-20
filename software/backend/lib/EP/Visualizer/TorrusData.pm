@@ -41,13 +41,17 @@ It determines further processing by evaluation additional configurable attribute
             $D{inbytes}{MAX}, \
             $D{outbytes}{MAX}
 
+=head1 METHODS
+
+all the methods from L<EP::Visualizer::base>. As well as these:               
+
 =cut
 
 use strict;
 use warnings;
 
 use Mojo::Base 'EP::Visualizer::base';
-use Mojo::Util qw(hmac_md5_sum url_unescape);
+use Mojo::Util qw(url_unescape);
 use Mojo::URL;
 use Mojo::JSON::Any;
 use Mojo::UserAgent;
@@ -260,7 +264,7 @@ sub getData {
                 Gend => $stepEnd,
                 nodeid=>"$nodeId//$subNode"
             );
-            $self->log->debug("getting ".$url->to_string);
+            $self->app->log->debug("getting ".$url->to_string);
             my $tx = Mojo::UserAgent->new->get($url);
             my $data;
             if (my $res=$tx->success) {
@@ -270,7 +274,7 @@ sub getData {
                         my $key = (keys %{$ret->{data}})[0];
                         $data{$subNode} = rrd2float($ret->{data}{$key});
                     } else {
-                        $self->log->error("Fetching ".$url->to_string." returns ".$data->{error});
+                        $self->app->log->error("Fetching ".$url->to_string." returns ".$data->{error});
                         return {
                            status => 0,
                            error => $data->{error}
@@ -278,7 +282,7 @@ sub getData {
                     }
                 }
                 else {
-                    $self->log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
+                    $self->app->log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
                     return {
                        status => 0,
                        error => "unexpected content/type (".$res->headers->content_type."): ".$res->body
@@ -287,7 +291,7 @@ sub getData {
             }
             else {
                 my ($msg,$error) = $tx->error;
-                $self->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
+                $self->app->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
                 return {    
                     status => 0,    
                     error => "fetching data for $nodeId from torrus server: $msg ".($error ||'')
@@ -326,8 +330,8 @@ create a proxy route with the given properties of the object
 
 sub addProxyRoute {
     my $self = shift;
-    my $routes = $self->routes;
-    $routes->get($self->prefix.$self->root, sub {
+    my $routes = $self->app->routes;
+    $routes->get($self->app->prefix.$self->root, sub {
         my $ctrl = shift;
         my $req = $ctrl->req;
         my $hash =  $req->param('hash');
@@ -343,7 +347,7 @@ sub addProxyRoute {
                  status => 401,
                  text => "Supplied hash ($hash) does not match our expectations",
             );
-            $self->log->warn("Request for $url?nodeid=$nodeid denied ($hash ne $newHash)");
+            $self->app->log->warn("Request for $url?nodeid=$nodeid denied ($hash ne $newHash)");
             return;
         }
         my $data = $self->getData($url,$nodeid,$end,$interval,$count);
@@ -352,7 +356,7 @@ sub addProxyRoute {
                  status => 401,
                  text => $data->{error},
             );
-            $self->log->error("faild getting data $data->{error}");
+            $self->app->log->error("faild getting data $data->{error}");
             return;
         }
         my $rp = Mojo::Message::Response->new;
@@ -490,18 +494,6 @@ sub _excelBuilder {
     return $fileData;
 }
 
-=head2 calcHash(ref)
-
-Returns a hash for authenticating access to the ref
-
-=cut
-
-sub calcHash {
-    my $self = shift;
-    $self->log->debug('HASH '.join(',',@_));
-    my $hash = hmac_md5_sum(join('::',@_),$self->secret);
-    return $hash;
-}
 
 1;
 

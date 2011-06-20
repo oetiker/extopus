@@ -20,6 +20,10 @@ This visualizer will match any records that have the following attributes:
  torrus.url-prefix
  torrus.nodeid
 
+=head1 METHODS
+
+all the methods from L<EP::Visualizer::base>. As well as these:               
+
 =cut
 
 use strict;
@@ -46,12 +50,6 @@ sub new {
     return $self;
 }
    
-=head2 matchRecord(rec)
-
-can we handle this type of record
-
-=cut
-
 sub matchRecord {
     my $self = shift;
     my $rec = shift;
@@ -67,7 +65,7 @@ sub matchRecord {
         next unless ref $leaf; # skip emtpy leaves
         my $nodeid = $leaf->{nodeid} or next; # skip leaves without nodeid
         my $hash = $self->calcHash($url,$nodeid,$view);
-        $self->log->debug('adding '.$leaf->{comment},$leaf->{nodeid});
+        $self->app->log->debug('adding '.$leaf->{comment},$leaf->{nodeid});
         my $src = Mojo::URL->new();
         $src->path($self->root);
         $src->query(
@@ -109,7 +107,7 @@ sub getLeaves {
         RPCCALL => 'WALK_LEAVES',
         GET_PARAMS => 'precedence',
     );    
-    $self->log->debug("getting ".$url->to_string);
+    $self->app->log->debug("getting ".$url->to_string);
     my $tx = Mojo::UserAgent->new->get($url);
     if (my $res=$tx->success) {
         if ($res->headers->content_type =~ m'application/json'i){
@@ -121,13 +119,13 @@ sub getLeaves {
             }
         }
         else {
-            $self->log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
+            $self->app->log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
             die mkerror(39944,"expected torrus to return and application/json result, but got ".$res->headers->content_type);
         }
     }
     else {
         my ($msg,$error) = $tx->error;
-        $self->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
+        $self->app->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
         die mkerror(48877,"fetching Leaves for $nodeid from torrus server: $msg ".($error ||''));        
     }
 }
@@ -140,9 +138,9 @@ create a proxy route with the given properties of the object
 
 sub addProxyRoute {
     my $self = shift;
-    my $routes = $self->routes;
+    my $routes = $self->app->routes;
 
-    $routes->get( $self->prefix.$self->root, sub {
+    $routes->get( $self->app->prefix.$self->root, sub {
         my $ctrl = shift;
         my $req = $ctrl->req;
         my $hash =  $req->param('hash');
@@ -164,7 +162,7 @@ sub addProxyRoute {
         if ($self->hostauth){
             $pxReq->query({hostauth=>$self->hostauth});
         }        
-        $self->log->debug("Fetching ".$pxReq->to_string);
+        $self->app->log->debug("Fetching ".$pxReq->to_string);
         my $tx = $ctrl->ua->get($pxReq);
         if (my $res=$tx->success) {
            my $body;
@@ -233,27 +231,14 @@ sub signImgSrc {
             if ($self->hostauth){
                 $newSrc->query({hostauth=>$self->hostauth});
             }        
-            $self->log->debug('img[src] in '.$attrs->{src});
+            $self->app->log->debug('img[src] in '.$attrs->{src});
             $attrs->{src} = $newSrc->to_string;
             # I guess to to_xml method of the dom re-escapes the urls again ... 
             # without this they end up being double escaped
             url_unescape $attrs->{src};
-            $self->log->debug('img[src] out '.$attrs->{src});
+            $self->app->log->debug('img[src] out '.$attrs->{src});
         }
     });
-}
-
-=head2 calcHash(ref)
-
-Returns a hash for authenticating access to the ref
-
-=cut
-
-sub calcHash {
-    my $self = shift;
-    $self->log->debug('HASH '.join(',',@_));    
-    my $hash = hmac_md5_sum(join('::',@_),$self->secret);
-    return $hash;
 }
 
 1;

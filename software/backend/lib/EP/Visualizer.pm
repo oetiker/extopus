@@ -8,8 +8,8 @@ EP::Visualizer - visualizer management object
 
  use EP::Visualizer;
 
- my $viz = EP::Visualizer->new(cfg,user,log,router,secret)
- my $matches = $viz->matchRecord(rec);
+ my $viz = EP::Visualizer->new($app)
+ my $matches = $viz->matchRecord($rec);
  
  # call $viz->visualizers->{'instance'}->XYZ
 
@@ -21,16 +21,26 @@ The base class for inventory modules.
 
 use Mojo::Base -base;
 
-has 'cfg';
 has 'visualizers' => sub { [] };
 has 'vismap' => sub { {} };
-has 'user';
-has 'log';
-has 'routes';
-has 'secret';
-has 'prefix';
 
-=head2 new
+=head1 ATTRIBUTES
+
+=head2 app
+
+a pointer to the application object
+
+=cut
+
+has 'app';
+
+=head1 METHODS
+
+All the methods of L<Mojo::base> plus:
+
+=cut
+
+=head2 new(app)
 
 create new inventory instance
 
@@ -38,16 +48,16 @@ create new inventory instance
 
 sub new {
     my $self = shift->SUPER::new(@_);    
-    my $cfg = $self->cfg;
+    my $cfg = $self->app->cfg;
 
-    for my $entry ( sort { $cfg->{$a}{_order} <=> $cfg->{$b}{_order} } grep /^VISUALIZER:/, keys %{$self->cfg} ){
+    for my $entry ( sort { $cfg->{$a}{_order} <=> $cfg->{$b}{_order} } grep /^VISUALIZER:/, keys %{$cfg} ){
         my $drvCfg = $cfg->{$entry};
         require 'EP/Visualizer/'.$drvCfg->{module}.'.pm';
         $entry =~ m/VISUALIZER:\s*(\S+)/ or die "Could not match $entry";
         my $instance = $1;
         do {
             no strict 'refs';
-            my $visObj = "EP::Visualizer::$drvCfg->{module}"->new({completeCfg=>$self->cfg,cfg=>$drvCfg,log=>$self->log,routes=>$self->routes,secret=>$self->secret,instance=>$instance,prefix=>$self->prefix});
+            my $visObj = "EP::Visualizer::$drvCfg->{module}"->new({app=>$self->app,cfg=>$drvCfg,instance=>$instance});
             push @{$self->visualizers}, $visObj;
             $self->vismap->{$instance} = $visObj;
         }
