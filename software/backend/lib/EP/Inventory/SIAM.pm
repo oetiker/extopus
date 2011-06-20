@@ -61,11 +61,10 @@ Has all the methods and attributes of L<EP::Inventory::base> and the following:
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    my $cfg = $self->cfg;
-    my $siamCfg =  YAML::LoadFile($cfg->{siam_cfg});
-    $siamCfg->{Logger} = $self->log;
+    my $siamCfg =  YAML::LoadFile($self->cfg->{siam_cfg});
+    $siamCfg->{Logger} = $self->app->log;
     $self->siam(SIAM->new($siamCfg));
-    $self->siam->set_log_manager($self->log);
+    $self->siam->set_log_manager($self->app->log);
     return $self;
 }
 
@@ -78,6 +77,7 @@ internal ... return a SIAM contract handler
 sub _getContracts {
     my $self = shift;
     my $siam = $self->siam;    
+    my $user = shift;
     my %user = ();
     my $contracts;
     if ($self->cfg->{load_all}){
@@ -85,9 +85,9 @@ sub _getContracts {
         $contracts = $siam->get_all_contracts();
     }
     else {
-        $self->app->log->debug('open contracts for '.$self->user);
-        my $user = $siam->get_user($self->user) or do {
-            $self->app->log->debug($self->cfg->{driver}.' has no information on '.$self->user);
+        $self->app->log->debug('open contracts for '.$user);
+        my $user = $siam->get_user($user) or do {
+            $self->app->log->debug($self->cfg->{driver}.' has no information on '.$user);
             return [];
         };
         %user = (%{$user->attributes});
@@ -96,7 +96,7 @@ sub _getContracts {
     return $contracts;    
 }
 
-=head2 getVersion
+=head2 getVersion(user)
 
 returns an md5 hash of all $cntr->computable('siam.contract.content_md5hash') values.
 
@@ -104,9 +104,10 @@ returns an md5 hash of all $cntr->computable('siam.contract.content_md5hash') va
 
 sub getVersion {
     my $self = shift;
+    my $user = shift;
     my $siam = $self->siam;
     $siam->connect;
-    my $contracts = $self->_getContracts();
+    my $contracts = $self->_getContracts($user);
     my $text = '';
     for my $cntr ( @{$contracts} ){
         $text .= $cntr->computable('siam.contract.content_md5hash');
@@ -115,7 +116,7 @@ sub getVersion {
     return md5_sum($text);
 }
 
-=head2 walkInventory(sub { my $hash = shift; ... })
+=head2 walkInventory(callback,user)
 
 call the data loading function for each data object retrieved from the inventory.
 
@@ -128,10 +129,11 @@ sub walkInventory {
 #   $ENV{DBI_PROFILE}=2;
     my $self = shift;
     my $storeCallback = shift;
+    my $user = shift;
     my $siam = $self->siam;    
     $siam->connect;
     my %user = ();
-    my $contracts = $self->_getContracts;
+    my $contracts = $self->_getContracts($user);
     my $count = 0;
     my $skip = $self->cfg->{skipnode_pl};
     for my $cntr ( @{$contracts} ){

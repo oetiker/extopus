@@ -115,14 +115,14 @@ sub startup {
         cfg=>$self->cfg,
         log=>$self->log,
         routes=>$self->routes,
-        secret=>$gcfg->{mojo_secret}
+        secret=>$self->secret
     );
 
     my $service = EP::RpcService->new(
         cfg => $self->cfg,
+        log => $self->log,
         inventory => $inventory,
         visualizer => $visualizer,
-        log => $self->log,
     );
 
     $self->plugin('EP::DocPlugin',{

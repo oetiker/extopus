@@ -9,9 +9,8 @@ EP::Inventory - inventory manager
  use EP::Inventory;
 
  my $inv = EP::Inventory->new(cfg=>$cfg);
- $inv->user('oetiker');
  my $cache = EP::Cache->new(...);
- $inv->walkInventory(sub { $cache->add(shift) });
+ $inv->walkInventory($cache,$user);
 
 =head1 DESCRIPTION
 
@@ -25,14 +24,6 @@ use Mojo::Util qw(md5_sum);
 use Mojo::Base -base;
 
 has 'drivers' => sub { [] };
-
-=head2 user
-
-the name of the current user. Set this before walking the inventories.
-
-=cut
-
-has 'user';
 
 =head2 app
 
@@ -69,7 +60,7 @@ sub new {
     return $self;
 }
 
-=head2 getVersion
+=head2 getVersion(user)
 
 return a md5 hash of all inventory versions to see if any of the inventories has new data. We use this information
 to decide when to re-inventory the data.
@@ -78,25 +69,25 @@ to decide when to re-inventory the data.
 
 sub getVersion {
     my $self = shift;
+    my $user = shift;
     my $text = '';
     for my $driver (@{$self->drivers}){        
-        $driver->user($self->user);
-        $text .= ">".$driver->getVersion;
+        $text .= ">".$driver->getVersion($user);
     }
-    $self->log->debug("inventory version check: $text");
+    $self->app->log->debug("inventory version check: $text");
     return md5_sum($text);
 }
 
-=head2 walkInventory(callback)
+=head2 walkInventory(cache,user)
 
-Walk all the configured inventories and add them to the cache by calling the callback with the available data.
-Before walking the inventory, make sure to set the 'user' property on the inventory manager object.
+Walk all the configured inventories and add them to the cache by calling the add method with the available data.
 
 =cut
 
 sub walkInventory {
     my $self = shift;
-    my $cache = shift;
+    my $cache = shift;    
+    my $user = shift;
     my $callback = sub { $cache->add(shift) };
     for my $driver (@{$self->drivers}){        
         if ($driver->cfg->{TREE}){
@@ -105,8 +96,7 @@ sub walkInventory {
         else {
             $cache->tree(sub{[]});
         }
-        $driver->user($self->user);
-        $driver->walkInventory($callback);
+        $driver->walkInventory($callback,$user);
     }
 }
 

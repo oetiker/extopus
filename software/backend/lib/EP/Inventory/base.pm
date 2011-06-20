@@ -34,21 +34,13 @@ a pointer to the application object
 
 has 'app';
 
-=head2 user
-
-the current user get set by L<EP::Inventory> before calling the walkInventory method.
-
-=cut
-
-has 'user';
-
 =head1 METHODS
 
 Has all the methods of L<Mojo::base> and the follogin:
 
 =cut
 
-=head2 walkInventory(callback)
+=head2 walkInventory(callback,user)
 
 Walk the invntory and hand all objects to the cache callback for adding to the cache.
 
@@ -58,7 +50,7 @@ sub walkInventory {
     die;
 }
 
-=head2 getVersion()
+=head2 getVersion(user)
 
 show some version for the inventory for extopus to decide if it should reload the data. By default the function returns
 a random number, meaning that every time extopus checks, there will be a reload.
@@ -78,7 +70,7 @@ Builds a record, using data from the MAP section. Executing snipped as necessary
 sub buildRecord {
     my $self = shift;    
     my $raw = shift;
-    my $map = $self->app->cfg->{MAP};
+    my $map = $self->cfg->{MAP};
     my %rec;
     for my $attr ( keys %$map ){
         $rec{$attr} = $map->{$attr}($raw);
