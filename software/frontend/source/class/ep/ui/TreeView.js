@@ -14,11 +14,18 @@
 ************************************************************************ */
 
 /**
- * The window for the browser side representation of a plugin instance.
+ * The Extopus node navigation tree with table and view areas.
  */
 qx.Class.define("ep.ui.TreeView", {
     extend : qx.ui.core.Widget,
 
+    /**
+     * create a navigator tree view
+     *
+     * @param colDef {Map} column definitions
+     * @param treeOpen {Integer} how many tree nodes to open initially
+     * @return {void} 
+     */
     construct : function(colDef, treeOpen) {
         this.__initial_open = treeOpen;
         this.base(arguments);
@@ -35,7 +42,13 @@ qx.Class.define("ep.ui.TreeView", {
     },
 
     properties : {
+        /**
+         * tree widget
+         */
         tree  : {},
+        /**
+         * table widget
+         */
         table : {}
     },
 
@@ -44,11 +57,11 @@ qx.Class.define("ep.ui.TreeView", {
 
 
         /**
-         * TODOC
+         * Open the tree
          *
-         * @param tree {var} TODOC
-         * @param node {Node} TODOC
-         * @param first {var} TODOC
+         * @param tree {Widget} tree widget
+         * @param node {Node} tree node model object
+         * @param first {Boolean} is this the first time we decend
          * @return {void} 
          */
         _openTree : function(tree, node, first) {
@@ -91,9 +104,9 @@ qx.Class.define("ep.ui.TreeView", {
 
 
         /**
-         * TODOC
+         * Create the tree widget with incremental loading
          *
-         * @return {var} TODOC
+         * @return {Widget} the tree widget
          */
         _createTree : function() {
             var root = qx.data.marshal.Json.createModel({
@@ -156,12 +169,12 @@ qx.Class.define("ep.ui.TreeView", {
 
 
         /**
-         * TODOC
+         * Create the table widget for showing the nodes matching the selected tree leaf.
          *
-         * @param names {var} TODOC
-         * @param ids {var} TODOC
-         * @param widths {var} TODOC
-         * @return {var} TODOC
+         * @param names {Array} column names
+         * @param ids {Array} column ids
+         * @param widths {Array} column widths
+         * @return {Widget} table widget
          */
         _createTable : function(names, ids, widths) {
             var tm = new qx.ui.table.model.Simple();
@@ -173,9 +186,9 @@ qx.Class.define("ep.ui.TreeView", {
 
 
         /**
-         * TODOC
+         * Add new nodes to the tree
          *
-         * @param node {Node} TODOC
+         * @param node {Node} node to add the new nodes to
          * @return {void} 
          */
         _addNodeKids : function(node) {
@@ -215,9 +228,9 @@ qx.Class.define("ep.ui.TreeView", {
 
 
         /**
-         * TODOC
+         * Load data into the leaf table
          *
-         * @param e {Event} TODOC
+         * @param e {Event} selection event
          * @return {void} 
          */
         _setLeavesTable : function(e) {

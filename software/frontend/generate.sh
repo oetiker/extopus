@@ -10,4 +10,8 @@ if [ x$QOOXDOO_PATH = x ]; then
    echo    or set QOOXDOO_PATH
    exit 1
 fi
-$QOOXDOO_PATH/tool/bin/generator.py -m QOOXDOO_PATH:$QOOXDOO_PATH -m CACHE:${TMP:-/tmp}/${USER}_QX_CACHE -m BUILD_PATH:../backend/public $1
+build_path=../backend/public
+if [ x$1=xapi ]; then
+   build_path=../backend/apidoc
+fi
+$QOOXDOO_PATH/tool/bin/generator.py -m QOOXDOO_PATH:$QOOXDOO_PATH -m CACHE:${TMP:-/tmp}/${USER}_QX_CACHE -m BUILD_PATH:${build_path} $1

@@ -6,7 +6,8 @@
 ************************************************************************ */
 
 /**
- * Navigation Window with tree and table
+ * Build the desktop. This is a singleton. So that the desktop
+ * object and with it the treeView and the searchView are universaly accessible
  */
 qx.Class.define("ep.ui.Desktop", {
     extend : qx.ui.container.Composite,
@@ -18,17 +19,25 @@ qx.Class.define("ep.ui.Desktop", {
     },
 
     properties : {
+       /**
+        * pointer to the treeView object.
+        */
         treeView   : {},
+       /** 
+        * pointer to the searchView object
+        */
         searchView : {}
     },
 
     members : {
-        /**
-         * TODOC
-         *
-         * @param cfg {var} TODOC
-         * @return {void} 
-         */
+       /**
+        * To populate the desktop object, we need access to the configuration.
+        * with this method (to be called only once) we provide the necessary
+        * information and setup the content of the desktop
+        *
+        * @param cfg {Map} a map representing the content of the FRONTEND section in the extops.cfg file
+        * @return {void}  
+        */
         populate : function(cfg) {
 
             /* large logo */
@@ -76,9 +85,9 @@ qx.Class.define("ep.ui.Desktop", {
 
 
         /**
-         * TODOC
+         * Add the Logo to the desktop
          *
-         * @param url {var} TODOC
+         * @param url {String} url of the logo
          * @return {void} 
          */
         _addLogo : function(url) {
@@ -102,7 +111,7 @@ qx.Class.define("ep.ui.Desktop", {
 
 
         /**
-         * TODOC
+         * Add the about line to the desktop
          *
          * @return {void} 
          */

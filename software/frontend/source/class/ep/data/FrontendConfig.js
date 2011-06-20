@@ -6,6 +6,10 @@
    Utf8Check:  äöü
 
 ************************************************************************ */
+/**
+ * This object holds the global configuration for the web frontend.
+ * it gets read at application startup
+ */
 
 qx.Class.define('ep.data.FrontendConfig', {
     extend : qx.core.Object,
@@ -13,9 +17,8 @@ qx.Class.define('ep.data.FrontendConfig', {
 
     properties : {
         /**
-                 * when set to null all records show
-                 * when set to 'none' no records get selected
-                 */
+         * the FRONTEND config from the master config file.
+         */
         config : { nullable : true }
     }
 });

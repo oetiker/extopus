@@ -11,6 +11,10 @@
 window.lightBlue = "#6eb7e4";
 window.darkBlue = "#0066a8";
 
+/**
+ * Have us some custom colors
+ */
+
 qx.Theme.define("ep.theme.Color", {
     extend : qx.theme.simple.Color,
 

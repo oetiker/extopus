@@ -10,12 +10,15 @@
 #asset(ep/page/*)
 ************************************************************************ */
 
+/**
+ * Main extopus application class.
+ */
 qx.Class.define("ep.Application", {
     extend : qx.application.Standalone,
 
     members : {
         /**
-         * Launch the remocular application.
+         * Launch the extopus application.
          *
          * @return {void} 
          */

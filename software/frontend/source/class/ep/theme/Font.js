@@ -6,7 +6,7 @@
 ************************************************************************ */
 
 /**
- * Two custom fonts for ep. <code>hugeTitle</code> and <code>smallTitle</code>.
+ * no special fonts for extopus
  */
 qx.Theme.define("ep.theme.Font", {
     extend : qx.theme.simple.Font,

@@ -6,11 +6,23 @@
 ************************************************************************ */
 
 /**
- * Show page from monitoring System.
-**/
+ * Show node properties.
+ **/
 qx.Class.define("ep.visualizer.Properties", {
     extend : ep.visualizer.AbstractVisualizer,
 
+    /**
+     * Setup the Chart view. The arguments map must look like this:
+     * 
+     * <pre>
+     * [ [ key, value ], [ ... ] ]
+     * </pre>
+     * 
+     * @param title {String} tab title
+     * @param args  {Map} configuration arguments.
+     * @return {void} 
+     *
+     */
     construct : function(title, args) {
         this.base(arguments, title);
         var scroller = new qx.ui.container.Scroll();
@@ -39,10 +51,10 @@ qx.Class.define("ep.visualizer.Properties", {
 
 
         /**
-         * TODOC
+         * Update the view content.
          *
-         * @param newArgs {var} TODOC
-         * @param oldArgs {var} TODOC
+         * @param newArgs {var} new args
+         * @param oldArgs {var} old args
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {

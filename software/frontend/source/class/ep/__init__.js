@@ -1,3 +1,3 @@
 /**
- * The extopus application.
+ * The extopus web frontend
  */

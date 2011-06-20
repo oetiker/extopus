@@ -24,7 +24,7 @@
  * open will just change the windows content on the fly.
  *
  * <pre code='javascript'>
- * var msg = nq.ui.MsgBox.getInstance();
+ * var msg = ep.ui.MsgBox.getInstance();
  * msg.error('Title','Message');
  * </pre>
  */
@@ -202,11 +202,11 @@ qx.Class.define("ep.ui.MsgBox", {
 
 
         /**
-         * Open the Warning popup
+         * Open the Warning popup with optional callback
          *
-         * @param titel {String} title
-         * @param text {String} body
-         * @param exec_action {var} TODOC
+         * @param titel {String} window title
+         * @param text {String} content
+         * @param exec_action {Function} callback to run when the apply button is pressed
          * @return {void} 
          */
         warn : function(titel, text, exec_action) {
@@ -215,12 +215,12 @@ qx.Class.define("ep.ui.MsgBox", {
             this.__btn_ok.setVisibility('excluded');
             this.__btn_cnl.setVisibility('visible');
             this.__btn_app.setVisibility('visible');
-            var listener = this.__btn_app.addListenerOnce("execute", exec_action);
-
-            this.addListenerOnce('close', function() {
-                this.removeListenerById(listener);
-            }, this);
-
+            if (exec_action){
+                var listener = this.__btn_app.addListenerOnce("execute", exec_action);
+                this.addListenerOnce('close', function() {
+                    this.removeListenerById(listener);
+                }, this);
+            }
             this.__open(titel, text);
         }
     }

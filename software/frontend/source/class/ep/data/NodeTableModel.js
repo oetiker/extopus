@@ -9,7 +9,7 @@
 
 /**
  * An {@link qx.ui.table.model.Remote} implementation for accessing
- * accessing Messreihen on the server.
+ * accessing the node cache on the server.
  */
 qx.Class.define('ep.data.NodeTableModel', {
     extend : qx.ui.table.model.Remote,
@@ -17,17 +17,16 @@ qx.Class.define('ep.data.NodeTableModel', {
 
 
     /**
-         * Create an instance of Rpc.
-         */
-    construct : function(columns) {
+     * Create an instance of the remote table model.
+     */
+    construct : function() {
         this.base(arguments);
     },
 
     properties : {
         /**
-                 * when set to null all records show
-                 * when set to 'none' no records get selected
-                 */
+         * when set to null no records show
+         */
         search : {
             nullable : true,
             apply    : '_applySearch'
@@ -61,7 +60,7 @@ qx.Class.define('ep.data.NodeTableModel', {
 
 
         /**
-         * Reload the table data when the tagId changes.
+         * Reload the table data when the search string changes
          *
          * @param newValue {Integer} New TagId
          * @param oldValue {Integer} Old TagId

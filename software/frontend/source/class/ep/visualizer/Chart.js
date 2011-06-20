@@ -11,10 +11,26 @@
 *************** */
 
 /**
- * Show page from monitoring System.
-**/
+ * Show a <b>chart</b> image from the monitoring System.
+ */
 qx.Class.define("ep.visualizer.Chart", {
     extend : ep.visualizer.AbstractVisualizer,
+
+    /**
+     * Setup the Chart view. The arguments map must look like this:
+     * 
+     * <pre code='javascript'>
+     * {
+     *    views: [ { title: 'x', src: 'view/url' }, { ... } ],
+     *    template: '<html>...</html>'
+     * }
+     * </pre>
+     * 
+     * @param title {String} tab title
+     * @param args  {Map} configuration arguments.
+     * @return {void} 
+     *
+     */
 
     construct : function(title, args) {
         this.base(arguments, title);
@@ -148,7 +164,12 @@ qx.Class.define("ep.visualizer.Chart", {
         this.setArgs(args);
     },
 
-    statics : { KEY : 'chart' },
+    statics : { 
+        /**
+         * The name of the visualizer is <code>chart</code>
+         */
+        KEY : 'chart' 
+    },
 
     members : {
         __viewSelector : null,
@@ -158,10 +179,10 @@ qx.Class.define("ep.visualizer.Chart", {
 
 
         /**
-         * TODOC
+         * Setup the Chart view.
          *
-         * @param newArgs {var} TODOC
-         * @param oldArgs {var} TODOC
+         * @param newArgs {var} new args
+         * @param oldArgs {var} old args
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
@@ -172,7 +193,7 @@ qx.Class.define("ep.visualizer.Chart", {
 
 
         /**
-         * TODOC
+         * Start the download of the pdf for the current chart
          *
          * @return {void} 
          */
@@ -198,9 +219,16 @@ qx.Class.define("ep.visualizer.Chart", {
 
 
         /**
-         * TODOC
+         * add bits to the template only available in the frontend. Currently to the following tags are supported:
          *
-         * @return {var} TODOC
+         * <ul>
+         * <li><b>@@SRC@@</b> the src for loading the chart image</li>
+         * <li><b>@@SRC@@</b> the src for loading the chart image</li>
+         * <li><b>@@START(x)@@</b> start time of the graph with x being an ISO time spec</li>
+         * <li><b>@@END(x)@@</b> end time of the graph with x being an ISO time spec</li>
+         * </ul>
+         * 
+         * @return {String} the template with @@X@@ replaced.
          */
         _fillTemplate : function() {
             var chart = this.__chart;
@@ -241,7 +269,7 @@ qx.Class.define("ep.visualizer.Chart", {
 
 
         /**
-         * TODOC
+         * Pop open the print window and start the print dialog.
          *
          * @return {void} 
          */

@@ -6,11 +6,14 @@
 ************************************************************************ */
 
 /**
- * The window for the browser side representation of a plugin instance.
+ * The searchView with search box, table and view area
  */
 qx.Class.define("ep.ui.SearchView", {
     extend : qx.ui.core.Widget,
 
+    /**
+     * @param colDef {Map} column definition with names and ids propperties
+     */
     construct : function(colDef) {
         this.base(arguments);
         this._setLayout(new qx.ui.layout.VBox());
@@ -23,17 +26,13 @@ qx.Class.define("ep.ui.SearchView", {
         this._createView();
     },
 
-    properties : {
-        searchBox : {},
-        table     : {}
-    },
-
     members : {
         __vPane : null,
-
+        __searchBox: null,
+        __table: null,
 
         /**
-         * TODOC
+         * Setup the search Text field
          *
          * @return {void} 
          */
@@ -45,45 +44,45 @@ qx.Class.define("ep.ui.SearchView", {
 
             this._add(control);
             control.addListener("changeValue", this._setSearch, this);
-            this.setSearchBox(control);
+            this.__searchBox = control;
         },
 
 
         /**
-         * TODOC
+         * Create the table widget.
          *
-         * @param widths {var} TODOC
+         * @param widths {var} the column widths for the table
          * @return {void} 
          */
         _createTable : function(widths) {
             var model = ep.data.NodeTableModel.getInstance();
             var control = new ep.ui.Table(model, widths);
             this.__vPane.add(control, 1);
-            this.getSearchBox().setEnabled(true);
-            this.setTable(control);
+            this.__searchBox.setEnabled(true);
+            this.__table = control;
         },
 
 
         /**
-         * TODOC
+         * Create the view widget
          *
          * @return {void} 
          */
         _createView : function() {
-            var control = new ep.ui.View(this.getTable());
+            var control = new ep.ui.View(this.__table);
             this.__vPane.add(control, 3);
         },
 
 
         /**
-         * TODOC
+         * Set the search value as data is entered in the search textbox
          *
-         * @param e {Event} TODOC
+         * @param e {Event} change event
          * @return {void} 
          */
         _setSearch : function(e) {
             var value = e.getData();
-            this.getTable().getSelectionModel().resetSelection();
+            this.__table.getSelectionModel().resetSelection();
             ep.data.NodeTableModel.getInstance().setSearch(value);
         }
     }

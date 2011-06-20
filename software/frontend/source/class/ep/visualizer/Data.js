@@ -13,11 +13,29 @@
 *************** */
 
 /**
- * Show page from monitoring System.
+ * Show Data analysis page
 **/
 qx.Class.define("ep.visualizer.Data", {
     extend : ep.visualizer.AbstractVisualizer,
 
+    /**
+     * Setup the Data view. The arguments map must look like this:
+     * 
+     * <pre code='javascript'>
+     * {
+     *    intervals: [ { name: 'Daily', key: 'daily' }, { ... } ],
+     *    treeUrl: 'url/to/fetch/data/from',
+     *    hash:    'xxx',
+     *    nodeId:  'nodeId',
+     *    csvUrl:  'url/to/download/data'          
+     * }
+     * </pre>
+     * 
+     * @param title {String} tab title
+     * @param args  {Map} configuration arguments.
+     * @return {void} 
+     *
+     */
     construct : function(title, args) {
         this.base(arguments, title);
         this.set({ layout : new qx.ui.layout.VBox(10) });
@@ -139,10 +157,10 @@ qx.Class.define("ep.visualizer.Data", {
 
 
         /**
-         * TODOC
+         * Setup visualizer with new configuration
          *
-         * @param newArgs {var} TODOC
-         * @param oldArgs {var} TODOC
+         * @param newArgs {var} new args
+         * @param oldArgs {var} old args
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
@@ -163,9 +181,9 @@ qx.Class.define("ep.visualizer.Data", {
 
 
         /**
-         * TODOC
+         * Download data to the client
          *
-         * @param format {var} TODOC
+         * @param format {var} in which format do we want the data.
          * @return {void} 
          */
         _downloadAction : function(format) {

@@ -10,12 +10,16 @@
 */
 
 /**
- * Visualization widgets they are re-usable by calling .setArgs(args)
-**/
+ * Abstract Visualization widget.
+ */
 qx.Class.define("ep.visualizer.AbstractVisualizer", {
     extend : qx.ui.tabview.Page,
     type : 'abstract',
-
+    /**
+     * create a visualization widget with the given title
+     * 
+     * @param title {String} title to display on the tab
+     */
     construct : function(title) {
         this.base(arguments, this['tr'](title));
 
@@ -41,14 +45,17 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
 
     events : {
         /**
-             * Fired by {@link qx.ui.tabview.Page} if the breakout button is clicked.
-             *
-             * Event data: The Page.
-             */
+         * Fired by {@link qx.ui.tabview.Page} if the breakout button is clicked.
+         *
+         * Event data: The Page.
+         */
         breakout : "qx.event.type.Data"
     },
 
     properties : {
+        /**
+         * arguments defining the visualizers configuration.
+         *        
         args : {
             nullable : true,
             init     : null,
@@ -61,10 +68,10 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
 
 
         /**
-         * TODOC
+         * Configure the visualizer. This must be overridden in the child code.
          *
-         * @param newArgs {var} TODOC
-         * @param oldArgs {var} TODOC
+         * @param newArgs {Map} old args
+         * @param oldArgs {Map} new args
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
@@ -73,9 +80,9 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
 
 
         /**
-         * TODOC
+         * Fire a breakout event for clicks on the breakOut button
          *
-         * @param e {Event} TODOC
+         * @param e {Event} click event
          * @return {void} 
          */
         _onBreakOutButtonClick : function(e) {
@@ -85,7 +92,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
 
 
         /**
-         * TODOC
+         * Only show the breakOut button when the tab is selected.
          *
          * @return {void} 
          */

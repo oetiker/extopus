@@ -8,11 +8,19 @@
 ************************************************************************ */
 
 /**
- * Create a table according to the instructions provided.
+ * Create a table widget for the Data visualizer.
  */
 qx.Class.define("ep.visualizer.DataTable", {
     extend : ep.ui.LoadingBox,
 
+    /**
+     * setup the data table
+     * 
+     * @param instance {String} instance name
+     * @param columns {Array} column names
+     * @param widths {Array} relative column widths
+     * @param units {Array} units for the column renderers
+     */
     construct : function(instance, columns, widths, units) {
         this.setInstance(instance);
         var tm = this.__model = new qx.ui.table.model.Simple().set({ columns : columns });
@@ -50,44 +58,59 @@ qx.Class.define("ep.visualizer.DataTable", {
     },
 
     properties : {
+        /**
+         * instance name of the table. This lets us identify ourselfs when requesting data from the server
+         */
         instance : {
             init     : null,
             nullable : true
         },
-
+        /**
+         * url on the torrus server where we get our data from
+         */
         treeUrl : {
             init     : null,
             nullable : true
         },
-
+        /**
+         * a hash provided by the server authorizing us to request the given nodeId from the treeUrl
+         */
         hash : {
             init     : null,
             nullable : true
         },
-
+        /**
+         * id of the current node
+         */
         nodeId : {
             init     : null,
-            apply    : '_reloadTable',
+            apply    : 'reloadTable',
             nullable : true
         },
-
+        /**
+         * time interval
+         */
         interval : {
             init     : null,
-            apply    : '_reloadTable',
+            apply    : 'reloadTable',
             nullable : true
         },
-
+        /**
+         * number of data rows to request
+         */
         count : {
             init     : null,
             check    : 'Integer',
-            apply    : '_reloadTable',
+            apply    : 'reloadTable',
             nullable : true
         },
-
+        /**
+         * last date of the analysis
+         */
         endDate : {
             init     : null,
             check    : 'Date',
-            apply    : '_reloadTable',
+            apply    : 'reloadTable',
             nullable : true
         }
     },
@@ -97,11 +120,11 @@ qx.Class.define("ep.visualizer.DataTable", {
 
 
         /**
-         * TODOC
+         * reload the table if all the required data is provided
          *
          * @return {void} 
          */
-        _reloadTable : function() {
+        reloadTable : function() {
             if (this.getInterval() && this.getCount() && this.getTreeUrl() && this.getNodeId() && this.getHash()) {
                 var rpc = ep.data.Server.getInstance();
                 var date = Math.round(new Date().getTime() / 1000);

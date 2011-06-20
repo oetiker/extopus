@@ -7,8 +7,7 @@
 ************************************************************************ */
 
 /**
- * initialize us an Rpc object which accesses a local cgi server when called from
- * the source version of the application 
+ * initialize us an Rpc object with some extra thrills.
  */
 qx.Class.define('ep.data.Server', {
     extend : qx.io.remote.Rpc,
@@ -16,10 +15,8 @@ qx.Class.define('ep.data.Server', {
 
     construct : function() {
         this.base(arguments);
-
         this.set({
-            // 3 seconds max
-            timeout     : 10000,
+            timeout     : 15000,
             url         : 'jsonrpc/',
             serviceName : 'ep'
         });

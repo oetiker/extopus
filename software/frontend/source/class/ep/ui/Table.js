@@ -8,11 +8,14 @@
 ************************************************************************ */
 
 /**
- * Create a table according to the instructions provided.
+ * Create a table with the given table model and relative column widths.
  */
 qx.Class.define("ep.ui.Table", {
     extend : qx.ui.table.Table,
-
+    /**
+     * @param tm {qx.ui.table.Model} table model
+     * @param widths {Array} relative column widths
+     */
     construct : function(tm, widths) {
         var tableOpts = {
             tableColumnModel : function(obj) {

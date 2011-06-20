@@ -7,9 +7,23 @@
 
 /**
  * A simple iFrame. Loads the src property of the args map
-**/
+ **/
 qx.Class.define("ep.visualizer.IFrame", {
     extend : ep.visualizer.AbstractVisualizer,
+    /**
+     * Setup the Iframe view. The arguments map must look like this:
+     * 
+     * <pre code='javascript'>
+     * {
+     *    src: 'url/to/request'
+     * }
+     * </pre>
+     * 
+     * @param title {String} tab title
+     * @param args  {Map} configuration arguments.
+     * @return {void} 
+     *
+     */
 
     construct : function(title, args) {
         this.base(arguments, title);
@@ -26,10 +40,10 @@ qx.Class.define("ep.visualizer.IFrame", {
 
 
         /**
-         * TODOC
+         * Configure the Iframe
          *
-         * @param newArgs {var} TODOC
-         * @param oldArgs {var} TODOC
+         * @param newArgs {var} new args
+         * @param oldArgs {var} old args
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {

@@ -8,7 +8,8 @@
 ************************************************************************ */
 
 /**
- * Create a table according to the instructions provided.
+ * Create an image widget to display the chart within the chart visualizer. The chart
+ * is reloaded as the widget size changes.
  */
 qx.Class.define("ep.visualizer.ChartImage", {
     extend : ep.ui.LoadingBox,
@@ -47,19 +48,26 @@ qx.Class.define("ep.visualizer.ChartImage", {
     },
 
     properties : {
+        /**
+         * base url to load the chart from the parameters 'end', 'start', 'width', 'height' will be added
+         */
         baseUrl : {
             init     : null,
             apply    : 'reloadChart',
             nullable : true
         },
-
+        /**
+         * time range for the chart (in seconds)
+         */
         timeRange : {
             init     : null,
             check    : 'Integer',
             apply    : 'reloadChart',
             nullable : true
         },
-
+        /**
+         * at what point in time is the end of the chart
+         */
         endTime : {
             init     : null,
             check    : 'Integer',
@@ -74,7 +82,8 @@ qx.Class.define("ep.visualizer.ChartImage", {
 
 
         /**
-         * TODOC
+         * Reload the chart. The reload will only happen when all the required information for requesting a chart from the 
+         * server are provided.
          *
          * @return {void} 
          */

@@ -104,6 +104,18 @@ sub startup {
         });
     }
 
+    my $apiDocRoot = $self->home->rel_dir('apidoc');
+    if (-d $apiDocRoot){
+        my $apiDoc = Mojolicious::Static->new();
+        $apiDoc->root($apiDocRoot);
+        $routes->get('/apidoc/(*path)' =>  { path => 'index.html' } => sub {
+            my $self = shift;
+            my $file = $self->param('path') || '';
+            $self->req->url->path('/'.$file); # relative paths get appended ... 
+            return $apiDoc->dispatch($self);
+        });
+    }
+
     $routes->get('/' => sub { shift->redirect_to($me->prefix.'/')});
 
     my $inventory = EP::Inventory->new(

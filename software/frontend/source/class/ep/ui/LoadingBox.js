@@ -5,16 +5,23 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/**********
+/*
 #asset(ep/loader.gif)
 #asset(qx/icon/${qx.icontheme}/64/status/dialog-information.png)
-**********/
+*/
+
 /**
- * Navigation Window with tree and table
+ * A container with the ability to overlay its prime content with either
+ * a loading animation or the message No Data. Configure the widget by setting the {@link #viewMode}.
  */
 qx.Class.define("ep.ui.LoadingBox", {
     extend : qx.ui.core.Widget,
 
+    /**
+     * wrap the loading Box around the given widget
+     *
+     * @param widget {Widget} widget to wrap
+     */
     construct : function(widget) {
         this.base(arguments);
 
@@ -65,6 +72,15 @@ qx.Class.define("ep.ui.LoadingBox", {
     },
 
     properties : {
+        /**
+         * The LoadingBox supports tree viewModes:
+         *
+         * <ul>
+         * <li><b>loading</b>: shows a loader animation. It only shows if the viewMode has been in loading state for more than 100ms</li>
+         * <li><b>nodata</b>: shows the no data message</li>
+         * <li><b>ready</b>: shows the widget provided at create time</li>
+         * </ul>
+         */
         viewMode : {
             init  : 'ready',
             apply : '_applyViewMode'
@@ -78,10 +94,10 @@ qx.Class.define("ep.ui.LoadingBox", {
 
 
         /**
-         * TODOC
+         * Set the View Mode
          *
-         * @param newValue {var} TODOC
-         * @param oldValue {var} TODOC
+         * @param newValue {var} new mode
+         * @param oldValue {var} old mode
          * @return {void} 
          */
         _applyViewMode : function(newValue, oldValue) {

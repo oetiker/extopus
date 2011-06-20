@@ -10,7 +10,9 @@
 **/
 qx.Class.define("ep.ui.View", {
     extend : qx.ui.core.Widget,
-
+    /**
+     * @param table {ep.ui.Table} table controling the view content
+     */
     construct : function(table) {
         this.base(arguments);
         this._setLayout(new qx.ui.layout.Grow());
@@ -57,10 +59,11 @@ qx.Class.define("ep.ui.View", {
 
 
         /**
-         * TODOC
+         * Create new a visualizer widget according to the given configuration. At first glance the configuration
+         * map has a <code>title</code>, <code>caption</code> and <code>arguments</code> property.
          *
-         * @param viz {var} TODOC
-         * @return {var} TODOC
+         * @param viz {Map} visualizer configuration map
+         * @return {Widget} visualizer widget
          */
         _createVisualizer : function(viz) {
             var control;
@@ -92,9 +95,10 @@ qx.Class.define("ep.ui.View", {
 
 
         /**
-         * TODOC
+         * Show the appropriate visualizer for the seleced node in a tab view. The method will re-use existing visualizer
+         * instances where possible.
          *
-         * @param vizList {var} TODOC
+         * @param vizList {Array} visualizer config array
          * @return {void} 
          */
         _showVisualizers : function(vizList) {
@@ -171,9 +175,9 @@ qx.Class.define("ep.ui.View", {
 
 
         /**
-         * TODOC
+         * Break out a visualizer tab into its own window.
          *
-         * @param e {Event} TODOC
+         * @param e {Event} breakOut event
          * @return {void} 
          */
         _onBreakOut : function(e) {
