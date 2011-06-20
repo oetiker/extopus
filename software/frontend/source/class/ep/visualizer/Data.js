@@ -120,6 +120,8 @@ qx.Class.define("ep.visualizer.Data", {
     },
     members: {
         __dataTable:  null,
+        __intervalSelector: null,
+        __endDate: null,
         __csvUrl: null,
         _applyArgs: function(newArgs,oldArgs){
             var intervalModel = qx.data.marshal.Json.createModel(newArgs.intervals);

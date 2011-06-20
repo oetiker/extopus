@@ -8,18 +8,19 @@
 
 ************************************************************************ */
 
-var lightBlue = "#6eb7e4";
-var darkBlue = "#0066a8";
+window.lightBlue = "#6eb7e4";
+window.darkBlue = "#0066a8";
+
 qx.Theme.define("ep.theme.Color", {
     extend : qx.theme.simple.Color,
 
     colors : {
         "table-row-background-even" : "#f3f3f3",
         "table-row-background-odd"  : "#fff",
-        "dark-blue" : darkBlue,
-        "table-row-background-selected" : lightBlue,
-        "background-selected" : lightBlue,
-        "border-main" : lightBlue,
-        "tabview-unselected" : darkBlue        
+        "dark-blue" : window.darkBlue,
+        "table-row-background-selected" : window.lightBlue,
+        "background-selected" : window.lightBlue,
+        "border-main" : window.lightBlue,
+        "tabview-unselected" : window.darkBlue        
     }
 });

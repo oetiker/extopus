@@ -129,7 +129,6 @@ qx.Class.define("ep.ui.TreeView", {
         },
         _addNodeKids : function(node){
             var rpc=ep.data.Server.getInstance();
-            var that = this;
             rpc.callAsyncSmart(function(ret){
                 var kids = node.getKids();
                 kids.removeAll();

@@ -21,7 +21,6 @@ qx.Class.define('ep.data.NodeTableModel', {
      */
     construct : function(columns) {
         this.base(arguments);
-        var trans = qx.locale.Manager;
     },
 
     properties : {
