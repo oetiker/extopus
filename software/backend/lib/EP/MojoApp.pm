@@ -17,6 +17,8 @@ EP::MojoApp - the mojo application starting point
 
 Configure the mojo engine to run our application logic as webrequests arrive.
 
+=head1 ATTRIBUTES
+
 =cut
 
 use strict;
@@ -35,6 +37,16 @@ use EP::DocPlugin;
 
 use Mojo::Base 'Mojolicious';
 
+=head2 cfg
+
+A hash pointer to the parsed extopus configuraton file. See L<EP::Cfg> for syntax.
+The default configuration file is located in etc/extopus.cfg. You can override the
+path by setting the C<EXTOPUS_CONF> environment variable.
+
+The cfg property is set automatically on startup.
+
+=cut
+
 has 'cfg' => sub {
     my $self = shift;
     my $conf = EP::Config->new( 
@@ -43,7 +55,19 @@ has 'cfg' => sub {
     return $conf->parse_config();
 };
 
+=head2 prefix
+
+location of the extopus application. This is set to '/app' by default.
+
+=cut
+
 has 'prefix' => '/app';
+
+=head1 METHODS
+
+All  the methods of L<Mojolicious> as well as:
+
+=cut
 
 =head2 startup
 
