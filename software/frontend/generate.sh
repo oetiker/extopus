@@ -11,7 +11,7 @@ if [ x$QOOXDOO_PATH = x ]; then
    exit 1
 fi
 build_path=../backend/public
-if [ x$1=xapi ]; then
+if [ x$1 = xapi ]; then
    build_path=../backend/apidoc
 fi
 $QOOXDOO_PATH/tool/bin/generator.py -m QOOXDOO_PATH:$QOOXDOO_PATH -m CACHE:${TMP:-/tmp}/${USER}_QX_CACHE -m BUILD_PATH:${build_path} $1
