@@ -99,7 +99,7 @@ sub startup {
     else {
         $routes->get('/setUser/(:user)' => sub {
             my $self = shift;
-            $self->session(epUser =>  $self->stash('user'));
+            $self->session(epUser =>  $self->param('user'));
             $self->redirect_to($me->prefix.'/');
         });
     }
