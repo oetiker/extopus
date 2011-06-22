@@ -112,7 +112,12 @@ sub startup {
             my $self = shift;
             my $file = $self->param('path') || '';
             $self->req->url->path('/'.$file); # relative paths get appended ... 
-            return $apiDoc->dispatch($self);
+            if (not $apiDoc->dispatch($self)){
+                $self->render(
+                   status => 404,
+                   text => $self->req->url->path.' not found'
+               );
+            }
         });
     }
 
@@ -133,7 +138,7 @@ sub startup {
         visualizer => $visualizer,
     );
 
-    $self->plugin('EP::DocPlugin',{
+    $self->plugin('EP::DocPlugin', {
         root => '/doc',
         index => 'EP::Index',
         template => Mojo::Asset::File->new(
@@ -147,7 +152,6 @@ sub startup {
             ep => $service
         }
     }); 
-
 }
 
 1;
