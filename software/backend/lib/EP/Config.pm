@@ -185,7 +185,7 @@ ${E}head1 SYNOPSIS
 
 ${E}head1 DESCRIPTION
 
-Configuration overview
+Extopus configuration is based on L<Config::Grammar>. The following options are available.
 
 HEADER
 
@@ -399,6 +399,10 @@ EX
 
 1;
 __END__
+
+=head1 SEE ALSO
+
+L<Config::Grammar>
 
 =head1 COPYRIGHT
 

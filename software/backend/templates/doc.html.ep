@@ -4,8 +4,6 @@
 <!doctype html><html>
   <head>
     <title><%= $title %></title>
-    %= stylesheet '/css/prettify-mojo.css'
-    %= javascript '/js/prettify.js'
     %= content_for 'header'
     %= stylesheet begin
       a { color: inherit; }
@@ -17,21 +15,25 @@
         margin: 0;
         text-shadow: #ddd 0 1px 0;
       }
-      h1, h2, h3 {
-        font-size: 1.5em;
-        margin: 0;
+      h1 {
+         font-size: 23px;
+      }
+      h2 {
+         font-size: 19px;
+      }
+      h3 {
+         font-size: 15px;
       }
       h1 a, h2 a, h3 a { text-decoration: none; }
       pre {
-        background-color: #1a1a1a;
+        background-color: #fafafa;
         -moz-border-radius: 5px;
         border-radius: 5px;
-        color: #eee;
+        color: #333;
         font-family: 'Menlo', 'Monaco', Courier, monospace !important;
         text-align: left;
-        text-shadow: #333 0 1px 0;
-        padding-bottom: 1.5em;
-        padding-top: 1.5em;
+        text-shadow: #ddd 0 1px 0;
+        padding: 15px;
         white-space: pre-wrap;
       }
       #footer {
@@ -50,7 +52,7 @@
         margin-left: auto;
         margin-right: auto;
         padding: 3em;
-        padding-top: 7em;
+        padding-top: 5em;
         max-width: 800px;
       }
       #perldoc > ul:first-of-type a { text-decoration: none; }
@@ -79,7 +81,7 @@
       }
     % end
   </head>
-  <body onload="prettyPrint()">
+  <body>
     <div id="extopus-positioner">
         <div id="extopus-header">
            <div id="extopus-title">Extopus Documentation Browser</div>

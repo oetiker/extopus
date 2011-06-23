@@ -86,14 +86,14 @@ sub register {
       );
 
       # Rewrite code sections for syntax highlighting
-      $dom->find('pre')->each(
-        sub {
-          my $attrs = shift->attrs;
-          my $class = $attrs->{class};
-          $attrs->{class} =
-            defined $class ? "$class prettyprint" : 'prettyprint';
-        }
-      );
+#      $dom->find('pre')->each(
+#        sub {
+#          my $attrs = shift->attrs;
+#          my $class = $attrs->{class};
+#          $attrs->{class} =
+#            defined $class ? "$class prettyprint lang-perl" : 'prettyprint lang-perl';
+#        }
+#      );
 
       # Rewrite headers
       my $url = $self->req->url->clone;
