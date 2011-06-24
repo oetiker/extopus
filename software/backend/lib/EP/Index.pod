@@ -13,6 +13,8 @@ All frontend configuration comes from the backend, so unless you are
 about to add additional visualization modules to the frontend, all you need to
 handle as an extopus admin is the backend configuration.
 
+There may be some additional information on your local setup in your L<Local Guide|EP::LocalGuide>.
+
 =over
 
 =item L<EP::Cfg> - Configuration Syntax

@@ -17,10 +17,6 @@ use Pod::Simple::Search;
 # Paths
 our @PATHS = map { $_, "$_/pods" } @INC;
 
-# Template directory
-my $T = File::Spec->catdir(dirname(__FILE__), '..', 'templates');
-
-
 # "This is my first visit to the Galaxy of Terror and I'd like it to be a
 #  pleasant one."
 sub register {
@@ -29,6 +25,7 @@ sub register {
   $conf ||= {};
   my $name       = $conf->{name}       || 'pod';
   my $preprocess = $conf->{preprocess} || 'ep';
+  my $localguide = $conf->{localguide};
   my $index      = $conf->{index}      || die 'index attribute is required';
   my $root       = $conf->{root}       || die 'root attribute is required';
   my $template   = $conf->{template}   || die 'template attribute is required';
@@ -56,13 +53,21 @@ sub register {
       my $module = $self->param('module');
       my $html;
       my $cpan = 'http://search.cpan.org/perldoc';
-      $module =~ s/\//\:\:/g;
+      $module =~ s/\//\:\:/g;      
       if ($module eq 'EP::Cfg'){
           $html = _pod_to_html(EP::Config->make_pod);
       }
       else {
-          my $path = Pod::Simple::Search->new->find($module, @PATHS);
-
+          my $path;
+          if ($module eq 'EP::LocalGuide'){
+              if ($localguide and -r $localguide){
+                 $path = $localguide;
+              } else {
+                 return $self->render(text=>'You got no Local Guide. Configure your localguide path in extopus.cfg and make sure the extopus backend can read the file.',status => 404);
+              }
+          } else {
+              $path = Pod::Simple::Search->new->find($module, @PATHS);
+          }
           # Redirect to CPAN
           return $self->redirect_to("$cpan?$module")
                 unless $path && -r $path;

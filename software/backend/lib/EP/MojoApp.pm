@@ -141,6 +141,7 @@ sub startup {
     $self->plugin('EP::DocPlugin', {
         root => '/doc',
         index => 'EP::Index',
+        localguide => $self->cfg->{GENERAL}{localguide},
         template => Mojo::Asset::File->new(
             path=>$self->home->rel_file('templates/doc.html.ep')
         )->slurp,
