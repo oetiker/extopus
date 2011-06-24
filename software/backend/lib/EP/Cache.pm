@@ -171,10 +171,12 @@ sub addTreeNode {
     my $dbh = $self->dbh;    
     my $cache = $self->{treeCache};
     my $treeData = $self->tree->($node);
+    LEAF:
     for my $subTree (@{$treeData}){                  
         my $parent = 0;
         for my $value (@{$subTree}){
-            last unless defined $value;
+            # skip nodes that do no properly populate
+            next LEAF unless $value;
             my $id;
             if ($cache->{$parent}{$value}){
                $id = $cache->{$parent}{$value};
