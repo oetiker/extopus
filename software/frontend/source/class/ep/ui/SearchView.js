@@ -22,6 +22,9 @@ qx.Class.define("ep.ui.SearchView", {
         this._add(this.__vPane, { flex : 1 });
         var tm = ep.data.NodeTableModel.getInstance();
         tm.setColumns(colDef.names, colDef.ids);
+        for (var i=0;i<colDef.names.length;i++){
+            tm.setColumnSortable(i,false);
+        }
         this._createTable(colDef.widths);
         this._createView();
     },
