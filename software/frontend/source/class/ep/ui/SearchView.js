@@ -41,7 +41,7 @@ qx.Class.define("ep.ui.SearchView", {
          */
         _createSearchBox : function() {
             var control = new qx.ui.form.TextField().set({
-                placeholder : this.tr('search ...'),
+                placeholder : this.tr('wor* AND ( this OR that )'),
                 enabled     : false
             });
 

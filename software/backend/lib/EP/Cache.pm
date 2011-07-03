@@ -38,6 +38,7 @@ use DBI;
 use Mojo::Base -base;
 use Mojo::JSON::Any;
 use Encode;
+use EP::Exception qw(mkerror);
 
 has cacheKey    => sub { die "cacheKey is a mandatory argument" };
 has cacheRoot   => '/tmp/';
@@ -207,7 +208,14 @@ sub getNodeCount {
     my $expression = shift;
     return 0 unless defined $expression;
     my $dbh = $self->dbh;    
-    return (($dbh->selectrow_array("SELECT count(docid) FROM node WHERE data MATCH ?",{},$self->encodeUtf8->encode($expression)))[0]);
+    my $re = $dbh->{RaiseError};
+    $dbh->{RaiseError} = 0;
+    my $answer = (($dbh->selectrow_array("SELECT count(docid) FROM node WHERE data MATCH ?",{},$self->encodeUtf8->encode($expression)))[0]);
+    if (my $err = $dbh->errstr){
+        $err =~ /malformed MATCH/ ? die mkerror(8384,"Invalid Search expression") : die $dbh->errstr;
+    }
+    $dbh->{RaiseError} = $re;
+    return $answer;
 }
 
     
