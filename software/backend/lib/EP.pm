@@ -86,17 +86,48 @@ sub startup {
             $self->log->level($gcfg->{log_level});
         }
     }
-    my $routes = $self->routes;
+
+    my $inventory = EP::Inventory->new(
+        app => $self
+    );
+
+    my $visualizer = EP::Visualizer->new(
+        app=>$self
+    );
+
+    my $service = EP::RpcService->new(
+        cfg => $self->cfg,
+        log => $self->log,
+        inventory => $inventory,
+        visualizer => $visualizer,
+    );
+
     # session is valid for 1 day
     $self->sessions->default_expiration(1*24*3600);
     # run /setUser/oetiker to launch the application for a particular user
-    if ($gcfg->{default_user}){
-        $self->hook(before_dispatch => sub {
-            my $self = shift;
+    my $app = $self;
+    $self->hook(before_dispatch => sub {
+        my $self = shift;
+        if ($gcfg->{default_user}){
             $self->session(epUser =>  $gcfg->{default_user});
         });
-    }
-    else {
+        if (my $user = $self->session('epUser')){
+	    my $cache = EP::Cache->new(
+        	cacheRoot => $gcfg->{GENERAL}{cache_dir},
+                user => $user,
+        	inventory => $nventory,
+                treeCols => $service->getTableColumnDef('tree')->{ids},
+                searchCols => $service->getTableColumnDef('search')->{ids},
+                updateInterval => $gcfg->{GENERAL}{update_interval} || 86400,
+                log => $app->log,
+             );
+             $self->stash('epCache' => $cache);
+	}
+    });
+
+    my $routes = $self->routes;
+
+    if (not $gcfg->{default_user}){
         $routes->get('/setUser/(:user)' => sub {
             my $self = shift;
             $self->session(epUser =>  $self->param('user'));
@@ -122,21 +153,6 @@ sub startup {
     }
 
     $routes->get('/' => sub { shift->redirect_to($me->prefix.'/')});
-
-    my $inventory = EP::Inventory->new(
-        app => $self
-    );
-
-    my $visualizer = EP::Visualizer->new(
-        app=>$self
-    );
-
-    my $service = EP::RpcService->new(
-        cfg => $self->cfg,
-        log => $self->log,
-        inventory => $inventory,
-        visualizer => $visualizer,
-    );
 
     $self->plugin('EP::DocPlugin', {
         root => '/doc',

@@ -8,19 +8,16 @@ EP::Cache - extopus data cache
 
  use EP::Cache;
 
- my $es = EP::Cache->new(
-    cacheKey => 'unique name for the store',
-    tree => sub { my %R = ( %$_[0] );
-            [ [ $R{country}, $R{state} ],
-              [ 'Index', uc(substr($R{customer},0,1)), $R{customer} ],
-            ] }
-    },
+ my $cache = EP::Cache->new(
+        cacheRoot => $cfg->{GENERAL}{cache_dir},
+        user => $user,        
+        inventory => $self->inventory,
+        treeCols => $self->getTableColumnDef('tree')->{ids},
+        searchCols => $self->getTableColumnDef('search')->{ids},
+        updateInterval => $cfg->{GENERAL}{update_interval} || 86400,
+        log => $self->app->log,
  );
-
- $es->add({
-    key => value,
-    ...
- });
+ $self->cache($cache);
 
  $es->getNodes('expression',offset,limit);
  
@@ -40,15 +37,79 @@ use Mojo::JSON::Any;
 use Encode;
 use EP::Exception qw(mkerror);
 
-has cacheKey    => sub { die "cacheKey is a mandatory argument" };
+=head2 ATTRIBUTES
+
+The cache objects supports the following attributes
+
+=cut
+
+=head3 user
+
+the user name supplied to the inventory plugins
+
+=cut
+
+has user	=> sub { die "cacheKey is a mandatory argument" };
+
+=head3 cacheRoot
+
+path to the cache root directory
+
+=cut
+
 has cacheRoot   => '/tmp/';
+
+=head3 searchCols
+
+array with the attributes to report for search results
+
+=cut
+
+has searchCols  => sub {[]};
+
+=head3 treeCols
+
+array with the attributes to report for tree leave nodes
+
+=cut
+ 
+has treeCols    => sub {[]};
+
+=head3 inventry
+
+the inventory object
+
+=cut
+
+has 'inventory';
+
+=head3 updateInterval
+
+how often should we check if the tree needs updating
+
+=cut
+
+has updateInterval => 1e9;
+
+=head3 log
+
+a pointer to the log object
+
+=cut
+
+has 'log';
+
+=head3 meta
+
+meta information on the cache content
+
+=cut
+
+has 'meta'      => sub { {} };
+
+has encodeUtf8  => sub { find_encoding('utf8') };
 has tree        => sub { [] };
 has json        => sub {Mojo::JSON::Any->new};
-has searchCols  => sub {[]};
-has treeCols    => sub {[]};
-has encodeUtf8  => sub { find_encoding('utf8') };
-has 'dbh';
-has 'meta'      => sub { {} };
 
 =head2 B<new>(I<config>)
 
@@ -95,6 +156,26 @@ sub new {
     } 
     $self->{treeCache} = {};
     $self->{nodeId} = 0;
+
+    if (! $self->meta->{version} or time - $cache->meta->{lastup} > $self->updateInterval ){
+        my $oldVersion = $self->meta->{version};
+        my $version = $self->inventory->getVersion($user);
+        if ($oldVersion || '' ne  $version){
+            $dbh->begin_work;
+            $dbh->do("PRAGMA synchronous = 0");
+            if ($oldVersion){
+                $self->dropTables;
+            }
+            $self->createTables;
+            $self->setMeta('version',$version);
+            $self->setMeta('lastup',time);
+            $self->log->debug("loading nodes into $cfg->{GENERAL}{cache_dir} for $user");
+            $self->inventory->walkInventory($self,$self->user);
+            $self->log->debug("nodes for ".$self->user." loaded");
+            $dbh->commit;
+            $dbh->do("PRAGMA synchronous = 1");
+        }
+    }
     return $self;
 }
 
