@@ -23,6 +23,7 @@ use Mojo::Base -base;
 
 has 'visualizers' => sub { [] };
 has 'vismap' => sub { {} };
+has 'controller';
 
 =head1 ATTRIBUTES
 

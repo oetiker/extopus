@@ -41,7 +41,6 @@ our %allow = (
 has 'controller';
 
 has 'cfg';
-has 'inventory';
 has 'visualizer';
 has 'cache';
 has 'log';
@@ -136,6 +135,7 @@ sub getVisualizers {
     my $self = shift;
     my $nodeId = shift;
     my $record = $self->cache->getNode($nodeId);
+    $self->visualizer->controller($self->controller);
     return $self->visualizer->getVisualizers($record);
 }
 
@@ -148,6 +148,7 @@ generic rpc call to be forwarere to the rpcService method of the visualizer inst
 sub visualize {
     my $self = shift;
     my $instance = shift;
+    $self->visualizer->controller($self->controller);
     return $self->visualizer->visualize($instance,@_);
 }
 
