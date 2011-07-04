@@ -156,8 +156,8 @@ sub new {
     } 
     $self->{treeCache} = {};
     $self->{nodeId} = 0;
-
-    if (! $self->meta->{version} or time - $cache->meta->{lastup} > $self->updateInterval ){
+    my $user = $self->user;
+    if (! $self->meta->{version} or time - $self->meta->{lastup} > $self->updateInterval ){
         my $oldVersion = $self->meta->{version};
         my $version = $self->inventory->getVersion($user);
         if ($oldVersion || '' ne  $version){
@@ -169,7 +169,7 @@ sub new {
             $self->createTables;
             $self->setMeta('version',$version);
             $self->setMeta('lastup',time);
-            $self->log->debug("loading nodes into $cfg->{GENERAL}{cache_dir} for $user");
+            $self->log->debug("loading nodes into ".$self->cacheRoot." for $user");
             $self->inventory->walkInventory($self,$self->user);
             $self->log->debug("nodes for ".$self->user." loaded");
             $dbh->commit;
