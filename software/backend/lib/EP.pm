@@ -1,15 +1,15 @@
-package EP::MojoApp;
+package EP;
 
 =head1 NAME
 
-EP::MojoApp - the mojo application starting point
+EP - the mojo application starting point
 
 =head1 SYNOPSIS
 
- use EP::MojoApp;
+ use EP;
  use Mojolicious::Commands;
 
- $ENV{MOJO_APP} = EP::MojoApp->new;
+ $ENV{MOJO_APP} = EP->new;
  # Start commands
  Mojolicious::Commands->start;
 
