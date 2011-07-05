@@ -20,29 +20,35 @@ qx.Class.define("ep.ui.View", {
         tabView.hide();
         this._add(new ep.ui.Logo());
         this._add(tabView);
-
+        this:__tabe = table;
         var sm = table.getSelectionModel();
-        sm.setSelectionMode(qx.ui.table.selection.Model.SINGLE_SELECTION);
+        sm.setSelectionMode(qx.ui.table.selection.Model.MULTIPLE_INTERVAL_SELECTION);
         var tm = table.getTableModel();
         var rpc = ep.data.Server.getInstance();
-
+        var multiMode = false;
         sm.addListener('changeSelection', function(e) {
-            var empty = true;
-
+            var selCount = 0;
+            var recId;
             sm.iterateSelection(function(ind) {
-                // this will only iterate once since we are in single selection
-                // mode ... the first column holds the nodeId
-                rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', tm.getValue(0, ind));
-                empty = false;
-            },
-            this);
-
-            if (empty) {
+                selCount++;
+                if (!recId){
+                    recId = tm.getValue(0, ind);
+            },this);
+            if (selCount == 0){
                 this.__hideTimer = qx.event.Timer.once(function() {
                     this.__hideTimer = null;
                     tabView.hide();
                 },
                 this, 200);
+            }            
+            if (!multiMode){
+                if (selCount > 1){
+                    rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getMultiVisualizers', recId);
+                    multiMode = true;
+                }
+                else {
+                    rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', recId);
+                }
             }
         },
         this);
@@ -56,7 +62,7 @@ qx.Class.define("ep.ui.View", {
         __breakOutKids : null,
         __hideTimer : null,
         __tabView : null,
-
+        __table : null,
 
         /**
          * Create new a visualizer widget according to the given configuration. At first glance the configuration
@@ -67,23 +73,23 @@ qx.Class.define("ep.ui.View", {
          */
         _createVisualizer : function(viz) {
             var control;
-
+            var table = this.__table;
             switch(viz.visualizer)
             {
                 case ep.visualizer.Chart.KEY:
-                    control = new ep.visualizer.Chart(viz.title, viz.arguments);
+                    control = new ep.visualizer.Chart(viz.title, viz.arguments,table);
                     break;
 
                 case ep.visualizer.IFrame.KEY:
-                    control = new ep.visualizer.IFrame(viz.title, viz.arguments);
+                    control = new ep.visualizer.IFrame(viz.title, viz.arguments,table);
                     break;
 
                 case ep.visualizer.Properties.KEY:
-                    control = new ep.visualizer.Properties(viz.title, viz.arguments);
+                    control = new ep.visualizer.Properties(viz.title, viz.arguments,table);
                     break;
 
                 case ep.visualizer.Data.KEY:
-                    control = new ep.visualizer.Data(viz.title, viz.arguments);
+                    control = new ep.visualizer.Data(viz.title, viz.arguments,table);
                     break;
 
                 default:

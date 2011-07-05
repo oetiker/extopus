@@ -71,6 +71,18 @@ sub matchRecord {
     return undef;
 }
 
+=head2 matchMultiRecord(rec)
+
+Can the Visualizer deal with multiple records of the given type?
+
+=cut
+
+sub matchMultiRecords {
+    my $self= shift;
+    my $rec = shift;    
+    return undef;
+}
+
 =head2 rpcService
 
 custom rpc service of this visualizer. accessible via the C<visualize(visualizerInstance,args)> rpc call

@@ -25,7 +25,7 @@ qx.Class.define("ep.ui.Table", {
 
         this.base(arguments, tm, tableOpts);
         this.set({ showCellFocusIndicator : false });
-
+        
         // hide the first column as it contains the internal
         // id of the node
         var tcm = this.getTableColumnModel();

@@ -27,7 +27,8 @@ qx.Class.define("ep.visualizer.Data", {
      *    treeUrl: 'url/to/fetch/data/from',
      *    hash:    'xxx',
      *    nodeId:  'nodeId',
-     *    csvUrl:  'url/to/download/data'          
+     *    csvUrl:  'url/to/download/data',
+     *    multiRecord: false
      * }
      * </pre>
      * 
@@ -36,8 +37,9 @@ qx.Class.define("ep.visualizer.Data", {
      * @return {void} 
      *
      */
-    construct : function(title, args) {
+    construct : function(title, args, table) {
         this.base(arguments, title);
+        this.__table = table;
         this.set({ layout : new qx.ui.layout.VBox(10) });
         var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(8).set({ alignY : 'middle' }));
         this.add(titleContainer);
@@ -69,8 +71,8 @@ qx.Class.define("ep.visualizer.Data", {
 
         // time span
         titleContainer.add(new qx.ui.basic.Label(this.tr('rows')).set({ paddingLeft : 8 }));
-
-        var rowCount = new qx.ui.form.TextField("1").set({
+        
+        var rowCount = this.__rowCount = new qx.ui.form.TextField("1").set({
             filter         : /[0-9]/,
             invalidMessage : this.tr('use values between 1 and 100')
         });
@@ -151,11 +153,12 @@ qx.Class.define("ep.visualizer.Data", {
 
     members : {
         __dataTable : null,
+        __rowCount: null,
         __intervalSelector : null,
         __endDate : null,
         __csvUrl : null,
-
-
+        __table : null,
+        __selTrack : false,
         /**
          * Setup visualizer with new configuration
          *
@@ -167,18 +170,45 @@ qx.Class.define("ep.visualizer.Data", {
             var intervalModel = qx.data.marshal.Json.createModel(newArgs.intervals);
             this.__intervalSelector.setModel(intervalModel);
             var dt = this.__dataTable;
-
-            dt.set({
-                treeUrl : newArgs.treeUrl,
-                hash    : newArgs.hash
-            });
-
-            /* trigger reload */
-
-            dt.setNodeId(newArgs.nodeId);
             this.__csvUrl = newArgs.csvUrl;
+            if (newArgs.multiRecord){
+                this.__rowCount.exclude();
+                this.__selTrack = true;
+                dt.clearCache();
+            }
+            else {
+                this.__rowCount.show();
+                dt.set({
+                    treeUrl : newArgs.treeUrl,
+                    hash    : newArgs.hash
+                });
+                this.__selTrack = false;
+                /* trigger reload */
+                dt.setNodeId(newArgs.nodeId);
+            }
         },
 
+        /**
+         * Connect the data table to the record selection of the view table
+         *
+         * @param table {var} pointer to the view table widget.
+         * @return {void} 
+         */
+
+        _hookSelection: function(table){
+	    var sm = table.getSelectionModel();
+	    var tm = table.getTableModel();
+            sm.addListener('changeSelection', function(e) {
+            	if (! this.__selTrack){
+		    return;
+                }
+	        var recId = [];
+                sm.iterateSelection(function(ind) {
+	            recId.push(tm.getValue(0, ind));
+		}
+		this.__dataTable.setRecordIds(recId);
+            },this);
+        },
 
         /**
          * Download data to the client

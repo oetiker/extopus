@@ -23,6 +23,7 @@ use Mojo::Base -base;
 
 has 'visualizers' => sub { [] };
 has 'vismap' => sub { {} };
+has 'controller';
 
 =head1 ATTRIBUTES
 
@@ -83,6 +84,24 @@ sub getVisualizers {
     return \@matches;
 }
 
+=head2 getMultiVisualizers(record)
+
+Find which visualizers consider themselves capable of visualizing multiple records
+similar to this one. See L<EP::Visualizer::base::matchMultiRecord>.
+
+=cut
+
+sub getMultiVisualizers {
+    my $self = shift;
+    my $record = shift;
+    my $viz = $self->visualizers;
+    my @matches;
+    for my $instance (@$viz){       
+        push @matches, grep({ defined $_ }  $instance->matchMultiRecord($record));
+    }
+    return \@matches;
+}
+
 =head2 visualize(instance,args)
 
 call the rpcService method of the selected instance.
@@ -92,7 +111,11 @@ call the rpcService method of the selected instance.
 sub visualize {
     my $self = shift;
     my $instance = shift;
-    return $self->vismap->{$instance}->rpcService(@_);
+    my $obj = $self->vismap->{$instance};
+    if ($obj->can('controller')){
+        $obj->controller($self->controller);
+    }
+    return $obj->rpcService(@_);
 }
 
 1;

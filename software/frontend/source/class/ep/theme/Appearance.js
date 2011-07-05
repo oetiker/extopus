@@ -4,7 +4,9 @@
    Authors:   Tobi Oetiker <tobi@oetiker.ch>
    Utf8Check: üöë
 ************************************************************************ */
-
+/* ****
+#asset(ep/date-bw.png)
+****/
 /**
  * Qooxdoo has no apperance overrides.
  */
@@ -20,6 +22,21 @@ qx.Theme.define("ep.theme.Appearance", {
         'eptree/tree'           : 'treevirtual',
         'eptable'               : 'widget',
         'eptable/table'         : 'table',
-        'eptable/search-box'    : 'textfield'
+        'eptable/search-box'    : 'textfield',
+
+        "datefield/button" :  {
+           alias : "combobox/button",
+           include : "combobox/button",
+
+           style : function(states) {
+              return {
+                icon : "ep/date-bw.png",
+                padding : [0, 0, 0, 3],
+                backgroundColor : undefined,
+                decorator : undefined,
+                width: 19
+              };
+          }
+        }
     }
 });

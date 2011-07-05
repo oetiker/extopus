@@ -35,13 +35,13 @@ our %allow = (
     getNodes => 1,
     getNode => 1,
     getVisualizers => 1,
+    getMultiVisualizers => 1,
     visualize => 1,
 );
 
 has 'controller';
 
 has 'cfg';
-has 'inventory';
 has 'visualizer';
 has 'cache';
 has 'log';
@@ -51,33 +51,7 @@ sub allow_rpc_access {
     my $method = shift;
     my $user = $self->controller->session('epUser');
     die mkerror(3993,q{Your session has expired. Please re-connect.}) unless defined $user;
-    my $cfg = $self->cfg;
-    my $cache = EP::Cache->new(
-        cacheRoot => $cfg->{GENERAL}{cache_dir},
-        cacheKey => $user,
-        treeCols => $self->getTableColumnDef('tree')->{ids},
-        searchCols => $self->getTableColumnDef('search')->{ids},
-    );
-    $self->cache($cache);
-    if (! $cache->meta->{version} or time - $cache->meta->{lastup} > ($cfg->{GENERAL}{update_interval} || 86400) ){
-        my $oldVersion = $cache->meta->{version};
-        my $version = $self->inventory->getVersion($user);
-        if ($oldVersion || '' ne  $version){
-            $cache->dbh->begin_work;
-            $cache->dbh->do("PRAGMA synchronous = 0");
-            if ($oldVersion){
-                $cache->dropTables;
-            }
-            $cache->createTables;
-            $cache->setMeta('version',$version);
-            $cache->setMeta('lastup',time);
-            $self->log->debug("loading nodes into $cfg->{GENERAL}{cache_dir} for $user");
-            $self->inventory->walkInventory($cache,$user);
-            $self->log->debug("nodes for $user loaded");
-            $cache->dbh->commit;
-            $cache->dbh->do("PRAGMA synchronous = 1");
-        }
-    }
+    $self->cache($self->controller->stash('epCache'));
     return $allow{$method}; 
 }
    
@@ -152,7 +126,7 @@ sub getNodes {
     return $self->cache->getNodes(@_);
 }
 
-=head2 getVisualizers(nodeId)
+=head2 getVisualizers(recId)
 
 return a list of visualizers ready to visualize the given node
 
@@ -160,9 +134,24 @@ return a list of visualizers ready to visualize the given node
 
 sub getVisualizers {
     my $self = shift;
-    my $nodeId = shift;
-    my $record = $self->cache->getNode($nodeId);
+    my $recId = shift;
+    my $record = $self->cache->getNode($recId);
+    $self->visualizer->controller($self->controller);
     return $self->visualizer->getVisualizers($record);
+}
+
+=head2 getMultiVisualizers(recId)
+
+return a list of visualizers ready to visualize the given node
+
+=cut
+
+sub getMultiVisualizers {
+    my $self = shift;
+    my $recId = shift;
+    my $record = $self->cache->getNode($recId);
+    $self->visualizer->controller($self->controller);
+    return $self->visualizer->getMultiVisualizers($record);
 }
 
 =head2 visualize(instance,args)
@@ -174,6 +163,7 @@ generic rpc call to be forwarere to the rpcService method of the visualizer inst
 sub visualize {
     my $self = shift;
     my $instance = shift;
+    $self->visualizer->controller($self->controller);
     return $self->visualizer->visualize($instance,@_);
 }
 
