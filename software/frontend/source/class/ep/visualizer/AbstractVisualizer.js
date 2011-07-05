@@ -19,8 +19,10 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
      * create a visualization widget with the given title
      * 
      * @param title {String} title to display on the tab
+     * @param args {Map} argument map for the view
+     * @param table {String} the view table
      */
-    construct : function(title) {
+    construct : function(title,args,table) {
         this.base(arguments, this['tr'](title));
 
         var breakOutButton = this._breakOutButton = new qx.ui.basic.Atom().set({

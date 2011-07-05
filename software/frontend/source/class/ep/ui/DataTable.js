@@ -23,6 +23,8 @@ qx.Class.define("ep.ui.DataTable", {
      */
     construct : function(instance, columns, widths, units) {
         this.setInstance(instance);
+        columns.unshift('');
+        widths.unshift(15);
         var tm = this.__model = new qx.ui.table.model.Simple().set({ columns : columns });
 
         var tableOpts = {
@@ -41,6 +43,7 @@ qx.Class.define("ep.ui.DataTable", {
         var tcm = table.getTableColumnModel();
         var resizeBehavior = tcm.getBehavior();
 
+        this.clearCache();
         for (var i=0; i<columns.length; i++) {
             if (widths[i]) {
                 resizeBehavior.setWidth(i, String(widths[i]) + '*');
@@ -112,20 +115,39 @@ qx.Class.define("ep.ui.DataTable", {
             check    : 'Date',
             apply    : 'reloadTable',
             nullable : true
+        },
+        /**
+         * recordIds
+         */
+        recordIds: {
+            init: null,
+            check: 'Array',
+            apply: 'reloadTable',
+            nullable: true
         }
+        
     },
 
     members : {
         __model : null,
+        __recCache : null,
 
-
+        /**
+         * drop cached records
+         *
+         * @return {void} 
+         */
+        clearCache: function(){
+            this.__recCache = {};
+        },
+        
         /**
          * reload the table if all the required data is provided
          *
          * @return {void} 
          */
         reloadTable : function() {
-            if (this.getInterval() && this.getCount() && this.getTreeUrl() && this.getNodeId() && this.getHash()) {
+            if (this.getInterval() && this.getTreeUrl() && this.getNodeId() && this.getHash()) {
                 var rpc = ep.data.Server.getInstance();
                 var date = Math.round(new Date().getTime() / 1000);
 

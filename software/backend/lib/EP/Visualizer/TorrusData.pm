@@ -13,16 +13,19 @@ EP::Visualizer::TorrusData - pull numeric data associated with torrus data sourc
  title = Port Traffic
  caption = $R{cust}
  sub_nodes = inbytes, outbytes
+ multilabel_pl = $R{SAP}
  skiprec_pl = $R{port.display} eq 'data_unavailable'  
 
- col_names = Date, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
- col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
- col_widths = 2, 1     1,    1,  1,  1,    1,    1
- col_data = $D{inbytes}{AVG}, $D{inbytes}{AVG}, \
-            $D{inbytes}{AVG} * $DURATION / 100 * $D{inbytes}{AVAIL}, \
-            $D{outbytes}{AVG} * $DURATION / 100 * $D{outbytes}{AVAIL}, \
-            $D{inbytes}{MAX}, \
-            $D{outbytes}{MAX}
+ col_names = Avg In, Avg Out, Total In, Total Out, Max In, Max Out, Coverage
+ col_units = Mb/s,   Mb/s,    Gb,       Gb,        Mb/s,   Mb/s,    %
+ col_widths =10      10,      10,       10,        10,     10,      10
+ col_data = int($D{inbytes}{AVG}*8/1e4)/1e2, \
+            int($D{outbytes}{AVG}*8/1e4)/1e2, \
+            int($D{inbytes}{AVG}*8 * $DURATION / 100 * $D{inbytes}{AVAIL}/1e7)/1e2, \
+            int($D{outbytes}{AVG}*8 * $DURATION / 100 * $D{outbytes}{AVAIL}/1e7)/1e2, \
+            int($D{inbytes}{MAX}*8/1e5)/1e1, \
+            int($D{outbytes}{MAX}*8/1e5)/1e1, \
+            int($D{inbytes}{AVAIL})
 
 =head1 DESCRIPTION
 
@@ -64,6 +67,7 @@ use POSIX qw(strftime);
 
 has 'hostauth';
 has 'root';
+has 'controller';
 
 has view => 'embedded';
 has json => sub {Mojo::JSON::Any->new};
@@ -133,6 +137,24 @@ sub denan {
     return [
         map { defined $nan <=> $_ ? $_ : undef } @$in
     ]    
+}
+
+=head2 matchMultiRecord(rec)
+
+can we handle multiple records of this type. Later as we evaluate the data all
+non matching records will be ignored.
+
+=cut
+
+sub matchMultiRecord {
+    my $self = shift;
+    my $ret = $self->matchRecord(@_);
+    if ($ret){
+       for (qw(nodeId hash treeUrl)){
+           delete $ret->{$_}
+       }
+       $ret->{multiRecord} = 1
+    }
 }
 
 =head2 matchRecord(rec)
@@ -305,6 +327,33 @@ sub getData {
     };
 }
 
+=head2 getMultiData(end,interval,recId[])
+
+use the AGGREGATE_DS rpc call to pull some statistics from the server.
+
+=cut
+
+sub getMultiData {
+    my $self = shift;
+    my $end = shift;
+    my $interval = shift;
+    my @recIds = split /\s*,\s*/, shift;
+    my $cache = $self->controller->stash('epCache');
+    my @ret;
+    for my $recId (@recIds){
+        my $rec = $self->cache->getNode($recId);
+        next unless $rec->{'torrus.nodeid'} and $rec->{'torrus.tree-url'};
+        my $data =  $self->getData($rec->{'torrus.tree-url'},$rec->{'torrus.nodeid'},$end,$interval,1);
+        next if not $data->{status};       
+        $data->{data}[0][0] = $self->cfg->{multilabel_pl}($rec);
+        push @ret, $data->{data}[0];
+    }
+    return {
+        status => 1,
+        data => \@ret,
+    };
+}
+
 =head2 rpcService 
 
 provide rpc data access
@@ -314,9 +363,14 @@ provide rpc data access
 sub rpcService {
     my $self = shift;
     my $arg = shift;
-    die mkerror(9844,"hash is not matching url and nodeid")
-        unless $self->calcHash($arg->{treeUrl},$arg->{nodeId}) eq $arg->{hash};
-    return $self->getData($arg->{treeUrl},$arg->{nodeId},$arg->{endDate},$arg->{interval},$arg->{count});
+    if ($arg->{recList}){
+        return $self->getMultiData($arg->{endDate},$arg->{interval},$arg->{recList});
+    }
+    else {
+        die mkerror(9844,"hash is not matching url and nodeid")
+            unless $self->calcHash($arg->{treeUrl},$arg->{nodeId}) eq $arg->{hash};
+        return $self->getData($arg->{treeUrl},$arg->{nodeId},$arg->{endDate},$arg->{interval},$arg->{count});
+    }
 }
 
 =head2 addProxyRoute()
@@ -347,7 +401,14 @@ sub addProxyRoute {
             $self->app->log->warn("Request for $url?nodeid=$nodeid denied ($hash ne $newHash)");
             return;
         }
-        my $data = $self->getData($url,$nodeid,$end,$interval,$count);
+        my $data;
+        if ($req->param('rec_list')){
+            my $cache = $self->stash('epCache');
+            $data = $self->getMultiData($cache,$end,$interval,[$req->param('recList')]);
+        }
+        else {
+            $data = $self->getData($url,$nodeid,$end,$interval,$count);
+        }
         if (not $data->{status}){
             $ctrl->render(
                  status => 401,

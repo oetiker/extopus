@@ -35,6 +35,7 @@ our %allow = (
     getNodes => 1,
     getNode => 1,
     getVisualizers => 1,
+    getMultiVisualizers => 1,
     visualize => 1,
 );
 
@@ -125,7 +126,7 @@ sub getNodes {
     return $self->cache->getNodes(@_);
 }
 
-=head2 getVisualizers(nodeId)
+=head2 getVisualizers(recId)
 
 return a list of visualizers ready to visualize the given node
 
@@ -133,10 +134,24 @@ return a list of visualizers ready to visualize the given node
 
 sub getVisualizers {
     my $self = shift;
-    my $nodeId = shift;
-    my $record = $self->cache->getNode($nodeId);
+    my $recId = shift;
+    my $record = $self->cache->getNode($recId);
     $self->visualizer->controller($self->controller);
     return $self->visualizer->getVisualizers($record);
+}
+
+=head2 getMultiVisualizers(recId)
+
+return a list of visualizers ready to visualize the given node
+
+=cut
+
+sub getMultiVisualizers {
+    my $self = shift;
+    my $recId = shift;
+    my $record = $self->cache->getNode($recId);
+    $self->visualizer->controller($self->controller);
+    return $self->visualizer->getMultiVisualizers($record);
 }
 
 =head2 visualize(instance,args)

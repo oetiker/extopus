@@ -98,7 +98,6 @@ sub startup {
     my $service = EP::RpcService->new(
         cfg => $self->cfg,
         log => $self->log,
-        inventory => $inventory,
         visualizer => $visualizer,
     );
 
@@ -110,12 +109,14 @@ sub startup {
         my $self = shift;
         if ($gcfg->{default_user}){
             $self->session(epUser =>  $gcfg->{default_user});
-        });
-        if (my $user = $self->session('epUser')){
+        }
+        
+        my $user = $self->session('epUser');
+        if ($user){
 	    my $cache = EP::Cache->new(
         	cacheRoot => $gcfg->{GENERAL}{cache_dir},
                 user => $user,
-        	inventory => $nventory,
+        	inventory => $inventory,
                 treeCols => $service->getTableColumnDef('tree')->{ids},
                 searchCols => $service->getTableColumnDef('search')->{ids},
                 updateInterval => $gcfg->{GENERAL}{update_interval} || 86400,
