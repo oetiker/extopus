@@ -277,13 +277,12 @@ qx.Class.define("ep.visualizer.Chart", {
             var win = qx.bom.Window.open("about:blank", '_blank', {
                 scrollbars : true,
                 width      : 900,
-                height     : 600,
-                menubar    : true,
-                toolbar    : true
+                height     : 600
             });
 
             win.document.write(this._fillTemplate());
-            win.print();
+            // wait for the image to load before printing ... 
+            qx.event.Timer.once(function() { this.stop(); this.print(); },win, 500);
         }
     }
 });
