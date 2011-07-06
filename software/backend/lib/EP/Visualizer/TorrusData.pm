@@ -425,7 +425,7 @@ sub addProxyRoute {
         my $cache = $ctrl->stash('epCache');
         my $rec = $cache->getNode($recId);  
         my $name = $self->cfg->{savename_pl} ? $self->cfg->{savename_pl}($rec) : $nodeid;
-        $name .= '-'.strftime('%Y-%m-%d',localtime($end));
+        $name .= ' - '.strftime('%Y-%m-%d',localtime($end));
         my $fileData;
         for ($format) {
             /csv/ && do {
@@ -539,7 +539,7 @@ sub _excelBuilder {
         my $unit = $self->cfg->{col_units}[$c] || '';
         push @cnames, qq{"$cname [$unit]"};
     }
-    my $worksheet = $workbook->add_worksheet($name);
+    my $worksheet = $workbook->add_worksheet(substr($name,0,31));
     $worksheet->set_column('A:I',18);
     
     my $cnames_ref = \@cnames;
