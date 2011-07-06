@@ -275,9 +275,11 @@ qx.Class.define("ep.visualizer.Chart", {
          */
         _popupPrintPage : function() {
             var win = qx.bom.Window.open("about:blank", '_blank', {
-                scrollbars : 'yes',
+                scrollbars : true,
                 width      : 900,
-                height     : 600
+                height     : 600,
+                menubar    : true,
+                toolbar    : true
             });
 
             win.document.write(this._fillTemplate());
