@@ -15,6 +15,7 @@ EP::Visualizer::TorrusData - pull numeric data associated with torrus data sourc
  sub_nodes = inbytes, outbytes
  multilabel_pl = $R{SAP}
  skiprec_pl = $R{port.display} eq 'data_unavailable'  
+ savename_pl = $R{sap} 
 
  col_names = Avg In, Avg Out, Total In, Total Out, Max In, Max Out, Coverage
  col_units = Mb/s,   Mb/s,    Gb,       Gb,        Mb/s,   Mb/s,    %
@@ -155,6 +156,7 @@ sub matchMultiRecord {
        }
        $ret->{multiRecord} = 1
     }
+    return $ret;
 }
 
 =head2 matchRecord(rec)
@@ -192,7 +194,8 @@ sub matchRecord {
     $src->query(
         hash => $hash,
         nodeid => $rec->{'torrus.nodeid'},
-        url => $rec->{'torrus.tree-url'}
+        url => $rec->{'torrus.tree-url'},
+        recid => $rec->{__nodeId},
     );
     $src->base->path($self->root);
     my $plain_src = $src->to_rel;
@@ -341,7 +344,7 @@ sub getMultiData {
     my $cache = $self->controller->stash('epCache');
     my @ret;
     for my $recId (@recIds){
-        my $rec = $self->cache->getNode($recId);
+        my $rec = $cache->getNode($recId);
         next unless $rec->{'torrus.nodeid'} and $rec->{'torrus.tree-url'};
         my $data =  $self->getData($rec->{'torrus.tree-url'},$rec->{'torrus.nodeid'},$end,$interval,1);
         next if not $data->{status};       
@@ -386,7 +389,8 @@ sub addProxyRoute {
         my $ctrl = shift;
         my $req = $ctrl->req;
         my $hash =  $req->param('hash');
-        my $nodeid = $req->param('nodeid');
+        my $nodeid = $req->param('nodeid'); 
+        my $recId = $req->param('recid'); 
         my $url = $req->param('url');
         my $end = $req->param('end');
         my $interval = $req->param('interval');
@@ -403,8 +407,7 @@ sub addProxyRoute {
         }
         my $data;
         if ($req->param('rec_list')){
-            my $cache = $self->stash('epCache');
-            $data = $self->getMultiData($cache,$end,$interval,[$req->param('recList')]);
+            $data = $self->getMultiData($end,$interval,[$req->param('recList')]);
         }
         else {
             $data = $self->getData($url,$nodeid,$end,$interval,$count);
@@ -419,8 +422,9 @@ sub addProxyRoute {
         }
         my $rp = Mojo::Message::Response->new;
         $rp->code(200);
-        my $name = $nodeid;
-        $name =~ s/[^-_0-9a-z]+/_/ig;
+        my $cache = $ctrl->stash('epCache');
+        my $rec = $cache->getNode($recId);  
+        my $name = $self->cfg->{savename_pl} ? $self->cfg->{savename_pl}($rec) : $nodeid;
         $name .= '-'.strftime('%Y-%m-%d',localtime($end));
         my $fileData;
         for ($format) {
@@ -531,12 +535,13 @@ sub _excelBuilder {
     my $workbook      = shift;
     my @cnames;
     for (my $c=0;$self->cfg->{col_names}[$c];$c++){
-        my $name = $self->cfg->{col_names}[$c];
+        my $cname = $self->cfg->{col_names}[$c];
         my $unit = $self->cfg->{col_units}[$c] || '';
-        push @cnames, qq{"$name [$unit]"};
+        push @cnames, qq{"$cname [$unit]"};
     }
-    my $worksheet = $workbook->add_worksheet();
+    my $worksheet = $workbook->add_worksheet($name);
     $worksheet->set_column('A:I',18);
+    
     my $cnames_ref = \@cnames;
     my $header_format = $workbook->add_format();
     $header_format->set_bold();

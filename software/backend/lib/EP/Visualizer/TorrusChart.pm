@@ -12,6 +12,7 @@ EP::Visualizer::TorrusChart - provide access to appropriate torrus pages via a p
  caption = $R{name}
  mode = traffic
  skiprec_pl = $R{port.display} eq 'data_unavailable'  
+ savename_pl = $R{sap}
 
  # in qos mode
  mode = qos
@@ -174,7 +175,8 @@ sub matchRecord {
         $src->query(
             hash => $hash,
             nodeid => $nodeid,
-            url => $url
+            url => $url,
+            recid => $rec->{__nodeId},
         );
         $src->base->path($self->root);
         my $plain_src = $src->to_rel;
@@ -269,6 +271,7 @@ sub addProxyRoute {
         my $start = $req->param('start');
         my $end = $req->param('end');
         my $format = $req->param('format');
+        my $recId = $req->param('recid');
         my $pxReq =  Mojo::URL->new($url);
         my $view = $self->view;
         my $newHash = $self->calcHash($url,$nodeid);
@@ -297,8 +300,9 @@ sub addProxyRoute {
             my $type = $res->headers->content_type;
            $rp->headers->content_type($type);
            if (lc $type eq 'application/pdf'){
-               my $name = $nodeid;
-               $name =~ s/[^-_0-9a-z]+/_/ig;
+               my $cache = $ctrl->stash('epCache');
+               my $rec = $cache->getNode($recId);
+               my $name = $self->cfg->{savename_pl} ? $self->cfg->{savename_pl}($rec) : $nodeid;
                $name .= '-'.strftime('%Y-%m-%d',localtime($start)).'_'.strftime('%Y-%m-%d',localtime($end));               
                $rp->headers->add('Content-Disposition',"attachement; filename=$name.pdf");
            }

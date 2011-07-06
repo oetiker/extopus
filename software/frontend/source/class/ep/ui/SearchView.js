@@ -16,7 +16,7 @@ qx.Class.define("ep.ui.SearchView", {
      */
     construct : function(colDef) {
         this.base(arguments);
-        this._setLayout(new qx.ui.layout.VBox());
+        this._setLayout(new qx.ui.layout.VBox(5));
         this._createSearchBox();
         this.__vPane = new qx.ui.splitpane.Pane("vertical");
         this._add(this.__vPane, { flex : 1 });
@@ -40,14 +40,24 @@ qx.Class.define("ep.ui.SearchView", {
          * @return {void} 
          */
         _createSearchBox : function() {
-            var control = new qx.ui.form.TextField().set({
+            var sbox  = new qx.ui.container.Composite(new qx.ui.layout.HBox(3).set({
+                alignY: 'middle'
+            }));            
+            var field  = new qx.ui.form.TextField().set({
                 placeholder : this.tr('wor* AND ( this OR that )'),
                 enabled     : false
             });
-
-            this._add(control);
-            control.addListener("changeValue", this._setSearch, this);
-            this.__searchBox = control;
+            sbox.add(field,{flex: 1});
+            var sb = new qx.ui.form.Button(this.tr('Search'));
+            field.addListener('keyup',function(e){
+                if (e.getKeyIdentifier() == 'Enter'){
+                    sb.execute()
+                }
+            },this);
+            sbox.add(sb);
+            this._add(sbox);
+            sb.addListener("execute", this._setSearch, this);
+            this.__searchBox = field;
         },
 
 
@@ -84,7 +94,7 @@ qx.Class.define("ep.ui.SearchView", {
          * @return {void} 
          */
         _setSearch : function(e) {
-            var value = e.getData();
+            var value = this.__searchBox.getValue();
             this.__table.getSelectionModel().resetSelection();
             ep.data.NodeTableModel.getInstance().setSearch(value);
         }

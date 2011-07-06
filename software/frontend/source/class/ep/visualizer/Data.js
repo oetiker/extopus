@@ -196,17 +196,17 @@ qx.Class.define("ep.visualizer.Data", {
          */
 
         _hookSelection: function(table){
-	    var sm = table.getSelectionModel();
-	    var tm = table.getTableModel();
+	        var sm = table.getSelectionModel();
+	        var tm = table.getTableModel();
             sm.addListener('changeSelection', function(e) {
             	if (! this.__selTrack){
-		    return;
+        		    return;
                 }
-	        var recId = [];
+	            var recId = [];
                 sm.iterateSelection(function(ind) {
-	            recId.push(tm.getValue(0, ind));
-		}
-		this.__dataTable.setRecordIds(recId);
+	                recId.push(tm.getValue(0, ind));
+    		    });
+    	    	this.__dataTable.setRecordIds(recId);
             },this);
         },
 

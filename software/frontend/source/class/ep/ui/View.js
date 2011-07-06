@@ -20,9 +20,10 @@ qx.Class.define("ep.ui.View", {
         tabView.hide();
         this._add(new ep.ui.Logo());
         this._add(tabView);
-        this:__tabe = table;
+        this.__table = table;
         var sm = table.getSelectionModel();
-        sm.setSelectionMode(qx.ui.table.selection.Model.MULTIPLE_INTERVAL_SELECTION);
+//      sm.setSelectionMode(qx.ui.table.selection.Model.MULTIPLE_INTERVAL_SELECTION);
+        sm.setSelectionMode(qx.ui.table.selection.Model.SINGLE_SELECTION);
         var tm = table.getTableModel();
         var rpc = ep.data.Server.getInstance();
         var multiMode = false;
@@ -33,6 +34,7 @@ qx.Class.define("ep.ui.View", {
                 selCount++;
                 if (!recId){
                     recId = tm.getValue(0, ind);
+                }
             },this);
             if (selCount == 0){
                 this.__hideTimer = qx.event.Timer.once(function() {

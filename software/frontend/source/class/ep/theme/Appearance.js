@@ -25,18 +25,22 @@ qx.Theme.define("ep.theme.Appearance", {
         'eptable/search-box'    : 'textfield',
 
         "datefield/button" :  {
-           alias : "combobox/button",
-           include : "combobox/button",
+           alias : "button",
+           include : "button",
 
            style : function(states) {
               return {
                 icon : "ep/date-bw.png",
-                padding : [0, 0, 0, 3],
-                backgroundColor : undefined,
-                decorator : undefined,
-                width: 19
-              };
-          }
+                padding : [0, 3, 0, 3],
+                marginLeft: 2
+              }
+/*
+                decorator : states.hovered ? "button-hover" : undefined,
+//                backgroundColor : undefined,
+//                decorator : undefined,
+//                width: 19
+              }; */
+           }
         }
     }
 });

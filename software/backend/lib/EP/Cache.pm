@@ -49,7 +49,7 @@ the user name supplied to the inventory plugins
 
 =cut
 
-has user	=> sub { die "cacheKey is a mandatory argument" };
+has user	=> sub { die "user is a mandatory argument" };
 
 =head3 cacheRoot
 
@@ -107,9 +107,18 @@ meta information on the cache content
 
 has 'meta'      => sub { {} };
 
+=head3 dbh
+
+the db handle used by the cache.
+
+=cut
+
+has 'dbh';
+
 has encodeUtf8  => sub { find_encoding('utf8') };
 has tree        => sub { [] };
 has json        => sub {Mojo::JSON::Any->new};
+
 
 =head2 B<new>(I<config>)
 
@@ -121,7 +130,7 @@ Create an EP::nodeCache object.
 
 Directory to store the cache databases.
 
-=item B<cacheKey>
+=item B<user>
 
 An identifier for this cache ... probably the name of the current user. If a cache under this name already exists it gets attached.
 
@@ -135,7 +144,7 @@ A hash pointer for a list of tree building configurations.
 
 sub new {
     my $self =  shift->SUPER::new(@_);
-    my $path = $self->cacheRoot.'/'.$self->cacheKey.'.sqlite';
+    my $path = $self->cacheRoot.'/'.$self->user.'.sqlite';
     my $dbh = DBI->connect_cached("dbi:SQLite:dbname=$path","","",{
          RaiseError => 1,
          PrintError => 1,
@@ -330,7 +339,7 @@ sub getNodes {
 
 =head2 getNode($nodeId)
 
-Return node matching the given nodeId
+Return node matching the given nodeId. Including the __nodeId attribute.
 
 =cut
 
@@ -340,7 +349,9 @@ sub getNode {
     my $dbh = $self->dbh;
     my @row = $dbh->selectrow_array("SELECT data FROM node WHERE docid = ?",{},$nodeId);
     my $json = $self->json;
-    return $json->decode($row[0]);
+    my $ret = $json->decode($row[0]);
+    $ret->{__nodeId} = $nodeId;
+    return $ret;
 }
 
 =head2 getBranch($parent)

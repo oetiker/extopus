@@ -114,7 +114,7 @@ sub startup {
         my $user = $self->session('epUser');
         if ($user){
 	    my $cache = EP::Cache->new(
-        	cacheRoot => $gcfg->{GENERAL}{cache_dir},
+        	cacheRoot => $gcfg->{cache_dir},
                 user => $user,
         	inventory => $inventory,
                 treeCols => $service->getTableColumnDef('tree')->{ids},

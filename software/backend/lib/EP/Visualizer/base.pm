@@ -77,7 +77,7 @@ Can the Visualizer deal with multiple records of the given type?
 
 =cut
 
-sub matchMultiRecords {
+sub matchMultiRecord {
     my $self= shift;
     my $rec = shift;    
     return undef;
