@@ -25,6 +25,7 @@ qx.Class.define("ep.ui.DataTable", {
         this.setInstance(instance);
         columns.unshift('');
         widths.unshift(15);
+        units.unshift('');
         var tm = this.__model = new qx.ui.table.model.Simple().set({ columns : columns });
 
         var tableOpts = {

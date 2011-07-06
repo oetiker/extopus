@@ -463,7 +463,7 @@ sub csvBuilder {
         'contentType'        => 'application/csv',
         'contentDisposition' => "attachment; filename=$name.csv"
    };
-   my @cnames;
+   my @cnames = ('');
    for (my $c=0;$self->cfg->{col_names}[$c];$c++){
         my $name = $self->cfg->{col_names}[$c];
         my $unit = $self->cfg->{col_units}[$c] || '';
@@ -533,7 +533,7 @@ sub _excelBuilder {
     my $fileData      = shift;
     my $excelBody_ref = shift; 
     my $workbook      = shift;
-    my @cnames;
+    my @cnames = ( '' );
     for (my $c=0;$self->cfg->{col_names}[$c];$c++){
         my $cname = $self->cfg->{col_names}[$c];
         my $unit = $self->cfg->{col_units}[$c] || '';
