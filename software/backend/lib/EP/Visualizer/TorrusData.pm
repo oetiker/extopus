@@ -424,8 +424,8 @@ sub addProxyRoute {
         $rp->code(200);
         my $cache = $ctrl->stash('epCache');
         my $rec = $cache->getNode($recId);  
-        my $name = $self->cfg->{savename_pl} ? $self->cfg->{savename_pl}($rec) : $nodeid;
-        $name .= ' - '.strftime('%Y-%m-%d',localtime($end));
+        my $wbname = $self->cfg->{savename_pl} ? $self->cfg->{savename_pl}($rec) : $nodeid;
+        my $name = $wbname . ' - '.strftime('%Y-%m-%d',localtime($end));
         my $fileData;
         for ($format) {
             /csv/ && do {
@@ -433,11 +433,11 @@ sub addProxyRoute {
                 next;
             };
             /xlsx/ && do {
-                $fileData = $self->xlsxBuilder($data,$name);
+                $fileData = $self->xlsxBuilder($data,$name,$wbname);
                 next;
             };
             /xls/ && do {
-                $fileData = $self->xlsBuilder($data,$name);
+                $fileData = $self->xlsBuilder($data,$name,$wbname);
                 next;
             };
         }
@@ -488,6 +488,7 @@ sub xlsBuilder {
     my $self = shift;
     my $data = shift;
     my $name = shift;
+    my $wbname = shift;
     my $fileData = {
         'contentType'        => 'application/vnd.ms-excel',
         'contentDisposition' => "attachment; filename=$name.xls"
@@ -496,7 +497,7 @@ sub xlsBuilder {
     my $xlsbody_ref = \$xlsbody;
     open my $fh, '>', $xlsbody_ref or die "Failed to open filehandle: $!";
     my $workbook = Spreadsheet::WriteExcel->new($fh);
-    return $self->_excelBuilder($data,$name,$fileData,$xlsbody_ref,$workbook);
+    return $self->_excelBuilder($data,$name,$wbname,$fileData,$xlsbody_ref,$workbook);
 }
 
 =head2 xlsxBuilder(data,filename)
@@ -509,6 +510,7 @@ sub xlsxBuilder {
    my $self = shift;
    my $data = shift;
    my $name = shift;
+   my $wbname = shift;
    my $fileData = {
         'contentType'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'contentDisposition' => "attachment; filename=$name.xlsx"
@@ -517,7 +519,7 @@ sub xlsxBuilder {
    my $xlsxbody_ref = \$xlsxbody;
    open my $fh, '>', $xlsxbody_ref or die "Failed to open filehandle: $!";
    my $workbook = Excel::Writer::XLSX->new($fh);
-   return $self->_excelBuilder($data,$name,$fileData,$xlsxbody_ref,$workbook);
+   return $self->_excelBuilder($data,$name,$wbname,$fileData,$xlsxbody_ref,$workbook);
 }
 
 =head2 _excelBuilder(data,filename)
@@ -530,6 +532,7 @@ sub _excelBuilder {
     my $self      = shift;
     my $data      = shift;
     my $name      = shift;
+    my $wbname    = shift;
     my $fileData      = shift;
     my $excelBody_ref = shift; 
     my $workbook      = shift;
@@ -539,7 +542,7 @@ sub _excelBuilder {
         my $unit = $self->cfg->{col_units}[$c] || '';
         push @cnames, qq{"$cname [$unit]"};
     }
-    my $worksheet = $workbook->add_worksheet(substr($name,0,31));
+    my $worksheet = $workbook->add_worksheet(substr($wbname,0,31));
     $worksheet->set_column('A:I',18);
     
     my $cnames_ref = \@cnames;
