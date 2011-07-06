@@ -42,6 +42,7 @@ qx.Class.define("ep.ui.View", {
                     tabView.hide();
                 },
                 this, 200);
+                return;
             }            
             if (!multiMode){
                 if (selCount > 1){
