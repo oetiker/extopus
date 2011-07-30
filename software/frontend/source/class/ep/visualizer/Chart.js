@@ -107,7 +107,6 @@ qx.Class.define("ep.visualizer.Chart", {
             l : '2 Year',
             v : 2 * 366 * 24 * 3600
         } ];
-        console.log(timeSpan);
         var timeSpanModel = qx.data.marshal.Json.createModel(timeSpan);
 
         var timeSpanSelector = new qx.ui.form.VirtualSelectBox(timeSpanModel).set({
