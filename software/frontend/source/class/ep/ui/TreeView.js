@@ -7,8 +7,8 @@
 
 /* ************************************************************************
 
-#asset(qx/icon/${qx.icontheme}/22/places/folder.png)
-#asset(qx/icon/${qx.icontheme}/22/mimetypes/office-spreadsheet.png)
+#asset(qx/icon/${qx.icontheme}/16/places/folder.png)
+#asset(qx/icon/${qx.icontheme}/16/mimetypes/office-spreadsheet.png)
 #asset(ep/loading22.gif)
 
 ************************************************************************ */
@@ -131,13 +131,13 @@ qx.Class.define("ep.ui.TreeView", {
                     converter : function(value, model) {
                         if (value == "default") {
                             if (model.getKids != null) {
-                                return "icon/22/places/folder.png";
+                                return "icon/16/places/folder.png";
                             } else {
-                                return "icon/22/mimetypes/office-spreadsheet.png";
+                                return "icon/16/mimetypes/office-spreadsheet.png";
                             }
                         }
                         else {
-                            return "ep/loading22.gif";
+                            return "ep/loading16.gif";
                         }
                     }
                 },

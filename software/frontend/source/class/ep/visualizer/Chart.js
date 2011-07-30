@@ -76,38 +76,38 @@ qx.Class.define("ep.visualizer.Chart", {
 
         // time span
         var timeSpan = [ {
-            l : this.tr('1 Day'),
+            l : '1 Day',
             v : 24 * 3600
         },
         {
-            l : this.tr('2 Days'),
+            l : '2 Days',
             v : 2 * 24 * 3600
         },
         {
-            l : this.tr('1 Week'),
+            l : '1 Week',
             v : 7 * 24 * 3600
         },
         {
-            l : this.tr('1 Month'),
+            l : '1 Month',
             v : 31 * 24 * 3600
         },
         {
-            l : this.tr('3 Months'),
+            l : '3 Months',
             v : 3 * 31 * 24 * 3600
         },
         {
-            l : this.tr('6 Months'),
+            l : '6 Months',
             v : 3 * 31 * 24 * 3600
         },
         {
-            l : this.tr('1 Year'),
+            l : '1 Year',
             v : 366 * 24 * 3600
         },
         {
-            l : this.tr('2 Year'),
+            l : '2 Year',
             v : 2 * 366 * 24 * 3600
         } ];
-
+        console.log(timeSpan);
         var timeSpanModel = qx.data.marshal.Json.createModel(timeSpan);
 
         var timeSpanSelector = new qx.ui.form.VirtualSelectBox(timeSpanModel).set({
