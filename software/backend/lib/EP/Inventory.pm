@@ -90,6 +90,7 @@ sub walkInventory {
     my $user = shift;
     my $callback = sub { $cache->add(shift) };
     for my $driver (@{$self->drivers}){        
+        $self->app->log->debug("walking ".$driver->cfg->{module}." inventory for $user");
         if ($driver->cfg->{TREE}){
             $cache->tree($driver->cfg->{TREE}{_text});
         }

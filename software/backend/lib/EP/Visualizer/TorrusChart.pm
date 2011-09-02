@@ -112,7 +112,8 @@ sub new {
     if ($self->cfg->{PRINTTEMPLATE_TX}){
         my $mt = Mojo::Template->new;
 #       $mt->prepend('my $self=shift; my %R = (%{$_[0]});');
-        $mt->parse('% my %R = (%{$_[0]});'."\n".$self->cfg->{PRINTTEMPLATE_TX}{_text});
+        # do not report warnings from uninitialized items in print templates
+        $mt->parse('% no warnings "uninitialized"; my %R = (%{$_[0]});'."\n".$self->cfg->{PRINTTEMPLATE_TX}{_text});
         $mt->build;
         my $exception = $mt->compile;
         die "Compiling Template: ".$exception if $exception;
@@ -189,7 +190,7 @@ sub matchRecord {
     };
     my $template;
     if ($self->printtemplate){
-        $template = $self->printtemplate->interpret($rec)
+        $template = $self->printtemplate->interpret($rec);
     }    
     return {
         visualizer => 'chart',

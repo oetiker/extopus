@@ -145,6 +145,7 @@ A hash pointer for a list of tree building configurations.
 sub new {
     my $self =  shift->SUPER::new(@_);
     my $path = $self->cacheRoot.'/'.$self->user.'.sqlite';
+    $self->log->debug("connecting to sqlite cache $path");
     my $dbh = DBI->connect_cached("dbi:SQLite:dbname=$path","","",{
          RaiseError => 1,
          PrintError => 1,
@@ -168,8 +169,10 @@ sub new {
     my $user = $self->user;
     if (! $self->meta->{version} or time - $self->meta->{lastup} > $self->updateInterval ){
         my $oldVersion = $self->meta->{version};
+        $self->log->debug("checking inventory version");
         my $version = $self->inventory->getVersion($user);
         if ($oldVersion || '' ne  $version){
+            $self->log->debug("loading nodes into ".$self->cacheRoot." for $user");
             $dbh->begin_work;
             $dbh->do("PRAGMA synchronous = 0");
             if ($oldVersion){
@@ -178,7 +181,6 @@ sub new {
             $self->createTables;
             $self->setMeta('version',$version);
             $self->setMeta('lastup',time);
-            $self->log->debug("loading nodes into ".$self->cacheRoot." for $user");
             $self->inventory->walkInventory($self,$self->user);
             $self->log->debug("nodes for ".$self->user." loaded");
             $dbh->commit;

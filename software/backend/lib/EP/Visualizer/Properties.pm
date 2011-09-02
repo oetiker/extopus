@@ -39,12 +39,12 @@ sub matchRecord {
     if ($cfg->{properties}){
         my @propList = split /\s*,\s*/, $cfg->{properties};
         @list = map {
-            [ $attr->{$_} || $_, defined $rec->{$_} ? "$rec->{$_}" : '-' ]
+            [ ''.($attr->{$_} || $_), defined $rec->{$_} ? "$rec->{$_}" : '-' ]
         } @propList;        
     }
     else {
         @list = map {
-            [ "$attr->{$_}" || "$_", defined $rec->{$_} ? "$rec->{$_}" : '-' ]
+            [ ''.($attr->{$_} || $_), defined $rec->{$_} ? "$rec->{$_}" : '-' ]
         } sort { ($attr->{$a} || $a) cmp ($attr->{$b} || $b) } keys %$rec;        
     }
     return {
