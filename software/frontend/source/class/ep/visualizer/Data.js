@@ -58,12 +58,12 @@ qx.Class.define("ep.visualizer.Data", {
 
         intervalSelection.addListener("change", function(e) {
             var item = intervalSelection.getItem(0);
-
             if (item == null) {
                 titleContainer.setEnabled(false);
                 dataTable.setInterval(null);
             }
             else {
+                titleContainer.setEnabled(true);
                 dataTable.setInterval(item.getKey());
             }
         },
@@ -169,6 +169,7 @@ qx.Class.define("ep.visualizer.Data", {
         _applyArgs : function(newArgs, oldArgs) {
             var intervalModel = qx.data.marshal.Json.createModel(newArgs.intervals);
             this.__intervalSelector.setModel(intervalModel);
+            this.__intervalSelector.getSelection().push(intervalModel.getItem(0));
             var dt = this.__dataTable;
             this.__csvUrl = newArgs.csvUrl;
             if (newArgs.multiRecord){

@@ -188,6 +188,8 @@ qx.Class.define("ep.visualizer.Chart", {
             var viewModel = qx.data.marshal.Json.createModel(newArgs.views);
             this.__template = newArgs.template;
             this.__viewSelector.setModel(viewModel);
+            this.__viewSelector.getSelection().push(viewModel.getItem(0));
+
         },
 
 
