@@ -119,7 +119,7 @@ sub startup {
         	inventory => $inventory,
                 treeCols => $service->getTableColumnDef('tree')->{ids},
                 searchCols => $service->getTableColumnDef('search')->{ids},
-                updateInterval => $gcfg->{GENERAL}{update_interval} || 86400,
+                updateInterval => $gcfg->{update_interval} || 86400,
                 log => $app->log,
              );
              $self->stash('epCache' => $cache);
