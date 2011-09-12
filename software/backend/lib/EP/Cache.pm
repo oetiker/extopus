@@ -167,11 +167,12 @@ sub new {
     $self->{treeCache} = {};
     $self->{nodeId} = 0;
     my $user = $self->user;
+    # $self->log->debug("UPDATE CHECK not ".$self->meta->{version}." or ".(time - $self->meta->{lastup})." > ".$self->updateInterval);
     if (! $self->meta->{version} or time - $self->meta->{lastup} > $self->updateInterval ){
-        my $oldVersion = $self->meta->{version};
-        $self->log->debug("checking inventory version");
+        my $oldVersion = $self->meta->{version} || '';
         my $version = $self->inventory->getVersion($user);
-        if ($oldVersion || '' ne  $version){
+        # $self->log->debug("checking inventory version '$version' vs '$oldVersion'");     
+        if ( $oldVersion  ne  $version){
             $self->log->debug("loading nodes into ".$self->cacheRoot." for $user");
             $dbh->begin_work;
             $dbh->do("PRAGMA synchronous = 0");
