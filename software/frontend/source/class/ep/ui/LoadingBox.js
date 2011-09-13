@@ -104,6 +104,10 @@ qx.Class.define("ep.ui.LoadingBox", {
             if (newValue == oldValue) {
                 return;
             }
+            if (this.__runningTimer) {
+                this.__runningTimer.stop();
+                this.__runningTimer = null;
+            }
 
             switch(newValue)
             {
@@ -118,21 +122,16 @@ qx.Class.define("ep.ui.LoadingBox", {
                     break;
 
                 case 'nodata':
-                    if (this.__runningTimer) {
-                        this.__runningTimer.stop();
+                    this.__runningTimer = qx.event.Timer.once(function() {
                         this.__runningTimer = null;
-                    }
+                        this.__loader.hide();
+                        this.__noData.show();
 
-                    this.__loader.hide();
-                    this.__noData.show();
+                    },
+                    this, 300);
                     break;
 
                 case 'ready':
-                    if (this.__runningTimer) {
-                        this.__runningTimer.stop();
-                        this.__runningTimer = null;
-                    }
-
                     this.__loader.hide();
                     this.__noData.hide();
                     break;
