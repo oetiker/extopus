@@ -168,8 +168,20 @@ qx.Class.define("ep.visualizer.Data", {
          */
         _applyArgs : function(newArgs, oldArgs) {
             var intervalModel = qx.data.marshal.Json.createModel(newArgs.intervals);
+            var iSel = this.__intervalSelector.getSelection();
+            var newItem = intervalModel.getItem(0);
+            var oldSel = iSel.getItem(0);
+            if (oldSel){
+                var oldKey = oldSel.getKey();
+                intervalModel.forEach(function(item){
+                    if (item.getKey() == oldKey){
+                        newItem = item;
+                    }
+                });
+            }
             this.__intervalSelector.setModel(intervalModel);
-            this.__intervalSelector.getSelection().push(intervalModel.getItem(0));
+            iSel.removeAll();
+            iSel.push(newItem);
             var dt = this.__dataTable;
             this.__csvUrl = newArgs.csvUrl;
             if (newArgs.multiRecord){

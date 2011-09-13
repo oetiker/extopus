@@ -63,7 +63,6 @@ qx.Class.define("ep.visualizer.Chart", {
                 chart.setBaseUrl(null);
                 titleContainer.setEnabled(false);
                 this.__printBtn.setEnabled(false);
-                chart.setViewMode('nodata');
             }
             else {
                 var url = item.getSrc();
@@ -187,9 +186,20 @@ qx.Class.define("ep.visualizer.Chart", {
         _applyArgs : function(newArgs, oldArgs) {
             var viewModel = qx.data.marshal.Json.createModel(newArgs.views);
             this.__template = newArgs.template;
+            var vSel = this.__viewSelector.getSelection();
+            var oldSel = vSel.getItem(0);
+            var newItem = viewModel.getItem(0);
+            if (oldSel){
+                var oldKey = oldSel.getTitle();
+                viewModel.forEach(function(item){
+                    if (item.getTitle() == oldKey){
+                        newItem = item;
+                    }
+                });
+            }
             this.__viewSelector.setModel(viewModel);
-            this.__viewSelector.getSelection().push(viewModel.getItem(0));
-
+            vSel.removeAll();
+            vSel.push(newItem);
         },
 
 
