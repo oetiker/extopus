@@ -35,6 +35,7 @@ qx.Class.define("ep.ui.ChartImage", {
         this);
 
         img.addListener('loaded', function() {
+            this.debug('image loaded');
             timer.restart();
             this.setViewMode('ready');
         },
@@ -87,12 +88,17 @@ qx.Class.define("ep.ui.ChartImage", {
          *
          * @return {void} 
          */
-        reloadChart : function() {
+        reloadChart : function(newVal,oldVal,key) {            
+            this.debug('reloading '+newVal+' - '+oldVal+' ('+key+')');
+            // do not reload if something is being set without changeing it
+            if (newVal && oldVal && newVal == oldVal){
+                return;
+            }
             var url = this.getBaseUrl();
-
+    
             if (url == null) {
                 this.setViewMode('nodata');
-                this.__img.setSource(null);
+//              this.__img.setSource(null);
                 return;
             }
 
