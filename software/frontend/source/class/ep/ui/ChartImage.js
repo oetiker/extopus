@@ -23,8 +23,8 @@ qx.Class.define("ep.ui.ChartImage", {
         });
 
         this.base(arguments, img);
-        img.addListener('appear', this.reloadChart, this);
-        img.addListener('resize', this.reloadChart, this);
+        this.addListener('appear', this.reloadChart, this);
+        this.addListener('resize', this.reloadChart, this);
         var timer = this.__timer = new qx.event.Timer(300 * 1000);
 
         timer.addListener('interval', function() {
@@ -108,7 +108,7 @@ qx.Class.define("ep.ui.ChartImage", {
 
             if (range && end && el) {
                 // sync screen before we measure things
-                qx.html.Element.flush();
+                qx.html.Element.flush(); 
                 var width = qx.bom.element.Dimension.getWidth(el);
                 var height = qx.bom.element.Dimension.getHeight(el);
 
