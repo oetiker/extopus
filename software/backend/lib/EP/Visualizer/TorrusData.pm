@@ -260,10 +260,10 @@ sub getData {
                 next;
             };
             /month/ && do {
-                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($end - 15 - $step * 365.25*24*3600/12);
+                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($end);
                 my $midMonStart = timelocal_nocheck(0,0,0,15,$S{mon},$S{year});
-                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($midMonStart);
-                @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($midMonStart+365.25*24*3600/12);
+                @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($midMonStart - $step * 365.25*24*3600/12);
+                @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($midMonStart - ($step - 1)*365.25*24*3600/12);
                 $stepStart = timelocal_nocheck(0,0,0,1,$S{mon},$S{year});
                 $stepEnd = timelocal_nocheck(0,0,0,1,$E{mon},$E{year})-1;
                 $stepLabel = strftime("%Y-%02m",localtime($stepStart));
