@@ -96,7 +96,7 @@ qx.Class.define("ep.visualizer.Chart", {
         },
         {
             l : '6 Months',
-            v : 3 * 31 * 24 * 3600
+            v : 6 * 31 * 24 * 3600
         },
         {
             l : '1 Year',
