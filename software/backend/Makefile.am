@@ -17,7 +17,6 @@
 AUTOMAKE_OPTIONS =  foreign
 
 ETC = etc/extopus.cfg.dist
-
 BIN = bin/ep.pl bin/run.sh bin/siamdumper.pl
 
 PM :=  $(shell find lib/ -name "*.pm")
@@ -38,13 +37,13 @@ dist_bin_SCRIPTS = $(BIN)
 
 if BUILD_QOOXDOO_APP
 
-script/ep.js: $(shell find ../../frontend/source/class/ep -name "*.js")
-        cd ../../frontend && $(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache -m BUILD_PATH:../backend/public build
+public/script/ep.js: $(shell find ../frontend/source/class/ep -name "*.js")
+	cd ../frontend && $(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache -m BUILD_PATH:../backend/public build
          
 endif
          
 install-exec-hook:
-        [ x$PERL5LIB != x ] && cd "$(DESTDIR)$(bindir)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)}; s{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(dist_bin_SCRIPTS)
+	[ x$PERL5LIB != x ] && cd "$(DESTDIR)$(bindir)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)}; s{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(dist_bin_SCRIPTS)
         
         
 dist-hook:
@@ -54,6 +53,6 @@ dist-hook:
 install-data-local:
 	mkdir -p $(DESTDIR)$(HTDOCSDIR)
 	echo "#!/bin/sh" > $(DESTDIR)$(HTDOCSDIR)/index.fcgi.dist
-	echo "export REMOCULAR_CONF=$(prefix)/etc/remocular.cfg" >> $(DESTDIR)$(HTDOCSDIR)/index.fcgi.dist
+	echo "export EXTOPUS_CONF=$(prefix)/etc/extopus.cfg" >> $(DESTDIR)$(HTDOCSDIR)/index.fcgi.dist
 	echo "$(prefix)/bin/ep.pl fastcgi" >> $(DESTDIR)$(HTDOCSDIR)/index.fcgi.dist
 	chmod +x $(DESTDIR)$(HTDOCSDIR)/index.fcgi.dist

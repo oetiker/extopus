@@ -83,7 +83,18 @@ if test "$enable_pkgonly" != yes; then
    if test x$prfx = xNONE; then
        prfx=$ac_default_prefix
    fi
-   for module in Mojolicious Mojo::Server::FastCGI Config::Grammar IPC::Run; do
+   for module in \
+     Mojolicious \
+     MojoX::Dispatcher::Qooxdoo::Jsonrpc \
+     Mojo::Server::FastCGI \
+     Config::Grammar \
+     SIAM \
+     DBD::SQLite \
+     JSON::XS \
+     Mojo::JSON::Any \
+     Excel::Writer::XLSX  \   
+     Spreadsheet::WriteExcel
+   do 
      AC_MSG_CHECKING([checking for perl module '$module'])
      if ${PERL} -I$prfx/thirdparty/lib/perl5 -e 'use '$module 2>/dev/null ; then
          AC_MSG_RESULT([Ok])
@@ -118,12 +129,8 @@ fi
 AC_CONFIG_FILES([
 	Makefile
 	backend/Makefile
-	backend/bin/Makefile
-	backend/lib/Makefile
-	backend/etc/Makefile
-	backend/public/Makefile
 	frontend/Makefile
-	])
+])
 
 AC_SUBST(VERSION)
 
