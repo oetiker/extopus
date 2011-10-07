@@ -56,7 +56,7 @@ sub matchRecord {
     my $self = shift;
     my $rec = shift;
     for (qw(torrus.nodeid torrus.tree-url)){
-        return undef unless defined $rec->{$_};
+        return unless defined $rec->{$_};
     };
     my $url = $rec->{'torrus.tree-url'};
     my $leaves = $self->getLeaves($url,$rec->{'torrus.nodeid'});
@@ -192,6 +192,7 @@ sub addProxyRoute {
             );
         }
     });
+    return;
 }
 
 =head2 signImgSrc(target,res)
@@ -241,6 +242,7 @@ sub signImgSrc {
             $self->app->log->debug('img[src] out '.$attrs->{src});
         }
     });
+    return;
 }
 
 1;

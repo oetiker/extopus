@@ -1,4 +1,6 @@
 package EP::Visualizer;
+use strict;
+use warnings;
 
 =head1 NAME
 
@@ -51,13 +53,13 @@ sub new {
     my $self = shift->SUPER::new(@_);    
     my $cfg = $self->app->cfg;
 
-    for my $entry ( sort { $cfg->{$a}{_order} <=> $cfg->{$b}{_order} } grep /^VISUALIZER:/, keys %{$cfg} ){
+    for my $entry ( sort { $cfg->{$a}{_order} <=> $cfg->{$b}{_order} } grep { /^VISUALIZER:/ } keys %{$cfg} ){
         my $drvCfg = $cfg->{$entry};
-        require 'EP/Visualizer/'.$drvCfg->{module}.'.pm';
+        require 'EP/Visualizer/'.$drvCfg->{module}.'.pm'; ## no critic (RequireBarewordIncludes)
         $entry =~ m/VISUALIZER:\s*(\S+)/ or die "Could not match $entry";
         my $instance = $1;
         do {
-            no strict 'refs';
+            no strict 'refs'; ## no critic (ProhibitNoStrict)
             my $visObj = "EP::Visualizer::$drvCfg->{module}"->new({app=>$self->app,cfg=>$drvCfg,instance=>$instance});
             push @{$self->visualizers}, $visObj;
             $self->vismap->{$instance} = $visObj;
@@ -108,7 +110,7 @@ call the rpcService method of the selected instance.
 
 =cut
 
-sub visualize {
+sub visualize {  ## no critic (RequireArgUnpacking)
     my $self = shift;
     my $instance = shift;
     my $obj = $self->vismap->{$instance};

@@ -1,4 +1,6 @@
 package EP::Visualizer::base;
+use strict;
+use warnings;
 
 =head1 NAME
 
@@ -68,7 +70,7 @@ used on extopus side. It returns either undef (no match) or an array of maps:
 sub matchRecord {
     my $self= shift;
     my $rec = shift;    
-    return undef;
+    return;
 }
 
 =head2 matchMultiRecord(rec)
@@ -80,7 +82,7 @@ Can the Visualizer deal with multiple records of the given type?
 sub matchMultiRecord {
     my $self= shift;
     my $rec = shift;    
-    return undef;
+    return;
 }
 
 =head2 rpcService
@@ -89,7 +91,7 @@ custom rpc service of this visualizer. accessible via the C<visualize(visualizer
 
 =cut
 
-sub rpcService {
+sub rpcService {  ## no critic (RequireArgUnpacking)
     my $self = shift;
     my @args = @_;
     die "sorry, no rpc service support";   
@@ -101,7 +103,7 @@ Returns a hash for authenticating access to the ref
 
 =cut
 
-sub calcHash {
+sub calcHash {   ## no critic (RequireArgUnpacking)
     my $self = shift;
     # $self->log->debug('HASH '.join(',',@_));    
     my $hash = hmac_md5_sum(join('::',@_),$self->app->secret);

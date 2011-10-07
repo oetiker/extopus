@@ -8,7 +8,9 @@ use lib "$FindBin::Bin/../lib";
 use Mojolicious::Commands;
 use EP;
 
-$ENV{MOJO_APP} = EP->new;
+our $VERSION = "0";
+
+local $ENV{MOJO_APP} = EP->new;
 
 # Start commands
 Mojolicious::Commands->start;

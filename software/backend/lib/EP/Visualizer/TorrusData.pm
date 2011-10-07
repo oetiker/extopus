@@ -85,7 +85,7 @@ sub new {
     for (@split_nodes){
         $self->cfg->{$_} = $self->cfg->{$_} ? [ split /\s*,\s*/, $self->cfg->{$_} ] : undef;
     }
-    my $sub = eval 'sub { my $DURATION = shift; my %D = (%{$_[0]}); return [ '.$self->cfg->{col_data} . ' ] }';
+    my $sub = eval 'sub { my $DURATION = shift; my %D = (%{$_[0]}); return [ '.$self->cfg->{col_data} . ' ] }'; ## no critic (ProhibitStringyEval)
     if ($@){
         die mkerror(38734,"Failed to compile $self->cfg->{col_data}"); 
     }
@@ -147,7 +147,7 @@ non matching records will be ignored.
 
 =cut
 
-sub matchMultiRecord {
+sub matchMultiRecord {   ## no critic (RequireArgUnpacking)
     my $self = shift;
     my $ret = $self->matchRecord(@_);
     if ($ret){
@@ -170,11 +170,11 @@ sub matchRecord {
     my $rec = shift;
     my $cfg = $self->cfg;
     for (qw(torrus.nodeid torrus.tree-url)){
-        return undef unless defined $rec->{$_};
+        return unless defined $rec->{$_};
     }
 
     if ($rec->{$cfg->{selector}} ne $cfg->{type}){
-        return undef;
+        return;
     }
 
     my $baseProps = {
@@ -447,6 +447,7 @@ sub addProxyRoute {
         $ctrl->tx->res($rp);
         $ctrl->rendered;
     });
+    return;
 }
 
 =head2 csvBuilder(data,filename)
@@ -497,7 +498,9 @@ sub xlsBuilder {
     my $xlsbody_ref = \$xlsbody;
     open my $fh, '>', $xlsbody_ref or die "Failed to open filehandle: $!";
     my $workbook = Spreadsheet::WriteExcel->new($fh);
-    return $self->_excelBuilder($data,$name,$wbname,$fileData,$xlsbody_ref,$workbook);
+    my $r = $self->_excelBuilder($data,$name,$wbname,$fileData,$xlsbody_ref,$workbook);
+    close $fh;
+    return $r;
 }
 
 =head2 xlsxBuilder(data,filename)
@@ -507,19 +510,21 @@ creates a xls data list
 =cut
 
 sub xlsxBuilder {
-   my $self = shift;
-   my $data = shift;
-   my $name = shift;
-   my $wbname = shift;
-   my $fileData = {
-        'contentType'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'contentDisposition' => "attachment; filename=$name.xlsx"
-   };
-   my $xlsxbody;
-   my $xlsxbody_ref = \$xlsxbody;
-   open my $fh, '>', $xlsxbody_ref or die "Failed to open filehandle: $!";
-   my $workbook = Excel::Writer::XLSX->new($fh);
-   return $self->_excelBuilder($data,$name,$wbname,$fileData,$xlsxbody_ref,$workbook);
+    my $self = shift;
+    my $data = shift;
+    my $name = shift;
+    my $wbname = shift;
+    my $fileData = {
+       'contentType'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+       'contentDisposition' => "attachment; filename=$name.xlsx"
+    };
+    my $xlsxbody;
+    my $xlsxbody_ref = \$xlsxbody;
+    open my $fh, '>', $xlsxbody_ref or die "Failed to open filehandle: $!";
+    my $workbook = Excel::Writer::XLSX->new($fh);
+    my $r = $self->_excelBuilder($data,$name,$wbname,$fileData,$xlsxbody_ref,$workbook);
+    close $fh;
+    return $r
 }
 
 =head2 _excelBuilder(data,filename)

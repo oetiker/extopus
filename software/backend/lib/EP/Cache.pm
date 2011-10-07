@@ -1,4 +1,6 @@
 package EP::Cache;
+use strict;
+use warnings;
 
 =head1 NAME
 
@@ -29,10 +31,10 @@ Provide node Cache services to Extopus.
 
 =cut
 
-use strict;
-use warnings;
-use DBI;
+
 use Mojo::Base -base;
+use Carp;
+use DBI;
 use Mojo::JSON::Any;
 use Encode;
 use EP::Exception qw(mkerror);
@@ -49,7 +51,7 @@ the user name supplied to the inventory plugins
 
 =cut
 
-has user	=> sub { die "user is a mandatory argument" };
+has user => sub { croak "user is a mandatory argument" };
 
 =head3 cacheRoot
 
@@ -57,7 +59,7 @@ path to the cache root directory
 
 =cut
 
-has cacheRoot   => '/tmp/';
+has cacheRoot  => '/tmp/';
 
 =head3 searchCols
 
@@ -155,9 +157,9 @@ sub new {
     });
     $self->dbh($dbh); 
     do { 
-        local $dbh->{RaiseError};
-        local $dbh->{PrintError};
-        $self->meta({ map { @$_ } @{$dbh->selectall_arrayref("select key,value from meta")||[]}});
+        local $dbh->{RaiseError} = undef;
+        local $dbh->{PrintError} = undef;
+        $self->meta({ map { @$_ } @{$dbh->selectall_arrayref("select key,value from meta")||[]} });
     };
     if ($dbh->err and $dbh->err == 1){ # no such table
         $dbh->begin_work;
@@ -168,7 +170,7 @@ sub new {
     $self->{nodeId} = 0;
     my $user = $self->user;
     # $self->log->debug("UPDATE CHECK not ".$self->meta->{version}." or ".(time - $self->meta->{lastup})." > ".$self->updateInterval);
-    if (! $self->meta->{version} or time - $self->meta->{lastup} > $self->updateInterval ){
+    if ((not $self->meta->{version}) or ( time - $self->meta->{lastup} > $self->updateInterval )  ){
         my $oldVersion = $self->meta->{version} || '';
         my $version = $self->inventory->getVersion($user);
         # $self->log->debug("checking inventory version '$version' vs '$oldVersion'");     
@@ -205,6 +207,7 @@ sub createTables {
     $dbh->do("CREATE TABLE leaf ( parent INTEGER, node INTEGER)");
     $dbh->do("CREATE INDEX leaf_idx ON leaf (parent )");
     $dbh->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
+    return;
 }
 
 =head2 dropTables
@@ -219,6 +222,7 @@ sub dropTables {
     $dbh->do("DROP TABLE branch");
     $dbh->do("DROP TABLE leaf");
     $dbh->do("DROP TABLE node");            
+    return;
 }
  
 =head2 add({...})
@@ -235,6 +239,7 @@ sub add {
     # should use $dbh->last_insert_id("","","",""); but it seems not to work with FTS3 tables :-(
     # glad we are doing the adding in one go so getting the number is pretty simple
     $self->addTreeNode($self->{nodeId},$nodeData);
+    return;
 }
 
 =head2 setMeta(key,value)
@@ -250,6 +255,7 @@ sub setMeta {
     my $dbh = $self->dbh;
     $dbh->do("INSERT OR REPLACE INTO meta (key,value) VALUES (?,?)",{},$key,$value);
     $self->meta->{$key} = $value;
+    return;
 }
 
 =head2 addTreeNode(nodeId,nodeData)
@@ -289,6 +295,7 @@ sub addTreeNode {
         $dbh->do("INSERT INTO leaf (node, parent) VALUES(?,?)",{},$nodeId,$parent);
 #        warn "   $parent -> $nodeId\n";
     }
+    return;
 }
 
 

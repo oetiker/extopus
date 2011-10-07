@@ -170,6 +170,7 @@ sub startup {
             ep => $service
         }
     }); 
+    return 0;
 }
 
 1;

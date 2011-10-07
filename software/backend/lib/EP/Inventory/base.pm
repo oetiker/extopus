@@ -1,4 +1,6 @@
 package EP::Inventory::base;
+use strict;
+use warnings;
 
 =head1 NAME
 

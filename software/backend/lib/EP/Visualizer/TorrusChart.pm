@@ -19,8 +19,8 @@ EP::Visualizer::TorrusChart - provide access to appropriate torrus pages via a p
  extra_params=cbqos-class-map-name,cbqos-parent-name                       
  +VIEW_MAPPER_PL   
  # use this section to remap the names provided by torrus to something
- # more 'end user friendly'. Return 'undef' to supress an entry
- return undef unless $R{'cbqos-parent-name'} =~ /^cos-po2-cos-SAP\@/;
+ # more 'end user friendly'. Return nothing to supress an entry
+ return unless $R{'cbqos-parent-name'} =~ /^cos-po2-cos-SAP\@/;
  my $label;
  for ($R{'cbqos-class-map-name'}){
      $label = 'Voice' if /-vo-/;
@@ -32,7 +32,7 @@ EP::Visualizer::TorrusChart - provide access to appropriate torrus pages via a p
      $kind = 'Data' if m|//summary$|;
      $kind = 'Dropped Packets' if m|//droppkt$|;
  }
- return undef unless $kind and $label;
+ return unless $kind and $label;
  return "$label $kind";
 
  +PRINTTEMPLATE_TX
@@ -132,10 +132,10 @@ sub matchRecord {
     my $self = shift;
     my $rec = shift;
     for (qw(torrus.nodeid torrus.tree-url)){
-        return undef unless $rec->{$_};
+        return unless $rec->{$_};
     };
     if ($self->mode eq 'qos'){
-        return undef unless $rec->{'torrus.qos-enabled'};
+        return unless $rec->{'torrus.qos-enabled'};
     };
     if ($self->cfg->{skiprec_pl} and $self->cfg->{skiprec_pl}->($rec)){
         return {  
@@ -320,6 +320,7 @@ sub addProxyRoute {
             );
         }
     });
+    return;
 }
 
 1;

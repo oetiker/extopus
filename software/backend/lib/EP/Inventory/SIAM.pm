@@ -1,4 +1,6 @@
 package EP::Inventory::SIAM;
+use strict;
+use warnings;
 
 =head1 NAME
 
@@ -77,7 +79,7 @@ internal ... return a SIAM contract handler
 sub _getContracts {
     my $self = shift;
     my $siam = $self->siam;    
-    my $user = shift;
+    my $username = shift;
     my %user = ();
     my $contracts;
     if ($self->cfg->{load_all}){
@@ -85,9 +87,9 @@ sub _getContracts {
         $contracts = $siam->get_all_contracts();
     }
     else {
-        $self->app->log->debug('open contracts for '.$user);
+        $self->app->log->debug('open contracts for '.$username);
         my $user = $siam->get_user($user) or do {
-            $self->app->log->debug($self->cfg->{driver}.' has no information on '.$user);
+            $self->app->log->debug($self->cfg->{driver}.' has no information on user '.$username);
             return [];
         };
         %user = (%{$user->attributes});
@@ -161,6 +163,7 @@ sub walkInventory {
     $self->app->log->debug('loaded '.$count.' nodes');
 #   DB::disable_profile();
 #   DB::finish_profile();
+    return;
 }
 
 1;

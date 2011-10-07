@@ -1,4 +1,7 @@
 package EP::DocPlugin;
+use strict;  
+use warnings;
+
 # based on Mojolicious::Plugin::PodRenderer
 
 use Mojo::Base 'Mojolicious::Plugin';
@@ -15,7 +18,7 @@ use Pod::Simple::HTML;
 use Pod::Simple::Search;
 
 # Paths
-our @PATHS = map { $_, "$_/pods" } @INC;
+our @PATHS = map { ($_ , "$_/pods") } @INC;
 
 # "This is my first visit to the Galaxy of Terror and I'd like it to be a
 #  pleasant one."
@@ -140,6 +143,7 @@ sub register {
       $self->res->headers->content_type('text/html;charset="UTF-8"');
     }
   );
+  return;
 }
 
 sub _pod_to_html {

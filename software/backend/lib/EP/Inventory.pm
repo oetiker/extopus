@@ -1,4 +1,6 @@
 package EP::Inventory;
+use strict;
+use warnings;
 
 =head1 NAME
 
@@ -48,11 +50,11 @@ create new inventory manager.
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    for my $entry ( grep /^INVENTORY:/, sort keys %{$self->app->cfg} ){
+    for my $entry ( grep { /^INVENTORY:/ } sort keys %{$self->app->cfg} ){
         my $drvCfg = $self->app->cfg->{$entry};
-        require 'EP/Inventory/'.$drvCfg->{module}.'.pm';
+        require 'EP/Inventory/'.$drvCfg->{module}.'.pm'; ## no critic (RequireBarewordIncludes)
         do {
-            no strict 'refs';
+            no strict 'refs'; ## no critic (ProhibitNoStrict)
             push @{$self->drivers}, "EP::Inventory::$drvCfg->{module}"->new({cfg=>$drvCfg,app=>$self->app});
 
         }
@@ -99,6 +101,7 @@ sub walkInventory {
         }
         $driver->walkInventory($callback,$user);
     }
+    return;
 }
 
 1;

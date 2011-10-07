@@ -1,5 +1,6 @@
 package EP::Config;
-use strict;
+use strict;  
+use warnings;
 
 =head1 NAME
 
@@ -20,8 +21,6 @@ Configuration reader for Extopus
 
 =cut
 
-use vars qw($VERSION);
-$VERSION   = '0.01';
 use Carp;
 use Config::Grammar;
 use Mojo::Base -base;
@@ -212,12 +211,12 @@ sub _make_parser {
         else {
            $perl = 'sub { $_[0]->{"'.$code.'"}}';
         }
-        my $sub = eval $perl;
+        my $sub = eval $perl; ## no critic (ProhibitStringyEval)
         if ($@){
             return "Failed to compile $code: $@ ";
         }
         $_[0] = $sub;
-        return undef;
+        return;
     };
 
     my $grammar = {
@@ -340,7 +339,7 @@ EX
                         my @t = split /\n/, $rules; 
                         my $perl = 'sub { my %R = (%{$_[0]}); return [ '.join(',',map {"[ $_ ]"} @t).' ] }';
                         # check and modify the _text in place ... sneaky ... 
-                        $_[0] = eval $perl;
+                        $_[0] = eval $perl;  ## no critic (ProhibitStringyEval)
                         if ($@){
                             return "Failed to compile $perl: $@ ";
                         }

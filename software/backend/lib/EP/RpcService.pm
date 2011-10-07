@@ -1,6 +1,6 @@
 package EP::RpcService;
-
 use strict;
+use warnings;
 
 use EP::Exception qw(mkerror);
 use EP::Cache;
@@ -77,9 +77,9 @@ Get the branches and leaves attachd to the given parent. The root of the tree ha
 
 =cut  
 
-sub getBranch {
-    my $self = shift;
-    return $self->cache->getBranch(@_);
+sub getBranch { ## no critic (RequireArgUnpacking)
+    my $self = shift;    
+    return $self->cache->getBranch(@_); 
 }
 
 =head2 getTableColumnDef
@@ -110,7 +110,7 @@ Get the number of nodes matching filter.
 
 =cut  
 
-sub getNodeCount {
+sub getNodeCount {  ## no critic (RequireArgUnpacking)
     my $self = shift;
     return $self->cache->getNodeCount(@_);
 }
@@ -121,7 +121,7 @@ Get the nodes matching the given filter.
 
 =cut  
 
-sub getNodes {
+sub getNodes {   ## no critic (RequireArgUnpacking)
     my $self = shift;
     return $self->cache->getNodes(@_);
 }
@@ -160,7 +160,7 @@ generic rpc call to be forwarere to the rpcService method of the visualizer inst
 
 =cut
 
-sub visualize {
+sub visualize {   ## no critic (RequireArgUnpacking)
     my $self = shift;
     my $instance = shift;
     $self->visualizer->controller($self->controller);
