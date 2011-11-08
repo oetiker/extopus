@@ -88,7 +88,7 @@ sub _getContracts {
     }
     else {
         $self->app->log->debug('open contracts for '.$username);
-        my $user = $siam->get_user($user) or do {
+        my $user = $siam->get_user($username) or do {
             $self->app->log->debug($self->cfg->{driver}.' has no information on user '.$username);
             return [];
         };
