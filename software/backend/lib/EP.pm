@@ -86,7 +86,12 @@ sub startup {
             $self->log->level($gcfg->{log_level});
         }
     }
-
+    $self->hook( before_dispatch => sub {
+        my $self = shift;
+        my $uri = $self->req->env->{SCRIPT_URI};
+        $self->req->url->base(Mojo::URL->new($uri)) if $uri;
+    });
+    
     my $inventory = EP::Inventory->new(
         app => $self
     );
