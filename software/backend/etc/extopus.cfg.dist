@@ -1,96 +1,117 @@
+# the extopus configuration file
 *** GENERAL ***
-cache_dir = /scratch/extopus
-mojo_secret = my_secret
-log_file = /tmp/extopus-tobi.log
+cache_dir = /scratch/extopus-demo/cache
+mojo_secret = d0duj3mfjfviasasdfasdf
+log_file = /scratch/extopus-demo/extopus-full.log
+default_user = admin
+update_interval = 5
 
 *** FRONTEND ***
-logo_large = http://www.upc-cablecom.biz/en/cablecom_logo_b2b.jpg
-title = upc cablecom b2b - extopus BETA
+#logo_large = http://www.upc-cablecom.biz/en/cablecom_logo_b2b.jpg
+title = Extopus DEMO
+open_branches = 1
+tree_width = 10
 
 *** ATTRIBUTES ***
-prod = Product
-country = Country
-city = City
-street = Street
-number = No
 cust = Customer
-svc_type = Service
 data = Data
 data_type = Type
-port = Port
+device_name = Device
 inv_id = SAP
+port = Port
+prod = Product
+svc_type = Svc Type
+country = Country
+torrus.nodeid = NodeId
+torrus.tree-url = Url
+cpe = CPE
 
 *** TABLES ***
-
-search = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
-search_width = 1,   1,       1,    2,      2,    1,          1,   2   
-tree = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
-tree_width = 1,   1,      1,    2,      2,    1,          1,    2
+search =  prod,  cust, data_type,  inv_id, device_name, port
+search_width = 2,  2,    1,         2,      1,           1
+tree =       prod, cust, data_type, inv_id, device_name, port
+tree_width = 2,    2,    1,          2,      1,           1
 
 *** INVENTORY: siam1 ***
 module=SIAM
-siam_cfg=/opt/extopus/etc/siam.yaml
+siam_cfg=/home/torrusde/pm/etc/siam.yaml
+#skipnode_pl = $R{'cablecom.port.display'} and $R{'cablecom.port.display'} eq 'skip'
+load_all = true
 
 +MAP
-prod = siam.svc.product_name
-country = xyc.svc.loc.country
-city = xyc.svc.loc.city
-street = $I{'xyc.svc.loc.address'} . ' ' . ( $I{'xyc.svc.loc.building_number'} || '')
 cust = siam.contract.customer_name
-svc_type = siam.svc.type
-data_class = siam.svcdata.name
+data = siam.svcdata.name
 data_type = siam.svcdata.type
-port = xyc.port.shortname 
+device_name = siam.device.name
 inv_id = siam.svc.inventory_id
+port = torrus.port.name
+prod = $R{'siam.svc.product_name'} or 'No Product'
+#street = $R{'cablecom.svc.loc.address'} . ' ' . ( $R{'cablecom.svc.loc.building_number'} || '')
+#street = ( $R{'cablecom.svc.loc.building_name'} ? $R{'cablecom.svc.loc.building_name'} : ($R{'cablecom.svc.loc.address'} || '') . ' ' . ( $R{'cablecom.svc.loc.building_number'} || '') . ( $R{'cablecom.svc.loc.building_number_annex'} || '') )
+#support_level = cablecom.svc.support_level
+svc_type = siam.svc.type
+torrus.nodeid = torrus.port.nodeid
 torrus.tree-url = torrus.tree-url
-torrus.nodeid = torrus.nodeid
-car = xyc.svc.car_name
-
+svc=siam.svcdata.name
 +TREE
+'Customers',$R{cust}
+'Devices',$R{device_name}
 
-'Location',$R{country}, $R{city}, $R{street}
-$R{cust},$R{svc_type},$R{data_type}
-
-*** VISUALIZER: chart ***
+*** VISUALIZER: port ***
 module=TorrusChart
-title = Torrus Traffic
-caption = "$R{prod} $R{inv_id} $R{device_name}:$R{port}"
-mode = traffic
-#mode = qos
-+TxPrintTemplate
+title=Traffic Charts  
+caption="$R{prod} $R{inv_id} $R{device_name}:$R{port}"
+savename_pl = "$R{cust} - $R{inv_id} $R{device_name}:$R{port}"
+mode=traffic
+
++PRINTTEMPLATE_TX
 <!doctype html><html>
- <head><title><%= "$R{cust} $R{city} $R{svc_type}" %></title></head>
+ <head><title><%= "Utilization Report for $R{device_name}:$R{port}" %></title></head>
  <body>
-   <h1><%= "$R{cust} $R{city}" %></h1>
-   <h2>@@VIEW@@</h2>
-   <div>@@START(d.MM.yyyy)@@ - @@END(d.MM.yyy)@@</div>
-   <p><img src="@@SRC@@"/></p>
+   <h1>Utilization Report</h1>
+   <h2><%= "$R{prod} $R{inv_id} $R{device_name}:$R{port}" %></h2>
+
+   <div>Period of @@START(d.MM.yyyy)@@ - @@END(d.MM.yyyy)@@</div>  
+
+
+   <div><b><%= $R{cust} %></b></div>
+
+   <p>
+   <div>Customer Reference: <%= $R{customer_ref} || 'undefined' %></div>
+   <div>Service Level: <%= $R{service_level} %></div>
+   <div>Support Level: <%= $R{support_level} %></div>
+   <div>CAR: <%= $R{car} %></div></p>
+
+   <p>@@VIEW@@<br/>
+   <img style="width: 100%" src="@@SRC@@" alt="chart"/></p>
+
+   <p><small>Generated <%= scalar localtime(time) %></small></p>
  </body>
 </html>
+
 
 *** VISUALIZER: data ***
 module = TorrusData
 selector = data_type
 type = PortTraffic
 title = Port Traffic
-sub_nodes = inbytes, outbytes
-col_names = Date, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out
-col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
-col_widths = 2,  3  ,  3,    3,  3,  3,    3, 2
+caption = "$R{prod} $R{inv_id} $R{device_name}:$R{port}"
+#skiprec_pl = $R{display} eq 'data_unavailable'
+savename_pl = "$R{cust} - $R{inv_id} $R{device_name}:$R{port}"
 
+sub_nodes = inbytes, outbytes
+col_names = Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage      
+col_units = Mb/s,   Mb/s,     GB,       GB,        Mb/s,   Mb/s,    %
+col_widths = 20,      20,     20,       20,        20,     20,      10 
 col_data = int($D{inbytes}{AVG}*8/1e4)/1e2, \
            int($D{outbytes}{AVG}*8/1e4)/1e2, \
-           int($D{inbytes}{AVG}*8 * $DURATION / 100 * $D{inbytes}{AVAIL}/1e7)/1e2, \
-           int($D{outbytes}{AVG}*8 * $DURATION / 100 * $D{outbytes}{AVAIL}/1e7)/1e2, \
+           int($D{inbytes}{AVG} * $DURATION / 100 * $D{inbytes}{AVAIL}/1e7)/1e2, \
+           int($D{outbytes}{AVG} * $DURATION / 100 * $D{outbytes}{AVAIL}/1e7)/1e2, \
            int($D{inbytes}{MAX}*8/1e5)/1e1, \
            int($D{outbytes}{MAX}*8/1e5)/1e1, \
-           int($D{inbytes}{AVAIL})        
+           int($D{inbytes}{AVAIL})
 
 *** VISUALIZER: prop ***
 module=Properties
 title=Properties
-caption = "$R{prod} $R{inv_id} $R{device_name}:$R{port}"
-# use this to limit the attributes shown
-# properties = cust,street,city,data_type,data_class
-
-
+caption="$R{prod} $R{inv_id} $R{device_name}:$R{port}"
