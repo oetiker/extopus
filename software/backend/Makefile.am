@@ -37,7 +37,7 @@ dist_bin_SCRIPTS = $(BIN)
 
 if BUILD_QOOXDOO_APP
 
-public/script/ep.js: $(shell find ../frontend/source/class/ep -name "*.js")
+public/script/ep.js: $(shell find ../frontend/source/class/ep -name "*.js") $(QOOXDOO_PATH)/framework/config.json
 	cd ../frontend && $(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache -m BUILD_PATH:../backend/public build
          
 endif
