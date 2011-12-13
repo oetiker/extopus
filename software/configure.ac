@@ -39,7 +39,7 @@ if test "x$PERL" != "x"; then
   $PERL -e "use $ac_perl_version;" >/dev/null 2>&1
   if test $? -ne 0; then
     AC_MSG_RESULT(no);
-    AC_MSG_ERROR(at least version 5.10.1 is required to run remocular)
+    AC_MSG_ERROR(at least version 5.10.1 is required to run extopus)
   else
     AC_MSG_RESULT(ok);
   fi
@@ -112,7 +112,7 @@ if test "$enable_pkgonly" != yes; then
    the PERL5LIB environment variable accordingly.
 
    FIRST though, make sure that 'perl' starts the perl
-   binary you want to use for remOcular.
+   binary you want to use for extopus.
 
    You can install local copies of the missing modules 
    by running
@@ -145,7 +145,7 @@ AC_OUTPUT
      PERL5LIB = ${PERL5LIB:-"not set"}
      PERL = $PERL
 
-   The remOcular Makefiles uses GNU make functionality.
+   The extopus Makefiles uses GNU make functionality.
    Continue installation with
 
      $GMAKE install
