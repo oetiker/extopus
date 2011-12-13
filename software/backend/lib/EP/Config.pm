@@ -226,7 +226,14 @@ sub _make_parser {
             _doc => 'Global configuration settings for Extopus',
             _vars => [ qw(cache_dir mojo_secret log_file log_level default_user update_interval localguide) ],
             _mandatory => [ qw(cache_dir mojo_secret log_file) ],
-            cache_dir => { _doc => 'directory to cache information gathered via the inventory plugins' },
+            cache_dir => { _doc => 'directory to cache information gathered via the inventory plugins',
+                _sub => {
+                    if ( not -d $_[0] ){
+                        system "/bin/mkdir","-p",$_[0];
+                    }
+                    -d $_[0] ? undef : "Cache directory $_[0] does not exist (and could not be created)";
+                }
+            },
             localguide => { _doc => 'path to a pod file describing the local setup' },
             default_user => { _doc => 'use this user for inventory authentication' },
             mojo_secret => { _doc => 'secret for signing mojo cookies' },
