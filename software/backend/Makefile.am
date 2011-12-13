@@ -45,7 +45,7 @@ public/script/ep.js: $(shell find ../frontend/source/class/ep -name "*.js") $(QO
 endif
          
 install-exec-hook:
-	[ x$PERL5LIB != x ] && cd "$(DESTDIR)$(bindir)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)}; s{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(dist_bin_SCRIPTS)
+	[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(bindir)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)}; s{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(dist_bin_SCRIPTS)
         
         
 dist-hook:
