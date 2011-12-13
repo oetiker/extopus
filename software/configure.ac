@@ -114,7 +114,7 @@ if test "$enable_pkgonly" != yes; then
    FIRST though, make sure that 'perl' starts the perl
    binary you want to use for remOcular.
 
-   Now you can install local copies of the missing modules 
+   You can install local copies of the missing modules 
    by running
 
      ./setup/build-perl-modules.sh ${prfx}/thirdparty

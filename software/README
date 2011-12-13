@@ -1,0 +1,20 @@
+Extopus - The Monitoring Aggregator
+
+Extopus is an aggregating frontend to monitoring systems. Its plug-in
+architecture provides an easy route to integrating output from a wide array
+of monitoring systems into a single instance of Extopus.
+
+Setup
+-----
+
+Just follow the hints issued by
+
+ ./configure
+ make install
+
+Action
+------
+
+The action is on https://github.com/oetiker/extopus
+
+Enoj!

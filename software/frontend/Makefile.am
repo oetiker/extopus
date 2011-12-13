@@ -22,7 +22,7 @@ if BUILD_QOOXDOO_APP
 
 .PHONY: source lint pretty
 
-source: source/script/remocular.js
+source: source/script/ep.js
 
 lint:
 	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache lint
@@ -30,7 +30,7 @@ lint:
 pretty:
 	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache pretty
 	
-source/script/remocular.js: $(shell find source/class/ -name "*.js")
+source/script/ep.js: $(shell find source/class/ -name "*.js")
 	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache source
 
 endif

@@ -23,21 +23,23 @@ PM :=  $(shell find lib/ -name "*.pm")
 
 RES :=  $(shell test -d public/resource && find public/resource -type f)        
 
+TEMPL := $(shell test -d templates && find templates -type f)
+
 PUB = public/script/ep.js public/index.html $(RES)
 
-EXTRA_DIST = $(wildcard t/*.t) $(ETC) $(BIN) $(PM) $(PUB)
+EXTRA_DIST = $(wildcard t/*.t) $(ETC) $(BIN) $(PM) $(PUB) $(TEMPL)
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
 
 datadir = $(prefix)
-nobase_data_DATA = $(PM) $(PUB) $(ETC)
+nobase_data_DATA = $(PM) $(PUB) $(ETC) $(TEMPL)
 
 dist_bin_SCRIPTS = $(BIN)
 
 if BUILD_QOOXDOO_APP
 
-public/script/ep.js: $(shell find ../frontend/source/class/ep -name "*.js")
+public/script/ep.js: $(shell find ../frontend/source/class/ep -name "*.js") $(QOOXDOO_PATH)/framework/config.json
 	cd ../frontend && $(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache -m BUILD_PATH:../backend/public build
          
 endif
