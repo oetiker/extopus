@@ -16,8 +16,12 @@
 
 AUTOMAKE_OPTIONS =  foreign
 
+QX_CLASS = ep
+MJ_CLASS = EP
+MJ_SCRIPT = ep
+
 ETC = etc/extopus.cfg.dist
-BIN = bin/ep.pl bin/run.sh bin/siamdumper.pl
+BIN = bin/$(MJ_SCRIPT).pl bin/run.sh bin/siamdumper.pl
 
 PM :=  $(shell find lib/ -name "*.pm")
 
@@ -25,7 +29,7 @@ RES :=  $(shell test -d public/resource && find public/resource -type f)
 
 TEMPL := $(shell test -d templates && find templates -type f)
 
-PUB = public/script/ep.js public/index.html $(RES)
+PUB = public/script/$(QX_CLASS).js public/index.html $(RES)
 
 EXTRA_DIST = $(wildcard t/*.t) $(ETC) $(BIN) $(PM) $(PUB) $(TEMPL)
 
@@ -39,21 +43,22 @@ dist_bin_SCRIPTS = $(BIN)
 
 if BUILD_QOOXDOO_APP
 
-public/script/ep.js: $(shell find ../frontend/source/class/ep -name "*.js") $(QOOXDOO_PATH)/framework/config.json
+public/script/$(QX_CLASS).js: $(shell find ../frontend/source/class/$(QX_CLASS) -name "*.js") $(QOOXDOO_PATH)/framework/config.json
 	cd ../frontend && $(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache -m BUILD_PATH:../backend/public build
          
 endif
          
 install-exec-hook:
-	[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(bindir)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)}; s{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' *.pl || true
+	[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(bindir)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' *.pl || true
+	cd "$(DESTDIR)$(bindir)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' *.pl
 
 dist-hook:
-	$(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(distdir)/lib/EP.pm
-	$(PERL) -i -p -e "s/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;" $(distdir)/public/script/ep.js
+	$(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(distdir)/lib/$(MJ_CLASS).pm
+	$(PERL) -i -p -e "s/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;" $(distdir)/public/script/$(QX_CLASS).js
 
 install-data-local:
 	mkdir -p $(DESTDIR)$(HTDOCSDIR)
 	echo "#!/bin/sh" > $(DESTDIR)$(HTDOCSDIR)/index.fcgi.dist
 	echo "export EXTOPUS_CONF=$(prefix)/etc/extopus.cfg" >> $(DESTDIR)$(HTDOCSDIR)/index.fcgi.dist
-	echo "$(prefix)/bin/ep.pl fastcgi" >> $(DESTDIR)$(HTDOCSDIR)/index.fcgi.dist
+	echo "$(prefix)/bin/$(MJ_SCRIPT).pl fastcgi" >> $(DESTDIR)$(HTDOCSDIR)/index.fcgi.dist
 	chmod +x $(DESTDIR)$(HTDOCSDIR)/index.fcgi.dist

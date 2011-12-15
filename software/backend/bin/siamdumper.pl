@@ -7,7 +7,8 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use lib "$FindBin::Bin/../../thirdparty/lib/perl5";
+use lib "$FindBin::Bin/../thirdparty/lib/perl5";
+# use lib qw() # PERL5LIB
 use Encode;
 use SIAM;
 use YAML;
