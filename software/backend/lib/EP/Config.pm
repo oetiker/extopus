@@ -227,7 +227,7 @@ sub _make_parser {
             _vars => [ qw(cache_dir mojo_secret log_file log_level default_user update_interval localguide) ],
             _mandatory => [ qw(cache_dir mojo_secret log_file) ],
             cache_dir => { _doc => 'directory to cache information gathered via the inventory plugins',
-                _sub => {
+                _sub => sub {
                     if ( not -d $_[0] ){
                         system "/bin/mkdir","-p",$_[0];
                     }
