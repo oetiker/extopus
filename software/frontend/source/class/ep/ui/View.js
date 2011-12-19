@@ -22,19 +22,20 @@ qx.Class.define("ep.ui.View", {
         this._add(tabView);
         this.__table = table;
         var sm = table.getSelectionModel();
-//      sm.setSelectionMode(qx.ui.table.selection.Model.MULTIPLE_INTERVAL_SELECTION);
-        sm.setSelectionMode(qx.ui.table.selection.Model.SINGLE_SELECTION);
+        sm.setSelectionMode(qx.ui.table.selection.Model.MULTIPLE_INTERVAL_SELECTION);
         var tm = table.getTableModel();
         var rpc = ep.data.Server.getInstance();
         var multiMode = false;
         sm.addListener('changeSelection', function(e) {
             var selCount = 0;
             var recId;
+            var recIdArr = [];
             sm.iterateSelection(function(ind) {
-                selCount++;
-                if (!recId){
-                    recId = tm.getValue(0, ind);
+                recIdArr[selCount] = tm.getValue(0, ind);
+                if (typeof recId === "undefined"){
+                    recId = recIdArr[selCount];
                 }
+                selCount++;
             },this);
             if (selCount == 0){
                 this.__hideTimer = qx.event.Timer.once(function() {
@@ -46,7 +47,7 @@ qx.Class.define("ep.ui.View", {
             }            
             if (!multiMode){
                 if (selCount > 1){
-                    rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getMultiVisualizers', recId);
+                    rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getMultiVisualizers', recIdArr);
                     multiMode = true;
                 }
                 else {
