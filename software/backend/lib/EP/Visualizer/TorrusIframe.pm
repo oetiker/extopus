@@ -54,6 +54,8 @@ sub new {
    
 sub matchRecord {
     my $self = shift;
+    my $type = shift;
+    return unless $type eq 'single';
     my $rec = shift;
     for (qw(torrus.nodeid torrus.tree-url)){
         return unless defined $rec->{$_};

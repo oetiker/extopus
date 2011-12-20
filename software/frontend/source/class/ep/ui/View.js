@@ -29,12 +29,8 @@ qx.Class.define("ep.ui.View", {
         sm.addListener('changeSelection', function(e) {
             var selCount = 0;
             var recId;
-            var recIdArr = [];
             sm.iterateSelection(function(ind) {
-                recIdArr[selCount] = tm.getValue(0, ind);
-                if (typeof recId === "undefined"){
-                    recId = recIdArr[selCount];
-                }
+                recId = tm.getValue(0, ind);
                 selCount++;
             },this);
             if (selCount == 0){
@@ -45,14 +41,15 @@ qx.Class.define("ep.ui.View", {
                 this, 200);
                 return;
             }            
-            if (!multiMode){
-                if (selCount > 1){
-                    rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getMultiVisualizers', recIdArr);
+            if (selCount > 1){
+                if (!multiMode){
+                    rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', 'multi', recId);
                     multiMode = true;
                 }
-                else {
-                    rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', recId);
-                }
+            }
+            else {
+                multiMode = false;
+                rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', 'single', recId);
             }
         },
         this);
@@ -67,6 +64,7 @@ qx.Class.define("ep.ui.View", {
         __hideTimer : null,
         __tabView : null,
         __table : null,
+        __selectedRows: null,
 
         /**
          * Create new a visualizer widget according to the given configuration. At first glance the configuration
@@ -82,6 +80,10 @@ qx.Class.define("ep.ui.View", {
             {
                 case ep.visualizer.Chart.KEY:
                     control = new ep.visualizer.Chart(viz.title, viz.arguments,table);
+                    break;
+
+                case ep.visualizer.MultiData.KEY:
+                    control = new ep.visualizer.MultiData(viz.title, viz.arguments,table);
                     break;
 
                 case ep.visualizer.IFrame.KEY:
@@ -114,12 +116,14 @@ qx.Class.define("ep.ui.View", {
         _showVisualizers : function(vizList) {
             var active = {};
             var tabView = this.__tabView;
-
             if (this.__hideTimer) {
                 this.__hideTimer.stop();
                 this.__hideTimer = null;
             }
-
+            if (!vizList || vizList.length == 0){
+                tabView.hide();
+                return;                
+            }
             if (tabView.isHidden()) {
                 tabView.show();
             }
@@ -130,6 +134,8 @@ qx.Class.define("ep.ui.View", {
                         showClose    : true,
                         showMinimize : false
                     });
+                    /* allow the kid to disentagle itself */
+                    this.__breakOutKids[kid].getUserData('pageWidget').onUnhook();
                 }
             }
 
@@ -158,7 +164,6 @@ qx.Class.define("ep.ui.View", {
                     control.addListener('breakout', this._onBreakOut, this);
                     cache[key] = control;
                 }
-
                 control.setUserData('caption', viz.caption);
                 control.setUserData('position', i);
                 var button = control.getButton();
@@ -169,18 +174,23 @@ qx.Class.define("ep.ui.View", {
                 }
             }
 
+            var reselect = false;
             for (var vizKey in cache) {
                 if (!active[vizKey]) {
+                    if (tabView.isSelected(cache[vizKey])) {
+                        reselect = true;
+                    }
                     cache[vizKey].getButton().set({
                         visibility : 'excluded',
                         enabled    : false
                     });
-
-                    if (tabView.isSelected(cache[vizKey])) {
-                        tabView.setSelection([ tabView.getSelectables(true)[0] ]);
-                    }
                 }
             }
+            if (reselect){
+                tabView.setSelection([ tabView.getSelectables(false)[0] ]);
+            }
+
+
         },
 
 
@@ -207,7 +217,7 @@ qx.Class.define("ep.ui.View", {
                 width     : width,
                 height    : height
             });
-
+            win.setUserData('pageWidget',page);
             this.__breakOutKids[key] = win;
             win.setLayout(new qx.ui.layout.Grow());
             page.show();

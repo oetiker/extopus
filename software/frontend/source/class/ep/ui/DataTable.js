@@ -23,10 +23,7 @@ qx.Class.define("ep.ui.DataTable", {
      */
     construct : function(instance, columns, widths, units) {
         this.setInstance(instance);
-        columns.unshift('');
-        widths.unshift(15);
-        units.unshift('');
-        var tm = this.__model = new qx.ui.table.model.Simple().set({ columns : columns });
+        var tm = this._model = new qx.ui.table.model.Simple().set({ columns : columns });
 
         var tableOpts = {
             tableColumnModel : function(obj) {
@@ -116,30 +113,18 @@ qx.Class.define("ep.ui.DataTable", {
             check    : 'Date',
             apply    : 'reloadTable',
             nullable : true
-        },
-        /**
-         * recordIds
-         */
-        recordIds: {
-            init: null,
-            check: 'Array',
-            apply: 'reloadTable',
-            nullable: true
         }
-        
     },
 
     members : {
-        __model : null,
-        __recCache : null,
-
+        _model : null,
         /**
          * drop cached records
          *
          * @return {void} 
          */
         clearCache: function(){
-            this.__recCache = {};
+            this._recCache = {};
         },
         
         /**
@@ -156,7 +141,7 @@ qx.Class.define("ep.ui.DataTable", {
                     date = Math.round(this.getEndDate().getTime() / 1000);
                 }
 
-                var tm = this.__model;
+                var tm = this._model;
                 this.setViewMode('loading');
                 var that = this;
 

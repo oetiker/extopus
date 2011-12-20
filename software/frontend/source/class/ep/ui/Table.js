@@ -40,5 +40,16 @@ qx.Class.define("ep.ui.Table", {
         }
 
         this.getDataRowRenderer().setHighlightFocusRow(false);
+    },
+    members: {
+        getSelectedRecordIds: function () {
+            var sm = this.getSelectionModel();
+            var tm = this.getTableModel();
+            var recIds = [];
+            sm.iterateSelection(function(ind) {
+                recIds.push(tm.getValue(0, ind));
+            },this);
+            return recIds;
+        }
     }
 });

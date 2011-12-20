@@ -389,7 +389,7 @@ sub getBranch {
     for my $branch (sort {
         my $l = $a->[1];
         my $r = $b->[1];
-        ( $l =~ /^\d+/ and $r =~ /^\d+/ ) ? $l <=> $r : $l cmp $r
+        ( $l =~ s/^(\d+).*/$1/s and $r =~ s/^(\d+).*/$1/s ) ? $l <=> $r : $l cmp $r
     } @$branches){
         $sth->execute($branch->[0]);
         my @leaves;

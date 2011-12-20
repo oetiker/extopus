@@ -27,6 +27,10 @@ qx.Class.define("ep.ui.ChartImage", {
         this.addListener('resize', this.reloadChart, this);
         var timer = this.__timer = new qx.event.Timer(300 * 1000);
 
+        this.addListener('disappear', function() {
+            timer.stop()
+        }, this);
+
         timer.addListener('interval', function() {
             if (!this.getEndTime()) {
                 this.reloadChart();
@@ -45,6 +49,7 @@ qx.Class.define("ep.ui.ChartImage", {
             this.setViewMode('nodata');
         }, this);
 
+    
         timer.start();
     },
 
@@ -89,7 +94,6 @@ qx.Class.define("ep.ui.ChartImage", {
          * @return {void} 
          */
         reloadChart : function(newVal,oldVal,key) {            
-            this.debug('reloading '+newVal+' - '+oldVal+' ('+key+')');
             // do not reload if something is being set without changeing it
             if (newVal && oldVal && newVal == oldVal){
                 return;
@@ -114,7 +118,9 @@ qx.Class.define("ep.ui.ChartImage", {
 
                 if (width > 0 && height > 0) {
                     var src = url + '&start=' + (end - range) + '&end=' + end + '&width=' + width + '&height=' + height + '&format=.png';
-
+                    if (this.__img.getSource() == src){
+                        return;
+                    }
                     if (!qx.io.ImageLoader.isLoaded(src)) {
                         this.setViewMode('loading');
                         this.__img.setSource(src);

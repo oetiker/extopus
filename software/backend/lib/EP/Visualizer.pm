@@ -68,20 +68,22 @@ sub new {
     return $self;
 }
 
-=head2 getVisualizers(record)
+=head2 getVisualizers(type,args)
 
 Find which visualizers consider themselves capable of visualizing this record.
 See L<EP::Visualizer::base::matchRecord>.
 
+Curently the types B<single> and B<multi> are supported.
 =cut
 
 sub getVisualizers {
     my $self = shift;
-    my $record = shift;
+    my $type = shift;
+    my $args = shift;
     my $viz = $self->visualizers;
     my @matches;
     for my $instance (@$viz){
-        push @matches, grep({ defined $_ }  $instance->matchRecord($record));
+        push @matches, grep({ defined $_ }  $instance->matchRecord($type,$args));
     }
     return \@matches;
 }

@@ -67,6 +67,11 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
     members : {
         _breakOutButton : null,
 
+        /**
+         * Unhook this visualizer from external influence (eg changeing selection of items in the view table)
+         * Override in childs
+         */
+        onUnhook : function(){},
 
         /**
          * Configure the visualizer. This must be overridden in the child code.

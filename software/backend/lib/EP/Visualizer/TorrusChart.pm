@@ -122,7 +122,7 @@ sub new {
     return $self;
 }
    
-=head2 matchRecord(rec)
+=head2 matchRecord(type,args)
 
 can we handle this type of record
 
@@ -130,6 +130,8 @@ can we handle this type of record
 
 sub matchRecord {
     my $self = shift;
+    my $type = shift;
+    return unless $type eq 'single';
     my $rec = shift;
     for (qw(torrus.nodeid torrus.tree-url)){
         return unless $rec->{$_};

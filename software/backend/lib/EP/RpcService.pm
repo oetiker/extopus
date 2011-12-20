@@ -35,7 +35,6 @@ our %allow = (
     getNodes => 1,
     getNode => 1,
     getVisualizers => 1,
-    getMultiVisualizers => 1,
     visualize => 1,
 );
 
@@ -126,32 +125,20 @@ sub getNodes {   ## no critic (RequireArgUnpacking)
     return $self->cache->getNodes(@_);
 }
 
-=head2 getVisualizers(recId)
+=head2 getVisualizers(type,recordId)
 
-return a list of visualizers ready to visualize the given node
+return a list of visualizers ready to visualize the given node.
+see L<EP::Visualizer::getVisualizers> for details.
 
 =cut
 
 sub getVisualizers {
     my $self = shift;
+    my $type = shift;
     my $recId = shift;
     my $record = $self->cache->getNode($recId);
     $self->visualizer->controller($self->controller);
-    return $self->visualizer->getVisualizers($record);
-}
-
-=head2 getMultiVisualizers(recId)
-
-return a list of visualizers ready to visualize the given node
-
-=cut
-
-sub getMultiVisualizers {
-    my $self = shift;
-    my $recId = shift;
-    my $record = $self->cache->getNode($recId);
-    $self->visualizer->controller($self->controller);
-    return $self->visualizer->getMultiVisualizers($record);
+    return $self->visualizer->getVisualizers($type,$record);
 }
 
 =head2 visualize(instance,args)

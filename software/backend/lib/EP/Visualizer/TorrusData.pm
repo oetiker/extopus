@@ -13,7 +13,6 @@ EP::Visualizer::TorrusData - pull numeric data associated with torrus data sourc
  title = Port Traffic
  caption = $R{cust}
  sub_nodes = inbytes, outbytes
- multilabel_pl = $R{SAP}
  skiprec_pl = $R{port.display} eq 'data_unavailable'  
  savename_pl = $R{sap} 
 
@@ -140,26 +139,7 @@ sub denan {
     ]    
 }
 
-=head2 matchMultiRecord(rec)
-
-can we handle multiple records of this type. Later as we evaluate the data all
-non matching records will be ignored.
-
-=cut
-
-sub matchMultiRecord {   ## no critic (RequireArgUnpacking)
-    my $self = shift;
-    my $ret = $self->matchRecord(@_);
-    if ($ret){
-       for (qw(nodeId hash treeUrl)){
-           delete $ret->{$_}
-       }
-       $ret->{multiRecord} = 1
-    }
-    return $ret;
-}
-
-=head2 matchRecord(rec)
+=head2 matchRecord(type,rec)
 
 can we handle this type of record
 
@@ -167,6 +147,8 @@ can we handle this type of record
 
 sub matchRecord {
     my $self = shift;
+    my $type = shift;
+    return  unless $type eq 'single';
     my $rec = shift;
     my $cfg = $self->cfg;
     for (qw(torrus.nodeid torrus.tree-url)){
@@ -330,32 +312,6 @@ sub getData {
     };
 }
 
-=head2 getMultiData(end,interval,recId[])
-
-use the AGGREGATE_DS rpc call to pull some statistics from the server.
-
-=cut
-
-sub getMultiData {
-    my $self = shift;
-    my $end = shift;
-    my $interval = shift;
-    my @recIds = split /\s*,\s*/, shift;
-    my $cache = $self->controller->stash('epCache');
-    my @ret;
-    for my $recId (@recIds){
-        my $rec = $cache->getNode($recId);
-        next unless $rec->{'torrus.nodeid'} and $rec->{'torrus.tree-url'};
-        my $data =  $self->getData($rec->{'torrus.tree-url'},$rec->{'torrus.nodeid'},$end,$interval,1);
-        next if not $data->{status};       
-        $data->{data}[0][0] = $self->cfg->{multilabel_pl}($rec);
-        push @ret, $data->{data}[0];
-    }
-    return {
-        status => 1,
-        data => \@ret,
-    };
-}
 
 =head2 rpcService 
 
@@ -366,14 +322,9 @@ provide rpc data access
 sub rpcService {
     my $self = shift;
     my $arg = shift;
-    if ($arg->{recList}){
-        return $self->getMultiData($arg->{endDate},$arg->{interval},$arg->{recList});
-    }
-    else {
-        die mkerror(9844,"hash is not matching url and nodeid")
-            unless $self->calcHash($arg->{treeUrl},$arg->{nodeId}) eq $arg->{hash};
-        return $self->getData($arg->{treeUrl},$arg->{nodeId},$arg->{endDate},$arg->{interval},$arg->{count});
-    }
+    die mkerror(9844,"hash is not matching url and nodeid")
+        unless $self->calcHash($arg->{treeUrl},$arg->{nodeId}) eq $arg->{hash};
+    return $self->getData($arg->{treeUrl},$arg->{nodeId},$arg->{endDate},$arg->{interval},$arg->{count});
 }
 
 =head2 addProxyRoute()
@@ -396,20 +347,20 @@ sub addProxyRoute {
         my $interval = $req->param('interval');
         my $count = $req->param('count');
         my $format = $req->param('format');
-        my $newHash = $self->calcHash($url,$nodeid);
-        if ($hash ne $newHash){
-            $ctrl->render(
-                 status => 401,
-                 text => "Supplied hash ($hash) does not match our expectations",
-            );
-            $self->app->log->warn("Request for $url?nodeid=$nodeid denied ($hash ne $newHash)");
-            return;
-        }
         my $data;
         if ($req->param('rec_list')){
-            $data = $self->getMultiData($end,$interval,[$req->param('recList')]);
+            $data = $self->getMultiData($end,$interval,[split /,/, $req->param('rec_list')]);
         }
         else {
+            my $newHash = $self->calcHash($url,$nodeid);
+            if ($hash ne $newHash){
+                $ctrl->render(
+                     status => 401,
+                     text => "Supplied hash ($hash) does not match our expectations",
+                );
+                $self->app->log->warn("Request for $url?nodeid=$nodeid denied ($hash ne $newHash)");
+                return;
+            }
             $data = $self->getData($url,$nodeid,$end,$interval,$count);
         }
         if (not $data->{status}){
@@ -417,7 +368,7 @@ sub addProxyRoute {
                  status => 401,
                  text => $data->{error},
             );
-            $self->app->log->error("faild getting data $data->{error}");
+            $self->app->log->error("failed getting data $data->{error}");
             return;
         }
         my $rp = Mojo::Message::Response->new;
