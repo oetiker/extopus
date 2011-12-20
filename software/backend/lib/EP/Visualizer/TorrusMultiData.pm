@@ -1,0 +1,175 @@
+package EP::Visualizer::TorrusMultiData;
+
+=head1 NAME
+
+EP::Visualizer::TorrusMultiData - pull numeric data associated with sellected torrus nodes
+
+=head1 SYNOPSIS
+
+ *** VISUALIZER: multidata ***
+ module = TorrusMultiData
+ selector = data_type
+ type = PortTraffic
+ title = Traffic Data
+ caption = Multi Node Traffic Review
+ skiprec_pl = $R{display} eq 'data_unavailable'
+ savename_pl = multi_node_data
+ multilabel_pl = "$R{prod} $R{inv_id} $R{device_name}:$R{port}"
+
+ sub_nodes = inbytes, outbytes
+ col_names = Node, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
+ col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, % 
+ col_widths = 10,  3  ,    3,    3,  3,  3,    3, 2
+ col_data = int($D{inbytes}{AVG}*8/1e4)/1e2, \
+           int($D{outbytes}{AVG}*8/1e4)/1e2, \
+           int($D{inbytes}{AVG}*8 * $DURATION / 100 * $D{inbytes}{AVAIL}/1e7)/1e2, \
+           int($D{outbytes}{AVG}*8 * $DURATION / 100 * $D{outbytes}{AVAIL}/1e7)/1e2, \
+           int($D{inbytes}{MAX}*8/1e5)/1e1, \
+           int($D{outbytes}{MAX}*8/1e5)/1e1, \
+           int($D{inbytes}{AVAIL})
+
+=head1 DESCRIPTION
+
+Works in conjunction with the Data frontend visualizer. Data can be
+presented in tabular form, as a csv download and as an Excel Worksheet.
+
+This visualizer will match records that have the following attributes:
+
+ torrus.url-prefix
+ torrus.nodeid
+
+The visualizer fetches data from torrus through the AGGREGATE_DS rpc call.
+
+It determines further processing by evaluation additional configurable attributes
+
+=head1 METHODS
+
+all the methods from L<EP::Visualizer::base>. As well as these:               
+
+=cut
+
+use strict;
+use warnings;
+
+use Mojo::Base 'EP::Visualizer::TorrusData';
+
+sub new {
+    my $self = shift->SUPER::new(@_);
+    # parse some config data
+    for my $prop (qw(multilabel_pl)){
+        die mkerror(9273, "mandatory property $prop for visualizer module TorrusMultiData is not defined")
+            if not defined $self->cfg->{$prop};
+    }
+    return $self;
+}
+
+=head2 matchRecord(type,args)
+
+can we handle multiple records of this type. Later as we evaluate the data all
+non matching records will be ignored.
+
+=cut
+
+sub matchRecord {   ## no critic (RequireArgUnpacking)
+    my $self = shift;
+    my $type = shift;
+    my $args = shift;
+    $self->app->log->info("match $type $args");
+    return unless $type eq 'multi';
+    my $ret = $self->SUPER::matchRecord('single',$args);
+    if ($ret){
+       for (qw(nodeId hash treeUrl)){
+           delete $ret->{arguments}{$_}
+       }
+       $ret->{visualizer} = 'multidata';
+    }
+    return $ret;
+}
+
+=head2 getMultiData(end,interval,recId[])
+
+use the AGGREGATE_DS rpc call to pull some statistics from the server.
+
+=cut
+
+sub getMultiData {
+    my $self = shift;
+    my $end = shift;
+    my $interval = shift;
+    my $recIds = shift;
+    my $cache = $self->controller->stash('epCache');
+    my @ret;
+    for my $recId (@$recIds){
+        my $rec = $cache->getNode($recId);
+        next unless $rec->{'torrus.nodeid'} and $rec->{'torrus.tree-url'};
+        my $data =  $self->getData($rec->{'torrus.tree-url'},$rec->{'torrus.nodeid'},$end,$interval,1);
+        next if not $data->{status};       
+        $self->app->log->info($self->cfg->{multilabel_pl});
+        $data->{data}[0][0] = $self->cfg->{multilabel_pl}($rec);
+        push @ret, $data->{data}[0];
+    }
+    return {
+        status => 1,
+        data => \@ret,
+    };
+}
+
+=head2 rpcService 
+
+provide rpc data access
+
+=cut
+
+sub rpcService {
+    my $self = shift;
+    my $arg = shift;
+    return $self->getMultiData($arg->{endDate},$arg->{interval},$arg->{recList});
+}
+
+1;
+
+__END__
+
+=back
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=head1 COPYRIGHT
+
+Copyright (c) 2011 by OETIKER+PARTNER AG. All rights reserved.
+
+=head1 AUTHOR
+
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+S<Roman Plessl E<lt>roman.plessl@oetiker.chE<gt>>
+
+=head1 HISTORY
+
+ 2010-11-04 to 1.0 first version
+
+=cut
+
+# Emacs Configuration
+#
+# Local Variables:
+# mode: cperl
+# eval: (cperl-set-style "PerlStyle")
+# mode: flyspell
+# mode: flyspell-prog
+# End:
+#
+# vi: sw=4 et
