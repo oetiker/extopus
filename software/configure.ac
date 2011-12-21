@@ -138,7 +138,7 @@ AC_OUTPUT
 
         cat <<NOTES
 
-** Ready to install remOcular ******************************
+** Ready to install extopus ******************************
    
    Settings:
 
