@@ -101,17 +101,16 @@ qx.Class.define("ep.ui.LoadingBox", {
          * @return {void} 
          */
         _applyViewMode : function(newValue, oldValue) {
-            if (newValue == oldValue) {
-                return;
-            }
             if (this.__runningTimer) {
                 this.__runningTimer.stop();
                 this.__runningTimer = null;
             }
-
+            if (newValue == oldValue) {
+                return;
+            }
             switch(newValue)
             {
-                case 'loading':
+                case 'loading':                    
                     this.__runningTimer = qx.event.Timer.once(function() {
                         this.__runningTimer = null;
                         this.__loader.show();

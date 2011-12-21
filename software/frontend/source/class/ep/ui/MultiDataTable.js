@@ -91,7 +91,7 @@ qx.Class.define("ep.ui.MultiDataTable", {
                     'visualize', this.getInstance(), {
                         interval : interval,
                         endDate  : date,
-                        recList  : missingRecIds,
+                        recList  : missingRecIds
                     });
                 }
             }

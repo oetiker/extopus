@@ -56,7 +56,6 @@ qx.Class.define("ep.visualizer.MultiData", {
         this.__changeListernerId = sm.addListener('changeSelection', function(e) {
             dataTable.setRecordIds(table.getSelectedRecordIds());
         },this);
-        
         dataTable.setRecordIds(table.getSelectedRecordIds());
     },
 
@@ -71,19 +70,6 @@ qx.Class.define("ep.visualizer.MultiData", {
 
         onUnhook: function(){
             this.__selectionModel.removeListenerById(this.__changeListernerId);
-        },
-        /**
-         * Setup visualizer with new configuration
-         *
-         * @param newArgs {var} new args
-         * @param oldArgs {var} old args
-         * @return {void} 
-         */
-        _applyArgs : function(newArgs, oldArgs) {
-            this.base(arguments,newArgs, oldArgs);
-            var dt = this.getDataTable();
-            /* trigger reload */
-            dt.resetRecordIds()
         },
 
         /**
