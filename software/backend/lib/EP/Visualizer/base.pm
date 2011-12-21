@@ -45,6 +45,14 @@ the name of the instance
 
 has 'instance';
 
+=head2 controller
+
+the current controller. get set before the visualizer is sent into action
+
+=cut
+
+has 'controller';
+
 =head1 METHODS
 
 all the methods of L<Mojo::Base> as well as these:

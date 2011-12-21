@@ -122,9 +122,9 @@ sub startup {
         my $user = $self->session('epUser');
         if ($user){
 	    my $cache = EP::Cache->new(
-        	cacheRoot => $gcfg->{cache_dir},
+                cacheRoot => $gcfg->{cache_dir},
                 user => $user,
-        	inventory => $inventory,
+                inventory => $inventory,
                 treeCols => $service->getTableColumnDef('tree')->{ids},
                 searchCols => $service->getTableColumnDef('search')->{ids},
                 updateInterval => $gcfg->{update_interval} || 86400,

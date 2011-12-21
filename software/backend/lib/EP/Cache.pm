@@ -161,19 +161,13 @@ sub new {
         local $dbh->{PrintError} = undef;
         $self->meta({ map { @$_ } @{$dbh->selectall_arrayref("select key,value from meta")||[]} });
     };
-    if ($dbh->err and $dbh->err == 1){ # no such table
-        $dbh->begin_work;
-        $dbh->do("CREATE TABLE meta ( key TEXT PRIMARY KEY, value TEXT)");
-        $dbh->commit;        
-    } 
     $self->{treeCache} = {};
     $self->{nodeId} = 0;
     my $user = $self->user;
-    # $self->log->debug("UPDATE CHECK not ".$self->meta->{version}." or ".(time - $self->meta->{lastup})." > ".$self->updateInterval);
     if ((not $self->meta->{version}) or ( time - $self->meta->{lastup} > $self->updateInterval )  ){
         my $oldVersion = $self->meta->{version} || '';
         my $version = $self->inventory->getVersion($user);
-        # $self->log->debug("checking inventory version '$version' vs '$oldVersion'");     
+        $self->log->debug("checking inventory version '$version' vs '$oldVersion'");     
         if ( $oldVersion  ne  $version){
             $self->log->debug("loading nodes into ".$self->cacheRoot." for $user");
             $dbh->begin_work;
@@ -183,12 +177,12 @@ sub new {
             }
             $self->createTables;
             $self->setMeta('version',$version);
-            $self->setMeta('lastup',time);
             $self->inventory->walkInventory($self,$self->user);
             $self->log->debug("nodes for ".$self->user." loaded");
             $dbh->commit;
             $dbh->do("PRAGMA synchronous = 1");
         }
+        $self->setMeta('lastup',time);
     }
     return $self;
 }
@@ -207,6 +201,7 @@ sub createTables {
     $dbh->do("CREATE TABLE leaf ( parent INTEGER, node INTEGER)");
     $dbh->do("CREATE INDEX leaf_idx ON leaf (parent )");
     $dbh->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
+    $dbh->do("CREATE TABLE meta ( key TEXT PRIMARY KEY, value TEXT)");
     return;
 }
 

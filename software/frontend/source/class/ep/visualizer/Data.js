@@ -24,11 +24,8 @@ qx.Class.define("ep.visualizer.Data", {
      * <pre code='javascript'>
      * {
      *    intervals: [ { name: 'Daily', key: 'daily' }, { ... } ],
-     *    treeUrl: 'url/to/fetch/data/from',
-     *    hash:    'xxx',
-     *    nodeId:  'nodeId',
      *    csvUrl:  'url/to/download/data',
-     *    multiRecord: false
+     *    recId:   xxx
      * }
      * </pre>
      * 
@@ -86,12 +83,8 @@ qx.Class.define("ep.visualizer.Data", {
         _applyArgs : function(newArgs, oldArgs) {
             this.base(arguments,newArgs, oldArgs);
             var dt = this.getDataTable();
-            dt.set({
-                treeUrl : newArgs.treeUrl,
-                hash    : newArgs.hash
-            });
             /* trigger reload */
-            dt.setNodeId(newArgs.nodeId);
+            dt.setRecId(newArgs.recId);
         },
 
         /**
@@ -108,7 +101,11 @@ qx.Class.define("ep.visualizer.Data", {
                 end = Math.round(data.getEndDate().getTime() / 1000);
             }
 
-            var url = this.getCsvUrl() + '&format=' + format + '&interval=' + data.getInterval() + '&end=' + end + '&count=' + data.getCount();
+            var url = this.getCsvUrl() + '?format=' + format 
+                                       + '&interval=' + data.getInterval() 
+                                       + '&end=' + end 
+                                       + '&recid=' + this.getArgs().recId
+                                       + '&count=' + data.getCount();
             var win = qx.bom.Window.open(url, '_blank');
 
             qx.bom.Event.addNativeListener(win, 'load', function(e) {

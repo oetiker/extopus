@@ -42,10 +42,22 @@ qx.Class.define("ep.visualizer.MultiData", {
         this.add(dataTable, { flex : 1 });
         this.setArgs(args);
 
+        dataTable.addListener('changeTitle',function(e){
+            var title = e.getData();
+            this.setLabel(title);
+        },this);
+
+        dataTable.addListener('changeCaption',function(e){
+            var caption = e.getData();
+            this.setUserData('caption',caption);
+        },this);
+
         var sm = this.__selectionModel = table.getSelectionModel();
         this.__changeListernerId = sm.addListener('changeSelection', function(e) {
             dataTable.setRecordIds(table.getSelectedRecordIds());
         },this);
+        
+        dataTable.setRecordIds(table.getSelectedRecordIds());
     },
 
     statics : { KEY : 'multidata' },
@@ -88,7 +100,7 @@ qx.Class.define("ep.visualizer.MultiData", {
                 end = Math.round(data.getEndDate().getTime() / 1000);
             }
 
-            var url = this.getCsvUrl() + '&format=' + format + '&interval=' + data.getInterval() + '&end=' + end + '&rec_list=' + data.getRecordIds().join(',');
+            var url = this.getCsvUrl() + '?format=' + format + '&interval=' + data.getInterval() + '&end=' + end + '&recid=' + data.getRecordIds().join(',');
             var win = qx.bom.Window.open(url, '_blank');
 
             qx.bom.Event.addNativeListener(win, 'load', function(e) {

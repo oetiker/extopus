@@ -63,16 +63,11 @@ Has all the methods and attributes of L<EP::Inventory::base> and the following:
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    return $self;
-}
-
-sub _init_siam {
-    my $self = shift;
-    return if $self->siam;
     my $siamCfg =  YAML::LoadFile($self->cfg->{siam_cfg});
     $siamCfg->{Logger} = $self->app->log;
     $self->siam(SIAM->new($siamCfg));
     $self->siam->set_log_manager($self->app->log);    
+    return $self;
 }
 
 =head2 _getContracts
@@ -83,7 +78,6 @@ internal ... return a SIAM contract handler
 
 sub _getContracts {
     my $self = shift;
-    $self->_init_siam;
     my $siam = $self->siam;    
     my $username = shift;
     my %user = ();
@@ -113,7 +107,6 @@ returns an md5 hash of all $cntr->computable('siam.contract.content_md5hash') va
 sub getVersion {
     my $self = shift;
     my $user = shift;
-    $self->_init_siam;
     my $siam = $self->siam;
     $siam->connect;
     my $contracts = $self->_getContracts($user);
@@ -139,7 +132,6 @@ sub walkInventory {
     my $self = shift;
     my $storeCallback = shift;
     my $user = shift;
-    $self->_init_siam;
     my $siam = $self->siam;    
     $siam->connect;
     my %user = ();

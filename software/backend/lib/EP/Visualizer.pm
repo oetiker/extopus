@@ -116,9 +116,7 @@ sub visualize {  ## no critic (RequireArgUnpacking)
     my $self = shift;
     my $instance = shift;
     my $obj = $self->vismap->{$instance};
-    if ($obj->can('controller')){
-        $obj->controller($self->controller);
-    }
+    $obj->controller($self->controller);
     return $obj->rpcService(@_);
 }
 

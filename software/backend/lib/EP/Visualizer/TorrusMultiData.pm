@@ -78,38 +78,53 @@ sub matchRecord {   ## no critic (RequireArgUnpacking)
     return unless $type eq 'multi';
     my $ret = $self->SUPER::matchRecord('single',$args);
     if ($ret){
-       for (qw(nodeId hash treeUrl)){
-           delete $ret->{arguments}{$_}
-       }
        $ret->{visualizer} = 'multidata';
     }
     return $ret;
 }
 
-=head2 getMultiData(end,interval,recId[])
+=head2 getWbName 
 
-use the AGGREGATE_DS rpc call to pull some statistics from the server.
+determine title and file name for the export
 
 =cut
 
-sub getMultiData {
+sub getWbName {  
+    my $self = shift; 
+    my $cache = shift;
+    my $recId = shift;      
+    my $data = shift;
+    return $data->{title};
+}
+
+=head2 getData(recId[],end,interval)
+
+run get data for multiple records
+
+=cut
+
+sub getData {
     my $self = shift;
+    my $recIds = shift;
     my $end = shift;
     my $interval = shift;
-    my $recIds = shift;
-    my $cache = $self->controller->stash('epCache');
+    if (ref $recIds ne 'ARRAY'){
+        $recIds = [ split /,/, $recIds ];
+    }
     my @ret;
+    my $stamp;
+    my $cache = $self->controller->stash('epCache');
     for my $recId (@$recIds){
-        my $rec = $cache->getNode($recId);
-        next unless $rec->{'torrus.nodeid'} and $rec->{'torrus.tree-url'};
-        my $data =  $self->getData($rec->{'torrus.tree-url'},$rec->{'torrus.nodeid'},$end,$interval,1);
+        my $data =  $self->SUPER::getData($recId,$end,$interval,1);
         next if not $data->{status};       
-        $self->app->log->info($self->cfg->{multilabel_pl});
+        $stamp =  $data->{data}[0][0];
+        my $rec = $cache->getNode($recId);
         $data->{data}[0][0] = $self->cfg->{multilabel_pl}($rec);
         push @ret, $data->{data}[0];
     }
     return {
         status => 1,
+        title => $stamp,
         data => \@ret,
     };
 }
@@ -123,7 +138,7 @@ provide rpc data access
 sub rpcService {
     my $self = shift;
     my $arg = shift;
-    return $self->getMultiData($arg->{endDate},$arg->{interval},$arg->{recList});
+    return $self->getData($arg->{recList},$arg->{endDate},$arg->{interval});
 }
 
 1;

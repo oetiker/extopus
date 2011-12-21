@@ -35,8 +35,11 @@ qx.Class.define("ep.ui.DataTable", {
             allowShrinkX : true,
             allowShrinkY : true,
             allowGrowX   : true,
-            allowGrowY   : true
+            allowGrowY   : true,
+            showCellFocusIndicator : false
         });
+
+        table.getDataRowRenderer().setHighlightFocusRow(false);
 
         var tcm = table.getTableColumnModel();
         var resizeBehavior = tcm.getBehavior();
@@ -67,23 +70,9 @@ qx.Class.define("ep.ui.DataTable", {
             nullable : true
         },
         /**
-         * url on the torrus server where we get our data from
-         */
-        treeUrl : {
-            init     : null,
-            nullable : true
-        },
-        /**
-         * a hash provided by the server authorizing us to request the given nodeId from the treeUrl
-         */
-        hash : {
-            init     : null,
-            nullable : true
-        },
-        /**
          * id of the current node
          */
-        nodeId : {
+        recId : {
             init     : null,
             apply    : 'reloadTable',
             nullable : true
@@ -133,7 +122,7 @@ qx.Class.define("ep.ui.DataTable", {
          * @return {void} 
          */
         reloadTable : function() {
-            if (this.getInterval() && this.getTreeUrl() && this.getNodeId() && this.getHash()) {
+            if (this.getInterval() && this.getRecId()) {
                 var rpc = ep.data.Server.getInstance();
                 var date = Math.round(new Date().getTime() / 1000);
 
@@ -159,9 +148,7 @@ qx.Class.define("ep.ui.DataTable", {
                     interval : this.getInterval(),
                     endDate  : date,
                     count    : this.getCount(),
-                    treeUrl  : this.getTreeUrl(),
-                    nodeId   : this.getNodeId(),
-                    hash     : this.getHash()
+                    recId    : this.getRecId()
                 });
             }
             else {

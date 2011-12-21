@@ -67,7 +67,6 @@ use POSIX qw(strftime);
 
 has 'hostauth';
 has 'root';
-has 'controller';
 
 has view => 'embedded';
 has json => sub {Mojo::JSON::Any->new};
@@ -171,14 +170,7 @@ sub matchRecord {
     };
 
     my $src = Mojo::URL->new();
-    my $hash = $self->calcHash( $rec->{'torrus.tree-url'}, $rec->{'torrus.nodeid'});
     $src->path($self->root);    
-    $src->query(
-        hash => $hash,
-        nodeid => $rec->{'torrus.nodeid'},
-        url => $rec->{'torrus.tree-url'},
-        recid => $rec->{__nodeId},
-    );
     $src->base->path($self->root);
     my $plain_src = $src->to_rel;
     url_unescape $plain_src;
@@ -194,16 +186,14 @@ sub matchRecord {
                 { key => 'week', name => 'Weekly' },
                 { key => 'month', name => 'Monthly' },
                 { key => 'year', name => 'Yearly' },
-            ],
-            treeUrl => $rec->{'torrus.tree-url'},
-            nodeId => $rec->{'torrus.nodeid'},
-            hash => $hash,
+            ],            
+            recId => $rec->{__nodeId},
             csvUrl => $plain_src
         }
     };
 }
 
-=head2 getData(tree_url,nodeid,end,interval,count)
+=head2 getData(recId,end,interval,count)
 
 use the AGGREGATE_DS rpc call to pull some statistics from the server.
 
@@ -211,13 +201,22 @@ use the AGGREGATE_DS rpc call to pull some statistics from the server.
 
 sub getData {
     my $self = shift;
-    my $treeUrl = shift;
-    my $nodeId = shift;
+    my $recId = shift;
     my $end = shift;
     my $interval = shift;
     my $count = shift;
-    my $url = Mojo::URL->new($treeUrl);
     my @return;
+    my $cache = $self->controller->stash('epCache');
+    my $rec = $cache->getNode($recId);    
+    my $treeUrl = $rec->{'torrus.tree-url'};
+    my $nodeId = $rec->{'torrus.nodeid'};
+    if (not $treeUrl or not $nodeId){
+        return {
+            status => 0,
+            error => "No data found for record $recId",
+        }
+    }
+    my $url = Mojo::URL->new($treeUrl);
     for (my $step=0;$step < $count;$step++){
         my $stepStart;
         my $stepEnd;
@@ -322,10 +321,24 @@ provide rpc data access
 sub rpcService {
     my $self = shift;
     my $arg = shift;
-    die mkerror(9844,"hash is not matching url and nodeid")
-        unless $self->calcHash($arg->{treeUrl},$arg->{nodeId}) eq $arg->{hash};
-    return $self->getData($arg->{treeUrl},$arg->{nodeId},$arg->{endDate},$arg->{interval},$arg->{count});
+    return $self->getData($arg->{recId},$arg->{endDate},$arg->{interval},$arg->{count});
 }
+
+=head2 getWbName 
+
+determine title and file name for the export
+
+=cut
+
+sub getWbName {
+    my $self = shift;
+    my $cache = shift;
+    my $recId = shift;    
+    my $data = shift;
+    my $rec = $cache->getNode($recId); 
+    return $self->cfg->{savename_pl} ? $self->cfg->{savename_pl}($rec) : 'missing save name for $recId';
+}
+
 
 =head2 addProxyRoute()
 
@@ -338,31 +351,15 @@ sub addProxyRoute {
     my $routes = $self->app->routes;
     $routes->get($self->app->prefix.$self->root, sub {
         my $ctrl = shift;
+        # make sure the rest of the object knows what we are doing here
+        $self->controller($ctrl);
         my $req = $ctrl->req;
-        my $hash =  $req->param('hash');
-        my $nodeid = $req->param('nodeid'); 
-        my $recId = $req->param('recid'); 
-        my $url = $req->param('url');
+        my $recId = $req->param('recid');
         my $end = $req->param('end');
         my $interval = $req->param('interval');
-        my $count = $req->param('count');
+        my $count = $req->param('count') || 1;
         my $format = $req->param('format');
-        my $data;
-        if ($req->param('rec_list')){
-            $data = $self->getMultiData($end,$interval,[split /,/, $req->param('rec_list')]);
-        }
-        else {
-            my $newHash = $self->calcHash($url,$nodeid);
-            if ($hash ne $newHash){
-                $ctrl->render(
-                     status => 401,
-                     text => "Supplied hash ($hash) does not match our expectations",
-                );
-                $self->app->log->warn("Request for $url?nodeid=$nodeid denied ($hash ne $newHash)");
-                return;
-            }
-            $data = $self->getData($url,$nodeid,$end,$interval,$count);
-        }
+        my $data = $self->getData($recId,$end,$interval,$count);
         if (not $data->{status}){
             $ctrl->render(
                  status => 401,
@@ -374,8 +371,8 @@ sub addProxyRoute {
         my $rp = Mojo::Message::Response->new;
         $rp->code(200);
         my $cache = $ctrl->stash('epCache');
-        my $rec = $cache->getNode($recId);  
-        my $wbname = $self->cfg->{savename_pl} ? $self->cfg->{savename_pl}($rec) : $nodeid;
+        my $wbname = $self->getWbName($cache,$recId,$data);
+
         my $name = $wbname . ' - '.strftime('%Y-%m-%d',localtime($end));
         my $fileData;
         for ($format) {
@@ -415,15 +412,19 @@ sub csvBuilder {
         'contentType'        => 'application/csv',
         'contentDisposition' => "attachment; filename=$name.csv"
    };
-   my @cnames = ('');
-   for (my $c=0;$self->cfg->{col_names}[$c];$c++){
+   my @cnames = ('Range');
+   for (my $c=0;$c < scalar @{$self->cfg->{col_names}};$c++){
         my $name = $self->cfg->{col_names}[$c];
         my $unit = $self->cfg->{col_units}[$c] || '';
-        push @cnames, qq{"$name [$unit]"};
+        push @cnames, ( $unit ? qq{"$name [$unit]"} : $name );
    }
+   my @extra;
+   if ($data->{title}){
+        @extra = ($data->{title});
+   } 
    my $body = join(";",@cnames)."\r\n";
    for my $row (@{$data->{data}}){
-       $body .= join(";",map { defined $_ && /[^.0-9]/ ? qq{"$_"} : ($_||'') } @$row)."\r\n";
+       $body .= join(";",map { defined $_ && /[^-e.0-9]/ ? qq{"$_"} : ($_||'') } @extra,@$row)."\r\n";
    }
    $fileData->{body} = $body;
    return $fileData;
@@ -492,11 +493,11 @@ sub _excelBuilder {
     my $fileData      = shift;
     my $excelBody_ref = shift; 
     my $workbook      = shift;
-    my @cnames = ( '' );
-    for (my $c=0;$self->cfg->{col_names}[$c];$c++){
+    my @cnames;
+    for (my $c=0;$c < scalar @{$self->cfg->{col_names}};$c++){
         my $cname = $self->cfg->{col_names}[$c];
         my $unit = $self->cfg->{col_units}[$c] || '';
-        push @cnames, qq{"$cname [$unit]"};
+        push @cnames, ( $unit ? qq{"$cname [$unit]"} : $cname );
     }
     my $worksheet = $workbook->add_worksheet(substr($wbname,0,31));
     $worksheet->set_column('A:I',18);
@@ -504,8 +505,11 @@ sub _excelBuilder {
     my $cnames_ref = \@cnames;
     my $header_format = $workbook->add_format();
     $header_format->set_bold();
-    $worksheet->write_row(0, 0,$cnames_ref,$header_format);
-    my $rowcounter = 1;
+    my $rowcounter = 0;
+    if ($data->{title}){
+        $worksheet->write_row($rowcounter++, 0,['Range',$data->{title}],$header_format);
+    }
+    $worksheet->write_row($rowcounter++, 0,$cnames_ref,$header_format);
     for my $row (@{$data->{data}}){ 
         my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_||'') } @$row;
         my $line_ref = \@line;
