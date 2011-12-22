@@ -54,7 +54,11 @@ qx.Class.define("ep.visualizer.MultiData", {
 
         var sm = this.__selectionModel = table.getSelectionModel();
         this.__changeListernerId = sm.addListener('changeSelection', function(e) {
-            dataTable.setRecordIds(table.getSelectedRecordIds());
+            var ids = table.getSelectedRecordIds();
+            /* we have to have two items selected in any case */
+            if (ids.length > 1){        
+                dataTable.setRecordIds(table.getSelectedRecordIds());
+            }
         },this);
         dataTable.setRecordIds(table.getSelectedRecordIds());
     },
