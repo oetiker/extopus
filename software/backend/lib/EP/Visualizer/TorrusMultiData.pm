@@ -10,23 +10,23 @@ EP::Visualizer::TorrusMultiData - pull numeric data associated with sellected to
  module = TorrusMultiData
  selector = data_type
  type = PortTraffic
- title = Traffic Data
+ title = Multi Node Traffic Data
  caption = Multi Node Traffic Review
  skiprec_pl = $R{display} eq 'data_unavailable'
- savename_pl = multi_node_data
- multilabel_pl = "$R{prod} $R{inv_id} $R{device_name}:$R{port}"
+ savename_pl = "multi_node_data"
 
  sub_nodes = inbytes, outbytes
- col_names = Node, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
- col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, % 
- col_widths = 10,  3  ,    3,    3,  3,  3,    3, 2
- col_data = int($D{inbytes}{AVG}*8/1e4)/1e2, \
+ col_names = Node, CAR, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
+ col_units =   , , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
+ col_widths = 10,  5, 3  ,    3,    3,  3,  3,    3, 2
+ col_data = "$R{prod} $R{inv_id}",$R{car},int($D{inbytes}{AVG}*8/1e4)/1e2, \
            int($D{outbytes}{AVG}*8/1e4)/1e2, \
            int($D{inbytes}{AVG}*8 * $DURATION / 100 * $D{inbytes}{AVAIL}/1e7)/1e2, \
            int($D{outbytes}{AVG}*8 * $DURATION / 100 * $D{outbytes}{AVAIL}/1e7)/1e2, \
            int($D{inbytes}{MAX}*8/1e5)/1e1, \
            int($D{outbytes}{MAX}*8/1e5)/1e1, \
            int($D{inbytes}{AVAIL})
+
 
 =head1 DESCRIPTION
 
@@ -52,16 +52,7 @@ use strict;
 use warnings;
 
 use Mojo::Base 'EP::Visualizer::TorrusData';
-
-sub new {
-    my $self = shift->SUPER::new(@_);
-    # parse some config data
-    for my $prop (qw(multilabel_pl)){
-        die mkerror(9273, "mandatory property $prop for visualizer module TorrusMultiData is not defined")
-            if not defined $self->cfg->{$prop};
-    }
-    return $self;
-}
+use EP::Exception qw(mkerror);
 
 =head2 matchRecord(type,args)
 
@@ -117,9 +108,7 @@ sub getData {
     for my $recId (@$recIds){
         my $data =  $self->SUPER::getData($recId,$end,$interval,1);
         next if not $data->{status};       
-        $stamp =  $data->{data}[0][0];
-        my $rec = $cache->getNode($recId);
-        $data->{data}[0][0] = $self->cfg->{multilabel_pl}($rec);
+        $stamp =  $data->{stepLabels}[0];
         push @ret, $data->{data}[0];
     }
     return {

@@ -9,23 +9,23 @@ EP::Visualizer::TorrusData - pull numeric data associated with torrus data sourc
  *** VISUALIZER: data ***
  module = TorrusData
  selector = data_type
- type = PortTraffic
- title = Port Traffic
- caption = $R{cust}
- sub_nodes = inbytes, outbytes
- skiprec_pl = $R{port.display} eq 'data_unavailable'  
- savename_pl = $R{sap} 
+ type = PortTraffic 
+ title = Traffic Data
+ caption = "$R{prod} $R{inv_id} $R{device_name}:$R{port}"
+ skiprec_pl = $R{display} eq 'data_unavailable'
+ savename_pl = $R{cust}.'_'.$R{inv_id}
 
- col_names = Avg In, Avg Out, Total In, Total Out, Max In, Max Out, Coverage
- col_units = Mb/s,   Mb/s,    Gb,       Gb,        Mb/s,   Mb/s,    %
- col_widths =10      10,      10,       10,        10,     10,      10
- col_data = int($D{inbytes}{AVG}*8/1e4)/1e2, \
-            int($D{outbytes}{AVG}*8/1e4)/1e2, \
-            int($D{inbytes}{AVG}*8 * $DURATION / 100 * $D{inbytes}{AVAIL}/1e7)/1e2, \
-            int($D{outbytes}{AVG}*8 * $DURATION / 100 * $D{outbytes}{AVAIL}/1e7)/1e2, \
-            int($D{inbytes}{MAX}*8/1e5)/1e1, \
-            int($D{outbytes}{MAX}*8/1e5)/1e1, \
-            int($D{inbytes}{AVAIL})
+ sub_nodes = inbytes, outbytes
+ col_names = Date, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
+ col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, % 
+ col_widths = 3,  3  ,    3,    3,  3,  3,    3, 2
+ col_data = $D{range},int($D{inbytes}{AVG}*8/1e4)/1e2, \
+           int($D{outbytes}{AVG}*8/1e4)/1e2, \
+           int($D{inbytes}{AVG}*8 * $DURATION / 100 * $D{inbytes}{AVAIL}/1e7)/1e2, \
+           int($D{outbytes}{AVG}*8 * $DURATION / 100 * $D{outbytes}{AVAIL}/1e7)/1e2, \
+           int($D{inbytes}{MAX}*8/1e5)/1e1, \
+           int($D{outbytes}{MAX}*8/1e5)/1e1, \
+           int($D{inbytes}{AVAIL})
 
 =head1 DESCRIPTION
 
@@ -83,9 +83,9 @@ sub new {
     for (@split_nodes){
         $self->cfg->{$_} = $self->cfg->{$_} ? [ split /\s*,\s*/, $self->cfg->{$_} ] : undef;
     }
-    my $sub = eval 'sub { my $DURATION = shift; my %D = (%{$_[0]}); return [ '.$self->cfg->{col_data} . ' ] }'; ## no critic (ProhibitStringyEval)
+    my $sub = eval 'sub { my $DURATION = shift; my $RANGE=shift; my %D = (%{$_[0]}); my %R = (%{$_[1]}); return [ '.$self->cfg->{col_data} . ' ] }'; ## no critic (ProhibitStringyEval)
     if ($@){
-        die mkerror(38734,"Failed to compile $self->cfg->{col_data}"); 
+        die mkerror(38734,"Failed to compile ".$self->cfg->{col_data}.": $@"); 
     }
     $self->cfg->{col_data} = $sub;
     $self->addProxyRoute();    
@@ -133,6 +133,7 @@ turn nan values into undef since json implementations have issues with nan ...
 sub denan {
     my $in = shift;
     my $nan = 0.0+"NaN";
+    no warnings; # don't get your undies in a twist when we look at a text bit
     return [
         map { defined $nan <=> $_ ? $_ : undef } @$in
     ]    
@@ -216,6 +217,7 @@ sub getData {
             error => "No data found for record $recId",
         }
     }
+    my @stepLabels;
     my $url = Mojo::URL->new($treeUrl);
     for (my $step=0;$step < $count;$step++){
         my $stepStart;
@@ -301,12 +303,14 @@ sub getData {
                 };
             }
         };
-        my $row = denan($self->cfg->{col_data}($stepEnd - $stepStart,\%data));       
-        push @return, [ $stepLabel, @{$row} ];
+        my $row = denan($self->cfg->{col_data}($stepEnd - $stepStart,$stepLabel,\%data,$rec));       
+        push @stepLabels, $stepLabel;
+        push @return, $row;
     }
 
     return {
         status => 1,
+        stepLabels => \@stepLabels,
         data => \@return,
     };
 }
