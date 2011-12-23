@@ -1,6 +1,7 @@
 Extopus - The Monitoring Aggregator
 
-Version: #VERSION# #YEAR# #DATE#
+Version: #VERSION#
+Date: #DATE#
 
 Extopus is an aggregating frontend to monitoring systems. Its plug-in
 architecture provides an easy route to integrating output from a wide array
