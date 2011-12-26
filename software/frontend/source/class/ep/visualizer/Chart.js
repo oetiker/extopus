@@ -59,7 +59,7 @@ qx.Class.define("ep.visualizer.Chart", {
         viewSelection.addListener("change", function(e) {
             var item = viewSelection.getItem(0);
 
-            if (item == null) {
+            if (item == null || item.getSrc == null ) {
                 chart.setBaseUrl(null);
                 titleContainer.setEnabled(false);
                 this.__printBtn.setEnabled(false);
@@ -184,22 +184,28 @@ qx.Class.define("ep.visualizer.Chart", {
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
+            var vSel = this.__viewSelector.getSelection();                                                                
+            if (newArgs.views.length == 0){
+                this.__viewSelector.resetModel();
+                vSel.removeAll(); 
+                this.__template = null;
+                return;
+            }
+            var oldSel = vSel.getItem(0);            
             var viewModel = qx.data.marshal.Json.createModel(newArgs.views);
-            this.__template = newArgs.template;
-            var vSel = this.__viewSelector.getSelection();
-            var oldSel = vSel.getItem(0);
             var newItem = viewModel.getItem(0);
             if (oldSel){
-                var oldKey = oldSel.getTitle();
-                viewModel.forEach(function(item){
-                    if (item.getTitle() == oldKey){
-                        newItem = item;
-                    }
-                });
+               var oldKey = oldSel.getTitle();
+                   viewModel.forEach(function(item){
+                   if (item.getTitle() == oldKey){
+                       newItem = item;
+                   }
+               });
             }
             this.__viewSelector.setModel(viewModel);
             vSel.removeAll();
             vSel.push(newItem);
+            this.__template = newArgs.template;
         },
 
 
