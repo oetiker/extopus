@@ -140,20 +140,25 @@ sub walkInventory {
     my $skip = $self->cfg->{skipnode_pl};
     for my $cntr ( @{$contracts} ){
         my %cntr = (%{$cntr->attributes});
+        next unless $cntr{'siam.object.complete'};
         for my $srv ( @{$cntr->get_services} ){
             my %srv = (%{$srv->attributes});
+            next unless $srv{'siam.object.complete'};
             for my $unit ( @{$srv->get_service_units} ){
                 my %unit = (%{$unit->attributes});
+                next unless $unit{'siam.object.complete'};
                 for my $data ( @{$unit->get_data_elements} ){
                     my %data = (%{$data->attributes});
+                    next unless $data{'siam.object.complete'};
                     my $device = $data->get_device();
                     my %device = (%{$device->attributes});
-                    my $raw_data = {
+                    next unless $device{'siam.object.complete'};
+                    my $raw_rec = {
                         %user,%cntr,%srv, %unit, %data, %device 
                     };
-                    next if defined $skip and $skip->($raw_data);
-                    my $data = $self->buildRecord($raw_data);
-                    $storeCallback->($data);
+                    next if defined $skip and $skip->($raw_rec);
+                    my $rec = $self->buildRecord($raw_rec);
+                    $storeCallback->($rec);
                     $count++;
                 }
             }
