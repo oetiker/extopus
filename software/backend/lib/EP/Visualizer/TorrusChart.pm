@@ -10,13 +10,15 @@ EP::Visualizer::TorrusChart - provide access to appropriate torrus pages via a p
  module = TorrusChart
  title = Traffic
  caption = $R{name}
- mode = traffic
+ call = WALK_LEAVES
+ call_arg_pl = nodeid => $R{'torrus.nodeid'}
+ call_url = torrus.tree-url
+  
  skiprec_pl = $R{port.display} eq 'data_unavailable'  
  savename_pl = $R{sap}
-
- # in qos mode
- mode = qos
+ 
  extra_params=cbqos-class-map-name,cbqos-parent-name                       
+ 
  +VIEW_MAPPER_PL   
  # use this section to remap the names provided by torrus to something
  # more 'end user friendly'. Return nothing to supress an entry
@@ -51,20 +53,15 @@ EP::Visualizer::TorrusChart - provide access to appropriate torrus pages via a p
 The proxy will only deliver pages with a valid hash. As it ships html pages,
 it can rewrite internal img refs to include appropriate hash keys.
 
-This visualizer will match any records that have the following attributes:
+This visualizer will match any records that provide the C<call_url> property
+and don't match C<skip_url_pl>.
 
- torrus.tree-url
- torrus.nodeid
-
-in qos mode  you also need
-
- torrus.qos_enabled
-
-The visualizer allows to configure a template for printing graphs.
-It uses the L<Mojo::Template> to render the content server side. Via the %R you have
-access to all node properties. Client side the following items will be replaced in the resulting
-html prior to displaying it. See L<http://demo.qooxdoo.org/current/apiviewer/#qx.util.format.DateFormat>
-for information on date format strings (according to unicode tr35).
+The visualizer allows to configure a template for printing graphs.  It uses
+the L<Mojo::Template> to render the content server side.  Via the %R you
+have access to all node properties.  Client side the following items will be
+replaced in the resulting html prior to displaying it.  See
+L<http://demo.qooxdoo.org/current/apiviewer/#qx.util.format.DateFormat> for
+information on date format strings (according to unicode tr35).
 
  @@SRC@@ the image src  path to the current chart
  @@START(format)@@ Start date of the chart
@@ -133,31 +130,11 @@ sub matchRecord {
     my $type = shift;
     return unless $type eq 'single';
     my $rec = shift;
-    for (qw(torrus.nodeid torrus.tree-url)){
-        return unless $rec->{$_};
-    };
-    if ($self->mode eq 'qos'){
-        return unless $rec->{'torrus.qos-enabled'};
-    };
-    if ($self->cfg->{skiprec_pl} and $self->cfg->{skiprec_pl}->($rec)){
-        return {  
-            visualizer => 'chart',
-            title => $self->cfg->{title},
-            caption => $self->cfg->{caption}($rec),
-            arguments => {
-                views => [], 
-                template => undef
-            }
-        }
-    }
-    my $url = $rec->{'torrus.tree-url'};
-    my $leaves;
-    if ($self->mode eq 'traffic'){
-        $leaves = $self->getLeaves($url,'WALK_LEAVES', {nodeid => $rec->{'torrus.nodeid'}});
-    }
-    else {
-        $leaves = $self->getLeaves($url,'SEARCH_NODEID', {PREFIX => 'qos//'.$rec->{'torrus.nodeid'}});
-    }    
+    my $cfg = $self->cfg;
+    return if $cfg->{skiprec_pl} and $cfg->{skiprec_pl}->($rec);
+    my $url =  $rec->{$cfg->{call_url}};
+    return unless $url;
+    my $leaves = $self->getLeaves($url,$cfg->{call}, { $cfg->{call_arg_pl}->($rec) });
     my @nodes;
     my $mapper = $self->cfg->{VIEW_MAPPER_PL}{_text};
     for my $token (sort { ($leaves->{$b}{precedence} || 0) <=> ($leaves->{$a}{precedence} || 0) } keys %$leaves){        

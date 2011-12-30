@@ -62,7 +62,10 @@ module=TorrusChart
 title=Traffic Charts  
 caption="$R{prod} $R{inv_id} $R{device_name}:$R{port}"
 savename_pl = "$R{cust} - $R{inv_id} $R{device_name}:$R{port}"
-mode=traffic
+call = WALK_LEAVES
+call_arg_pl = nodeid => $R{'torrus.nodeid'}
+call_url = torrus.tree-url
+
 
 +PRINTTEMPLATE_TX
 <!doctype html><html>
