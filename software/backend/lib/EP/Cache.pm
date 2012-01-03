@@ -269,9 +269,11 @@ sub addTreeNode {
     LEAF:
     for my $subTree (@{$treeData}){                  
         my $parent = 0;
+        # make sure the hole branche is populated
         for my $value (@{$subTree}){
-            # skip nodes that do no properly populate
-            next LEAF unless $value;
+            next LEAF unless $value;            
+        }
+        for my $value (@{$subTree}){
             my $id;
             if ($cache->{$parent}{$value}){
                $id = $cache->{$parent}{$value};
