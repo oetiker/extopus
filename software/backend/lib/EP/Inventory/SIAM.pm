@@ -141,21 +141,52 @@ sub walkInventory {
     for my $cntr ( @{$contracts} ){
         my %cntr = (%{$cntr->attributes});
         next unless $cntr{'siam.object.complete'};
-        for my $srv ( @{$cntr->get_services} ){
+        my @srv = @{$cntr->get_services};
+        if (not @srv){
+            my $raw_rec = {%cntr};
+            next if defined $skip and $skip->($raw_rec);
+            my $rec = $self->buildRecord($raw_rec);
+            $storeCallback->($rec);
+            $count++;
+            next;
+        }
+        for my $srv ( @srv ){
             my %srv = (%{$srv->attributes});
             next unless $srv{'siam.object.complete'};
-            for my $unit ( @{$srv->get_service_units} ){
+            my @unit = @{$srv->get_service_units};        
+            if (not @unit){
+                my $raw_rec = {%cntr, %srv};
+                next if defined $skip and $skip->($raw_rec);
+                my $rec = $self->buildRecord($raw_rec);
+                $storeCallback->($rec);
+                $count++;
+                next;
+            }
+            for my $unit ( @unit ){
                 my %unit = (%{$unit->attributes});
                 next unless $unit{'siam.object.complete'};
-                for my $data ( @{$unit->get_data_elements} ){
+                my @data = @{$unit->get_data_elements};
+                if (not @data){   
+                    my $raw_rec = {%cntr, %srv, %unit};
+                    next if defined $skip and $skip->($raw_rec);
+                    my $rec = $self->buildRecord($raw_rec);
+                    $storeCallback->($rec);
+                    $count++;
+                    next;
+                }
+                for my $data ( @data ){
                     my %data = (%{$data->attributes});
                     next unless $data{'siam.object.complete'};
+                    my $raw_rec = {
+                        %user,%cntr,%srv, %unit, %data 
+                    };
+                    
                     my $device = $data->get_device();
                     my %device = (%{$device->attributes});
-                    next unless $device{'siam.object.complete'};
-                    my $raw_rec = {
-                        %user,%cntr,%srv, %unit, %data, %device 
-                    };
+                    if ( $device{'siam.object.complete'} ){
+                        $raw_rec = { %$raw_rec, %device };
+                    }                    
+
                     next if defined $skip and $skip->($raw_rec);
                     my $rec = $self->buildRecord($raw_rec);
                     $storeCallback->($rec);
