@@ -72,6 +72,15 @@ qx.Class.define("ep.ui.ChartImage", {
             nullable : true
         },
         /**
+         * max interval (in seconds)
+         */
+        maxInterval : {
+            init     : null,
+            check    : 'Integer',
+            apply    : 'reloadChart',
+            nullable : true
+        },
+        /**
          * at what point in time is the end of the chart
          */
         endTime : {
@@ -107,6 +116,7 @@ qx.Class.define("ep.ui.ChartImage", {
             }
 
             var range = this.getTimeRange();
+            var maxInterval = this.getMaxInterval();
             var end = this.getEndTime() || (Math.round(new Date().getTime() / 1000 / 60) * 60);
             var el = this.getContainerElement().getDomElement();
 
@@ -117,7 +127,11 @@ qx.Class.define("ep.ui.ChartImage", {
                 var height = qx.bom.element.Dimension.getHeight(el);
 
                 if (width > 0 && height > 0) {
-                    var src = url + '&start=' + (end - range) + '&end=' + end + '&width=' + width + '&height=' + height + '&format=.png';
+                    var src = url + '&start=' + (end - range) + '&end=' + end + '&width=' + width + '&height=' + height;
+                    if (maxInterval){
+                        src += '&maxlinestep=' + String(maxInterval);
+                    }
+                    src += '&format=.png';        
                     if (this.__img.getSource() == src){
                         return;
                     }

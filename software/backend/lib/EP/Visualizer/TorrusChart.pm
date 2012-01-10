@@ -252,6 +252,7 @@ sub addProxyRoute {
         my $end = $req->param('end');
         my $format = $req->param('format');
         my $recId = $req->param('recid');
+        my $maxlinestep = $req->param('maxlinestep');
         my $pxReq =  Mojo::URL->new($url);
         my $view = $self->view;
         my $newHash = $self->calcHash($url,$nodeid);
@@ -268,6 +269,9 @@ sub addProxyRoute {
         if ($self->hostauth){
             $pxReq->query({hostauth=>$self->hostauth});
         }        
+        if ($maxlinestep){
+            $pxReq->query({Gmaxline=>1,Gmaxlinestep=>$maxlinestep});
+        }
         if ($format =~ /pdf$/){
             $pxReq->query({Gimgformat=>'PDF'})
         }

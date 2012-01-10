@@ -201,7 +201,7 @@ sub createTables {
     $dbh->do("CREATE TABLE leaf ( parent INTEGER, node INTEGER)");
     $dbh->do("CREATE INDEX leaf_idx ON leaf (parent )");
     $dbh->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
-    $dbh->do("CREATE TABLE meta ( key TEXT PRIMARY KEY, value TEXT)");
+    $dbh->do("CREATE TABLE IF NOT EXISTS meta ( key TEXT PRIMARY KEY, value TEXT)");
     return;
 }
 
