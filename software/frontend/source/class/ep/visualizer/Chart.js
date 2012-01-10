@@ -364,8 +364,6 @@ qx.Class.define("ep.visualizer.Chart", {
 
             this.__chart.setMaxInterval(maxIntervalSelection.getItem(0).getV());
             return maxIntervalSelector;
-        },
-
-
+        }
     }
 });
