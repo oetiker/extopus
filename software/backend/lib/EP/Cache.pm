@@ -1,6 +1,7 @@
 package EP::Cache;
 use strict;
 use warnings;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -162,7 +163,6 @@ sub new {
         $self->meta({ map { @$_ } @{$dbh->selectall_arrayref("select key,value from meta")||[]} });
     };
     $self->{treeCache} = {};
-    $self->{nodeId} = 0;
     my $user = $self->user;
     if ((not $self->meta->{version}) or ( time - $self->meta->{lastup} > $self->updateInterval )  ){
         my $oldVersion = $self->meta->{version} || '';
@@ -202,6 +202,8 @@ sub createTables {
     $dbh->do("CREATE INDEX leaf_idx ON leaf (parent )");
     $dbh->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
     $dbh->do("CREATE TABLE IF NOT EXISTS meta ( key TEXT PRIMARY KEY, value TEXT)");
+    $dbh->do("CREATE TABLE IF NOT EXISTS stable ( numid INTEGER PRIMARY KEY, textkey TEXT)");
+    $dbh->do("CREATE UNIQUE INDEX IF NOT EXISTS stable_idx ON stable(textkey)");
     return;
 }
 
@@ -217,6 +219,7 @@ sub dropTables {
     $dbh->do("DROP TABLE branch");
     $dbh->do("DROP TABLE leaf");
     $dbh->do("DROP TABLE node");            
+    $dbh->do("VACUUM");
     return;
 }
  
@@ -228,12 +231,26 @@ Store a node in the database.
 
 sub add {
     my $self = shift;
+    my $rawNodeId = shift;
     my $nodeData = shift;
     my $dbh = $self->dbh;
-    $dbh->do("INSERT INTO node (rowid,data) VALUES (?,?)",{},++$self->{nodeId},$self->json->encode($nodeData));
+    my $nodeId = $dbh->selectrow_array("SELECT numid FROM stable WHERE textkey = ?",{},$rawNodeId);
+    if (not defined $nodeId){
+        $dbh->do("INSERT INTO stable (textkey) VALUES (?)",{},$rawNodeId);
+        $nodeId = $dbh->last_insert_id("","","","");
+    }
+    $self->log->debug("keygen $rawNodeId => $nodeId");
+    eval {
+        $dbh->do("INSERT INTO node (rowid,data) VALUES (?,?)",{},$nodeId,$self->json->encode($nodeData));
+    };
+    if ($@){
+        $self->log->warn("$@");
+        $self->log->warn("Skipping ($rawNodeId)\n\n".Dumper($nodeData));
+        return;
+    }
     # should use $dbh->last_insert_id("","","",""); but it seems not to work with FTS3 tables :-(
     # glad we are doing the adding in one go so getting the number is pretty simple
-    $self->addTreeNode($self->{nodeId},$nodeData);
+    $self->addTreeNode($nodeId,$nodeData);
     return;
 }
 

@@ -18,12 +18,13 @@ configuration information from the main config file.
  *** INVENTORY: siam1 ***
  module=SIAM
  siam_cfg=test.yaml 
+ # how to identify this record based on original record inputraw record input
+ stableid_pl = $R{'torrus.nodeid'}
+ # do not add nodes satisfying this condition based on raw record properties
+ skipnode_pl = $R{'cablecom.port.display'} eq 'skip'
 
  # load all data regardles of user
  load_all = true
-
- # do not add nodes satisfying this condition
- skipnode_pl = $R{'cablecom.port.display'} eq 'skip'
 
  +TREE
  'Location',$R{country}, $R{city}, $R{street}.' '.($R{number}||'')
@@ -138,6 +139,8 @@ sub walkInventory {
     my $contracts = $self->_getContracts($user);
     my $count = 0;
     my $skip = $self->cfg->{skipnode_pl};
+    my $stableId = $self->cfg->{stableid_pl};
+
     for my $cntr ( @{$contracts} ){
         my %cntr = (%{$cntr->attributes});
         next unless $cntr{'siam.object.complete'};
@@ -145,7 +148,7 @@ sub walkInventory {
         if (not @srv){
             my $raw_rec = {%cntr};
             next if defined $skip and $skip->($raw_rec);
-            my $rec = $self->buildRecord($raw_rec);
+            my $rec = $self->buildRecord($stableId->($raw_rec),$raw_rec);
             $storeCallback->($rec);
             $count++;
             next;
@@ -158,7 +161,7 @@ sub walkInventory {
                 my $raw_rec = {%cntr, %srv};
                 next if defined $skip and $skip->($raw_rec);
                 my $rec = $self->buildRecord($raw_rec);
-                $storeCallback->($rec);
+                $storeCallback->($stableId->($raw_rec),$rec);
                 $count++;
                 next;
             }
@@ -170,7 +173,7 @@ sub walkInventory {
                     my $raw_rec = {%cntr, %srv, %unit};
                     next if defined $skip and $skip->($raw_rec);
                     my $rec = $self->buildRecord($raw_rec);
-                    $storeCallback->($rec);
+                    $storeCallback->($stableId->($raw_rec),$rec);
                     $count++;
                     next;
                 }
@@ -189,7 +192,7 @@ sub walkInventory {
 
                     next if defined $skip and $skip->($raw_rec);
                     my $rec = $self->buildRecord($raw_rec);
-                    $storeCallback->($rec);
+                    $storeCallback->($stableId->($raw_rec),$rec);
                     $count++;
                 }
             }

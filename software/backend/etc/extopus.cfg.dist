@@ -36,6 +36,7 @@ tree_width = 2,    2,    1,          2,      1,           1
 module=SIAM
 siam_cfg=/home/torrusde/pm/etc/siam.yaml
 #skipnode_pl = $R{'cablecom.port.display'} and $R{'cablecom.port.display'} eq 'skip'
+stableid_pl = ($R{'siam.svc.inventory_id'}//'').":".($R{'torrus.nodeid'}//'').":".($R{'torrus.aggregate.nodeid'}//"")
 load_all = true
 
 +MAP
