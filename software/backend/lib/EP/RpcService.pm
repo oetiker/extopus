@@ -99,7 +99,8 @@ sub getTableColumnDef {
         names => [ 'NodeId', map { $attr->{$_} } @$cols ],
         ref $cfg->{"${table}_width"} ? (
             widths  => [1,@{$cfg->{${table}."_width"}}]
-        ) : ()
+        ) : (),
+        props => ref $cfg->{"${table}_props"} ? ['H',@{$cfg->{${table}."_props"}}] : [],
     };
 }
 

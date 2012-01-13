@@ -28,6 +28,7 @@ qx.Class.define("ep.ui.TreeView", {
      */
     construct : function(colDef, treeOpen) {
         this.__initial_open = treeOpen;
+        this.__colProps = colDef.props;
         this.base(arguments);
         this._setLayout(new qx.ui.layout.Grow());
         var hPane = new qx.ui.splitpane.Pane("horizontal");
@@ -54,7 +55,7 @@ qx.Class.define("ep.ui.TreeView", {
 
     members : {
         __initial_open : null,
-
+        __colProps: null,
 
         /**
          * Open the tree
@@ -228,39 +229,48 @@ qx.Class.define("ep.ui.TreeView", {
 
 
         /**
-         * Load data into the leaf table
+         * Load data into the leaf table and switch visibility of columns according
+         * config file instructions
          *
          * @param e {Event} selection event
          * @return {void} 
          */
         _setLeavesTable : function(e) {
             var sel = this.getTree().getSelection();
-
+            var colProps = this.__colProps;
             if (sel.length > 0) {
                 var table = this.getTable();
                 var tm = table.getTableModel();
                 var sm = table.getSelectionModel();
-
-                var data = sel.getItem(0).getLeaves();
-                var showCol = new Array();
-                for (var i = 1;i<data[0].length;i++){
-                    showCol[i] = false;
-                }
-                var whiteRx = /^\s*$/;
-                for (var i = 0;i<data.length;i++){
-                    for (var ii = 0;ii<data[i].length;ii++){
-                        var item = data[i][ii];
-                        if (item && ! whiteRx.test(item)){
-                            console.log('show '+i+':'+ii+' - "'+item+'"');
-                            showCol[ii] = true;
+                
+                var data = sel.getItem(0).getLeaves();                
+                if (data.length > 0){
+                    var showCol = new Array();                
+                    for (var i = 0;i<data[0].length;i++){          
+                        switch (colProps[i]) {
+                            case 'H':
+                            case 'N':
+                                showCol[i] = false;
+                                break;
+                            case 'A': 
+                            default:
+                                showCol[i] = true;
+                        };
+                    }
+                    var whiteRx = /^\s*$/;
+                    for (var i = 0;i<data.length;i++){
+                        for (var ii = 0;ii<data[i].length;ii++){
+                            var item = data[i][ii];
+                            if (colProps[ii] == 'N'
+                                && item && ! whiteRx.test(item)){
+                                showCol[ii] = true;
+                            }
                         }
                     }
-                }
-
-                var tcm = table.getTableColumnModel();
-                console.log(showCol);
-                for (var i = 1;i<showCol.length;i++){
-                    tcm.setColumnVisible(i, showCol[i]);
+                    var tcm = table.getTableColumnModel();
+                    for (var i = 1;i<showCol.length;i++){
+                        tcm.setColumnVisible(i, showCol[i]);
+                    }
                 }
                 table.resetSelection();                
 

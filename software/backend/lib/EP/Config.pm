@@ -142,8 +142,10 @@ ${E}head1 SYNOPSIS
  *** TABLES ***
  search = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
  search_width = 1,   1,       1,    1,      1,    1,          1,   1
+
  tree = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
  tree_width = 1,   1,      1,    1,      1,    1,          1,    1 
+ tree_props = A,   S,       H,    S,      S,    S,          S,   S
 
  *** INVENTORY: dummy ***
  module=SIAM
@@ -258,7 +260,7 @@ sub _make_parser {
             },            
         },
         TABLES => {
-            _vars => [ qw(search tree search_width tree_width) ],
+            _vars => [ qw(search tree search_width tree_props tree_width) ],
             _mandatory => [ qw(search tree) ],
             search => {
                 _doc => 'list of attributes for search results table',
@@ -278,6 +280,11 @@ sub _make_parser {
             tree_width => {
                 _doc => 'list of relative column widths',
                 _examples => 'tree_width = 3,1,1,1,1',
+                _sub => sub { $_[0] = [ split /\s*,\s*/, $_[0] ]; undef },
+            },            
+            tree_props => {
+                _doc => 'list of column visibility properties: [A]lways, [N]on empty, [H]idden',
+                _examples => 'tree_props = A,N,N,H,N,N',
                 _sub => sub { $_[0] = [ split /\s*,\s*/, $_[0] ]; undef },
             },            
         },

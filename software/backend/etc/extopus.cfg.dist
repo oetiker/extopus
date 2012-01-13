@@ -31,6 +31,7 @@ search =  prod,  cust, data_type,  inv_id, device_name, port
 search_width = 2,  2,    1,         2,      1,           1
 tree =       prod, cust, data_type, inv_id, device_name, port
 tree_width = 2,    2,    1,          2,      1,           1
+tree_props = A,   H,      N,    N,      N,    N,          H,    A
 
 *** INVENTORY: siam1 ***
 module=SIAM
