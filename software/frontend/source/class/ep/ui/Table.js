@@ -50,6 +50,6 @@ qx.Class.define("ep.ui.Table", {
                 recIds.push(tm.getValue(0, ind));
             },this);
             return recIds;
-        },        
+        }
     }
 });
