@@ -240,8 +240,30 @@ qx.Class.define("ep.ui.TreeView", {
                 var table = this.getTable();
                 var tm = table.getTableModel();
                 var sm = table.getSelectionModel();
+
                 var data = sel.getItem(0).getLeaves();
-                table.resetSelection();
+                var showCol = new Array();
+                for (var i = 1;i<data[0].length;i++){
+                    showCol[i] = false;
+                }
+                var whiteRx = /^\s*$/;
+                for (var i = 0;i<data.length;i++){
+                    for (var ii = 0;ii<data[i].length;ii++){
+                        var item = data[i][ii];
+                        if (item && ! whiteRx.test(item)){
+                            console.log('show '+i+':'+ii+' - "'+item+'"');
+                            showCol[ii] = true;
+                        }
+                    }
+                }
+
+                var tcm = table.getTableColumnModel();
+                console.log(showCol);
+                for (var i = 1;i<showCol.length;i++){
+                    tcm.setColumnVisible(i, showCol[i]);
+                }
+                table.resetSelection();                
+
                 tm.setData(data);
 
                 if (data.length) {
