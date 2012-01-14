@@ -34,7 +34,7 @@ qx.Class.define("ep.ui.TreeView", {
         var hPane = new qx.ui.splitpane.Pane("horizontal");
         this._add(hPane);
         var vPane = new qx.ui.splitpane.Pane("vertical");
-        vPane.add(this._createTable(colDef.names, colDef.ids, colDef.widths), 1);
+        vPane.add(this._createTable(colDef.names, colDef.ids, colDef.widths, colDef.props), 1);
         var tree = this._createTree();
         hPane.add(tree, parseInt(ep.data.FrontendConfig.getInstance().getConfig().tree_width));
         this._openTree(tree, tree.getModel(), true);
@@ -56,7 +56,7 @@ qx.Class.define("ep.ui.TreeView", {
     members : {
         __initial_open : null,
         __colProps: null,
-
+        __dataPattern: null,
         /**
          * Open the tree
          *
@@ -177,10 +177,10 @@ qx.Class.define("ep.ui.TreeView", {
          * @param widths {Array} column widths
          * @return {Widget} table widget
          */
-        _createTable : function(names, ids, widths) {
+        _createTable : function(names, ids, widths, props) {
             var tm = new qx.ui.table.model.Simple();
             tm.setColumns(names, ids);
-            var control = new ep.ui.Table(tm, widths);
+            var control = new ep.ui.Table(tm, widths, props);
             this.setTable(control);
             return control;
         },
@@ -245,31 +245,43 @@ qx.Class.define("ep.ui.TreeView", {
                 
                 var data = sel.getItem(0).getLeaves();                
                 if (data.length > 0){
-                    var showCol = new Array();                
+                    var showCol = {};
                     for (var i = 0;i<data[0].length;i++){          
-                        switch (colProps[i]) {
-                            case 'H':
-                            case 'N':
-                                showCol[i] = false;
-                                break;
-                            case 'A': 
-                            default:
-                                showCol[i] = true;
+                        if (colProps[i] == 'A'){
+                            showCol[i] = 'N';
                         };
                     }
                     var whiteRx = /^\s*$/;
                     for (var i = 0;i<data.length;i++){
                         for (var ii = 0;ii<data[i].length;ii++){
                             var item = data[i][ii];
-                            if (colProps[ii] == 'N'
+                            if (colProps[ii] == 'A'
                                 && item && ! whiteRx.test(item)){
-                                showCol[ii] = true;
+                                showCol[ii] = 'Y';
                             }
                         }
                     }
                     var tcm = table.getTableColumnModel();
-                    for (var i = 1;i<showCol.length;i++){
-                        tcm.setColumnVisible(i, showCol[i]);
+                    var pattern = '';
+                    for (var i = 1;i<data[0].length;i++){
+                        if (showCol[i] == 'Y'){
+                            pattern += 'Y';
+                        }
+                        else {
+                            pattern += 'N';
+                        }
+                    }
+                    console.log(pattern + ' -- ' + this.__dataPattern);
+                    if (pattern != this.__dataPattern){
+                        for (var i = 1;i<data[0].length;i++){
+                            if (showCol[i] == 'Y'){
+                                tcm.setColumnVisible(i, true);
+                            }
+                            else {
+                                tcm.setColumnVisible(i, false);
+                            }
+                        }   
+                        this.__dataPattern = pattern;
                     }
                 }
                 table.resetSelection();                

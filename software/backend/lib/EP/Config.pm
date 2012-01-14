@@ -145,7 +145,7 @@ ${E}head1 SYNOPSIS
 
  tree = prod, country, city, street, number, cust, svc_type, data, data_type, port, inv_id
  tree_width = 1,   1,      1,    1,      1,    1,          1,    1 
- tree_props = A,   S,       H,    S,      S,    S,          S,   S
+ tree_props = S,   H,      A,    A,      A,    A,          H,    A
 
  *** INVENTORY: dummy ***
  module=SIAM
@@ -283,8 +283,8 @@ sub _make_parser {
                 _sub => sub { $_[0] = [ split /\s*,\s*/, $_[0] ]; undef },
             },            
             tree_props => {
-                _doc => 'list of column visibility properties: [A]lways, [N]on empty, [H]idden',
-                _examples => 'tree_props = A,N,N,H,N,N',
+                _doc => 'list of column visibility properties: [S]how, [H]ide, [A]utomatic',
+                _examples => 'tree_props = S,A,A,A,H,H,S',
                 _sub => sub { $_[0] = [ split /\s*,\s*/, $_[0] ]; undef },
             },            
         },
