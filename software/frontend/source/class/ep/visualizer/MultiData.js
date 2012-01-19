@@ -33,10 +33,11 @@ qx.Class.define("ep.visualizer.MultiData", {
      * @return {void} 
      *
      */
-    construct : function(title, args, table) {
-        this.base(arguments, title, args);
-        var dataTable = new ep.ui.MultiDataTable(args.instance, args.columns, args.column_widths, args.column_units);
+    construct : function(title, args, view) {
+        this.base(arguments, title, args, view);
+        this._vizKey = this.self(arguments).KEY;
 
+        var dataTable = new ep.ui.MultiDataTable(args.instance, args.columns, args.column_widths, args.column_units);
         this.setDataTable(dataTable);
 
         this.add(dataTable, { flex : 1 });
@@ -52,15 +53,14 @@ qx.Class.define("ep.visualizer.MultiData", {
             this.setUserData('caption',caption);
         },this);
 
-        var sm = this.__selectionModel = table.getSelectionModel();
-        this.__changeListernerId = sm.addListener('changeSelection', function(e) {
-            var ids = table.getSelectedRecordIds();
+        view.addListener('changeRecIds', function(e) {
+            var ids = e.getData();
             /* we have to have two items selected in any case */
             if (ids.length > 1){        
-                dataTable.setRecordIds(table.getSelectedRecordIds());
+                dataTable.setRecordIds(ids);
             }
         },this);
-        dataTable.setRecordIds(table.getSelectedRecordIds());
+        dataTable.setRecordIds(view.getRecIds());
     },
 
     statics : { KEY : 'multidata' },

@@ -34,8 +34,9 @@ qx.Class.define("ep.visualizer.Data", {
      * @return {void} 
      *
      */
-    construct : function(title, args) {
-        this.base(arguments, title, args);
+    construct : function(title, args,view) {
+        this.base(arguments, title, args,view);
+        this._vizKey = this.self(arguments).KEY;
         var dataTable = new ep.ui.DataTable(args.instance, args.columns, args.column_widths, args.column_units);
         this.setDataTable(dataTable);
         this.add(dataTable, { flex : 1 });

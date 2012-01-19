@@ -25,8 +25,9 @@ qx.Class.define("ep.visualizer.IFrame", {
      *
      */
 
-    construct : function(title, args) {
-        this.base(arguments, title);
+    construct : function(title, args, view) {
+        this.base(arguments, title, args, view);
+        this._vizKey = this.self(arguments).KEY;
         this.set({ layout : new qx.ui.layout.Grow() });
         this.__iFrame = new qx.ui.embed.ThemedIframe();
         this.add(this.__iFrame);

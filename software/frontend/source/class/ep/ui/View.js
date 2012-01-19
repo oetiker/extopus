@@ -27,13 +27,11 @@ qx.Class.define("ep.ui.View", {
         var rpc = ep.data.Server.getInstance();
         var multiMode = false;
         sm.addListener('changeSelection', function(e) {
-            var selCount = 0;
-            var recId;
+            var recIds = [];
             sm.iterateSelection(function(ind) {
-                recId = tm.getValue(0, ind);
-                selCount++;
+                recIds.push(tm.getValue(0, ind));
             },this);
-            if (selCount == 0){
+            if (recIds.length == 0){
                 this.__hideTimer = qx.event.Timer.once(function() {
                     this.__hideTimer = null;
                     tabView.hide();
@@ -41,21 +39,32 @@ qx.Class.define("ep.ui.View", {
                 this, 200);
                 return;
             }            
-            if (selCount > 1){
+            if (recIds.length > 1){
                 if (!multiMode){
-                    rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', 'multi', recId);
+                    /* only pass one recId, as this only serves to determine the type of visualizer */
+                    rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', 'multi', recIds[0]);
                     multiMode = true;
                 }
             }
             else {
                 multiMode = false;
-                rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', 'single', recId);
+                rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', 'single', recIds[0]);
             }
+            this.setRecIds(recIds);
         },
         this);
 
         this.__pageCache = {};
         this.__breakOutKids = {};
+    },
+    properties: {
+        /**
+         * List of Records selected in view table
+         **/
+        recIds: {
+            init: [],
+            event: 'changeRecIds'
+        }
     },
 
     members : {
@@ -79,27 +88,27 @@ qx.Class.define("ep.ui.View", {
             switch(viz.visualizer)
             {
                 case ep.visualizer.Chart.KEY:
-                    control = new ep.visualizer.Chart(viz.title, viz.arguments,table);
+                    control = new ep.visualizer.Chart(viz.title, viz.arguments,this);
                     break;
 
                 case ep.visualizer.MultiData.KEY:
-                    control = new ep.visualizer.MultiData(viz.title, viz.arguments,table);
+                    control = new ep.visualizer.MultiData(viz.title, viz.arguments,this);
                     break;
 
                 case ep.visualizer.IFrame.KEY:
-                    control = new ep.visualizer.IFrame(viz.title, viz.arguments,table);
+                    control = new ep.visualizer.IFrame(viz.title, viz.arguments,this);
                     break;
 
                 case ep.visualizer.Properties.KEY:
-                    control = new ep.visualizer.Properties(viz.title, viz.arguments,table);
+                    control = new ep.visualizer.Properties(viz.title, viz.arguments,this);
                     break;
 
                 case ep.visualizer.Data.KEY:
-                    control = new ep.visualizer.Data(viz.title, viz.arguments,table);
+                    control = new ep.visualizer.Data(viz.title, viz.arguments,this);
                     break;
 
                 default:
-                    qx.dev.Debug.debugObject(viz, 'Can not handle ');
+                    qx.dev.Debug.debugObject(viz, 'Can not handle ' + viz.visualizer);
             }
 
             return control;

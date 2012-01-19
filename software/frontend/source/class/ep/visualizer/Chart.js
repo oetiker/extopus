@@ -32,8 +32,9 @@ qx.Class.define("ep.visualizer.Chart", {
      *
      */
 
-    construct : function(title, args) {
-        this.base(arguments, title);
+    construct : function(title, args, view) {
+        this.base(arguments, title, args, view);
+        this._vizKey = this.self(arguments).KEY;
         this.set({ layout : new qx.ui.layout.VBox(10) });
         var titleContainer = this.__titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(8).set({ alignY : 'middle' }));
         this.add(titleContainer);

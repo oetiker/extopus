@@ -271,7 +271,6 @@ qx.Class.define("ep.ui.TreeView", {
                             pattern += 'N';
                         }
                     }
-                    console.log(pattern + ' -- ' + this.__dataPattern);
                     if (pattern != this.__dataPattern){
                         for (var i = 1;i<data[0].length;i++){
                             if (showCol[i] == 'Y'){

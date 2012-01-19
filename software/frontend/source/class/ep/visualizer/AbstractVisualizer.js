@@ -7,6 +7,7 @@
 
 /*
 #asset(ep/view-fullscreen.png)
+#asset(ep/view-link.png)
 */
 
 /**
@@ -22,27 +23,41 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
      * @param args {Map} argument map for the view
      * @param table {String} the view table
      */
-    construct : function(title,args,table) {
+    construct : function(title,args,view) {
         this.base(arguments, this['tr'](title));
+        this._view = view;
+
+        var button = this.getChildControl('button');
+            
+
+        var linkButton = this._linkButton = new qx.ui.basic.Atom().set({
+            icon   : 'ep/view-link.png',
+            show   : 'icon',
+            cursor : 'pointer',
+            visibility: 'excluded'
+        });
+
+        linkButton.addListener("click", this._buildLink, this);
+
+        button._add(linkButton, {
+            row    : 0,
+            column : 5
+        });
 
         var breakOutButton = this._breakOutButton = new qx.ui.basic.Atom().set({
             icon   : 'ep/view-fullscreen.png',
             show   : 'icon',
-            cursor : 'pointer'
+            cursor : 'pointer',
+            visibility: 'excluded'
         });
         breakOutButton.addListener("click", this._onBreakOutButtonClick, this);
 
-        breakOutButton.exclude();
-        var button = this.getChildControl('button');
-
         button._add(breakOutButton, {
             row    : 0,
-            column : 5
+            column : 6
         });
-        button.addListener('syncAppearance', this._updateBreakOutButton, this);
+        button.addListener('syncAppearance', this._updateButton, this);
     },
-
-    statics : { KEY : 'name' },
 
     events : {
         /**
@@ -61,12 +76,22 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
             nullable : true,
             init     : null,
             apply    : '_applyArgs'
+        },
+        recId: {
+            nullable: true,
+            init    : null,
+        },
+        key: {
+            nullable: false,
+            init    : 'abstract'
         }
     },
 
     members : {
         _breakOutButton : null,
-
+        _linkButton: null,
+        _view: null,
+        _vizKey: null,
         /**
          * Unhook this visualizer from external influence (eg changeing selection of items in the view table)
          * Override in childs
@@ -102,14 +127,25 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
          *
          * @return {void} 
          */
-        _updateBreakOutButton : function() {
+        _updateButton : function() {
             var button = this.getChildControl('button');
 
             if (button.hasState('checked')) {
                 this._breakOutButton.show();
+                this._linkButton.show();
             } else {
                 this._breakOutButton.exclude();
+                this._linkButton.exclude();
             }
+        },
+        /**
+         * Create a linkable argument for this image
+         *
+         * @return {void} 
+         */
+        _buildLink: function(){
+            var link = 'app='+this._vizKey+';recIds='+this._view.getRecIds().join(',');
+            console.log(link);                
         }
     }
 });

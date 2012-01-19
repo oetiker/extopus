@@ -34,8 +34,8 @@ qx.Class.define("ep.visualizer.AbstractData", {
      * @return {void} 
      *
      */
-    construct : function(title, args) {
-        this.base(arguments, title);
+    construct : function(title, args, view) {
+        this.base(arguments, title, args, view);
         this.set({ layout : new qx.ui.layout.VBox(10) });
         var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(8).set({ alignY : 'middle' }));
         this.setTitleContainer(titleContainer);
