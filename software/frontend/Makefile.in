@@ -349,6 +349,9 @@ uninstall-am:
 @BUILD_QOOXDOO_APP_TRUE@pretty:
 @BUILD_QOOXDOO_APP_TRUE@	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache pretty
 
+@BUILD_QOOXDOO_APP_TRUE@api:
+@BUILD_QOOXDOO_APP_TRUE@	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache api
+
 @BUILD_QOOXDOO_APP_TRUE@source-full:
 @BUILD_QOOXDOO_APP_TRUE@	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache source
 
