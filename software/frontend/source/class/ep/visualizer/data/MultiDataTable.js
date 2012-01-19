@@ -10,8 +10,8 @@
 /**
  * Create a table widget for the Data visualizer.
  */
-qx.Class.define("ep.ui.MultiDataTable", {
-    extend : ep.ui.DataTable,
+qx.Class.define("ep.visualizer.data.MultiDataTable", {
+    extend : ep.visualizer.data.DataTable,
 
     construct : function(instance, columns, widths, units) {
         this.base(arguments,instance, columns, widths, units);

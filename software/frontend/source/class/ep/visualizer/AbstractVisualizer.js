@@ -14,7 +14,7 @@
  * Abstract Visualization widget.
  */
 qx.Class.define("ep.visualizer.AbstractVisualizer", {
-    extend : qx.ui.tabview.Page,
+    extend : qx.ui.container.Composite,
     type : 'abstract',
     /**
      * create a visualization widget with the given title
@@ -24,48 +24,9 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
      * @param table {String} the view table
      */
     construct : function(title,args,view) {
-        this.base(arguments, this['tr'](title));
-        this._view = view;
-
-        var button = this.getChildControl('button');
-            
-
-        var linkButton = this._linkButton = new qx.ui.basic.Atom().set({
-            icon   : 'ep/view-link.png',
-            show   : 'icon',
-            cursor : 'pointer',
-            visibility: 'excluded'
-        });
-
-        linkButton.addListener("click", this._buildLink, this);
-
-        button._add(linkButton, {
-            row    : 0,
-            column : 5
-        });
-
-        var breakOutButton = this._breakOutButton = new qx.ui.basic.Atom().set({
-            icon   : 'ep/view-fullscreen.png',
-            show   : 'icon',
-            cursor : 'pointer',
-            visibility: 'excluded'
-        });
-        breakOutButton.addListener("click", this._onBreakOutButtonClick, this);
-
-        button._add(breakOutButton, {
-            row    : 0,
-            column : 6
-        });
-        button.addListener('syncAppearance', this._updateButton, this);
-    },
-
-    events : {
-        /**
-         * Fired by {@link qx.ui.tabview.Page} if the breakout button is clicked.
-         *
-         * Event data: The Page.
-         */
-        breakout : "qx.event.type.Data"
+        this.base(arguments);
+        this.setTitle(title);
+        this._viewProps = {};
     },
 
     properties : {
@@ -77,26 +38,74 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
             init     : null,
             apply    : '_applyArgs'
         },
-        recId: {
+        title: {
             nullable: true,
-            init    : null,
-        },
-        key: {
-            nullable: false,
-            init    : 'abstract'
+            init: 'Untitled',
+            event: 'changeTitle'
+        }
+    },
+    statics: {
+       /**
+         * Create new a visualizer widget according to the given configuration. At first glance the configuration
+         * map has a <code>title</code>, <code>caption</code> and <code>arguments</code> property.
+         *
+         * @param vizMap {Map} visualizer configuration map
+         * @return {Widget} visualizer widget
+         */
+        createVisualizer : function(key,title,args,view) {
+            var control;
+            switch(key)
+            {
+                case ep.visualizer.Chart.KEY:  
+                    control = new ep.visualizer.Chart(title, args,view);
+                    break;
+
+                case ep.visualizer.MultiData.KEY:
+                    control = new ep.visualizer.MultiData(title, args,view);
+                    break;
+
+                case ep.visualizer.IFrame.KEY:
+                    control = new ep.visualizer.IFrame(title, args,view);
+                    break;
+
+                case ep.visualizer.Properties.KEY: 
+                    control = new ep.visualizer.Properties(title, args,view);
+                    break;
+
+                case ep.visualizer.Data.KEY:
+                    control = new ep.visualizer.Data(title, args,view);
+                    break;
+
+                default:
+                    qx.dev.Debug.debugObject(viz, 'Can not handle ' + key);
+            }
+            return control;
         }
     },
 
     members : {
-        _breakOutButton : null,
-        _linkButton: null,
         _view: null,
         _vizKey: null,
+        __viewProps: null,
+        /**
+         * Store for all 'relevant' properties for this view, building the basis
+         * to create links to views representing their curent configuration
+         *
+         * @param prop {String}
+         * @param value {String}
+         * @return {void}
+         */
+        setViewProp: function(prop,value){
+            if (this.__viewProps == null){
+                this.__viewProps = {};
+            }
+            this.__viewProps[prop] = String(value);
+        },
         /**
          * Unhook this visualizer from external influence (eg changeing selection of items in the view table)
          * Override in childs
          */
-        onUnhook : function(){},
+        unhook : function(){},
 
         /**
          * Configure the visualizer. This must be overridden in the child code.
@@ -106,46 +115,23 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
-            this.error('overwrite _applyArgs in the child object');
+            this.setViewProp('recId',newArgs.recIds.join(','));
         },
 
 
-        /**
-         * Fire a breakout event for clicks on the breakOut button
-         *
-         * @param e {Event} click event
-         * @return {void} 
-         */
-        _onBreakOutButtonClick : function(e) {
-            this.fireDataEvent("breakout", this);
-            e.stop();
-        },
-
-
-        /**
-         * Only show the breakOut button when the tab is selected.
-         *
-         * @return {void} 
-         */
-        _updateButton : function() {
-            var button = this.getChildControl('button');
-
-            if (button.hasState('checked')) {
-                this._breakOutButton.show();
-                this._linkButton.show();
-            } else {
-                this._breakOutButton.exclude();
-                this._linkButton.exclude();
-            }
-        },
         /**
          * Create a linkable argument for this image
          *
          * @return {void} 
          */
-        _buildLink: function(){
-            var link = 'app='+this._vizKey+';recIds='+this._view.getRecIds().join(',');
-            console.log(link);                
+        buildLink: function(){
+            var link = 'app='+this._vizKey;
+            if (this.__viewProps){
+                for (var prop in this.__viewProps){
+                    link += ';'+ prop + '=' + escape(this.__viewProps[prop]);
+                }
+            }
+            return link;                
         }
     }
 });

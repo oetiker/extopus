@@ -35,13 +35,13 @@ qx.Class.define("ep.visualizer.Chart", {
     construct : function(title, args, view) {
         this.base(arguments, title, args, view);
         this._vizKey = this.self(arguments).KEY;
-        this.set({ layout : new qx.ui.layout.VBox(10) });
+        this._setLayout(new qx.ui.layout.VBox(10));
         var titleContainer = this.__titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(8).set({ alignY : 'middle' }));
-        this.add(titleContainer);
+        this._add(titleContainer);
 
         // the chart
-        var chart = this.__chart = new ep.ui.ChartImage();
-        this.add(chart, { flex : 1 });
+        var chart = this.__chart = new ep.visualizer.chart.Image();
+        this._add(chart, { flex : 1 });
 
         titleContainer.add(this._makeViewSelector(),{ flex: 10});
         titleContainer.add(this._makeTimeSpanSelector());
@@ -113,6 +113,7 @@ qx.Class.define("ep.visualizer.Chart", {
             vSel.removeAll();
             vSel.push(newItem);
             this.__template = newArgs.template;
+            this.base(arguments, newArgs, oldArgs);
         },
 
 
@@ -232,11 +233,13 @@ qx.Class.define("ep.visualizer.Chart", {
 
                 if (item == null || item.getSrc == null ) {
                     this.__chart.setBaseUrl(null);
+                    this.setViewProp('view',null);
                     titleContainer.setEnabled(false);
                     this.__printBtn.setEnabled(false);
                 }
                 else {
                     var url = item.getSrc();
+                    this.setViewProp('view',item.getTitle());
                     titleContainer.setEnabled(true);
                     this.__printBtn.setEnabled(this.__template != null);
                     this.__chart.setBaseUrl(url);
@@ -295,7 +298,9 @@ qx.Class.define("ep.visualizer.Chart", {
             var timeSpanSelection = timeSpanSelector.getSelection();
 
             timeSpanSelection.addListener("change", function(e) {
-                this.__chart.setTimeRange(timeSpanSelection.getItem(0).getV());
+                var span = timeSpanSelection.getItem(0);
+                this.__chart.setTimeRange(span.getV());
+                this.setViewProp('timeSpan',span.getL());
             }, this);
 
             this.__chart.setTimeRange(timeSpanSelection.getItem(0).getV());
@@ -322,6 +327,8 @@ qx.Class.define("ep.visualizer.Chart", {
                 } else {
                     this.__chart.setEndTime(null);
                 }
+                this.setViewProp('endTime',this.__chart.getEndTime());
+
             },this);
             return dateField;
         },
@@ -360,7 +367,9 @@ qx.Class.define("ep.visualizer.Chart", {
             var maxIntervalSelection = maxIntervalSelector.getSelection();
 
             maxIntervalSelection.addListener("change", function(e) {
-                this.__chart.setMaxInterval(maxIntervalSelection.getItem(0).getV());
+                var mi = maxIntervalSelection.getItem(0);
+                this.__chart.setMaxInterval(mi.getV());
+                this.setViewProp('maxInterval',mi.getL());
             }, this);
 
             this.__chart.setMaxInterval(maxIntervalSelection.getItem(0).getV());

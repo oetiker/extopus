@@ -37,7 +37,7 @@ qx.Class.define("ep.visualizer.MultiData", {
         this.base(arguments, title, args, view);
         this._vizKey = this.self(arguments).KEY;
 
-        var dataTable = new ep.ui.MultiDataTable(args.instance, args.columns, args.column_widths, args.column_units);
+        var dataTable = new ep.visualizer.data.MultiDataTable(args.instance, args.columns, args.column_widths, args.column_units);
         this.setDataTable(dataTable);
 
         this.add(dataTable, { flex : 1 });
@@ -59,6 +59,7 @@ qx.Class.define("ep.visualizer.MultiData", {
             if (ids.length > 1){        
                 dataTable.setRecordIds(ids);
             }
+            this.setViewProps('recIds',ids.join(','));
         },this);
         dataTable.setRecordIds(view.getRecIds());
     },
@@ -72,7 +73,7 @@ qx.Class.define("ep.visualizer.MultiData", {
          * Remove the Table Change listener when we unhook
          */
 
-        onUnhook: function(){
+        unhook: function(){
             this.__selectionModel.removeListenerById(this.__changeListernerId);
         },
 

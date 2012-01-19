@@ -37,7 +37,7 @@ qx.Class.define("ep.visualizer.Data", {
     construct : function(title, args,view) {
         this.base(arguments, title, args,view);
         this._vizKey = this.self(arguments).KEY;
-        var dataTable = new ep.ui.DataTable(args.instance, args.columns, args.column_widths, args.column_units);
+        var dataTable = new ep.visualizer.data.DataTable(args.instance, args.columns, args.column_widths, args.column_units);
         this.setDataTable(dataTable);
         this.add(dataTable, { flex : 1 });
 
@@ -64,6 +64,7 @@ qx.Class.define("ep.visualizer.Data", {
                 rowCount.set({ valid : true });
             }
             dataTable.setCount(value);
+            this.setViewProps('rows',String(value));
         },
         this);
 
@@ -86,6 +87,7 @@ qx.Class.define("ep.visualizer.Data", {
             var dt = this.getDataTable();
             /* trigger reload */
             dt.setRecId(newArgs.recId);
+            this.base(arguments, newArgs, oldArgs);                 
         },
 
         /**

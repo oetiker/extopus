@@ -68,6 +68,7 @@ qx.Class.define("ep.visualizer.Properties", {
 
             data += '</table>';
             l.setValue(data);
+            this.base(arguments, newArgs, oldArgs);
         }
     }
 });

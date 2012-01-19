@@ -83,35 +83,9 @@ qx.Class.define("ep.ui.View", {
          * @return {Widget} visualizer widget
          */
         _createVisualizer : function(viz) {
-            var control;
-            var table = this.__table;
-            switch(viz.visualizer)
-            {
-                case ep.visualizer.Chart.KEY:
-                    control = new ep.visualizer.Chart(viz.title, viz.arguments,this);
-                    break;
-
-                case ep.visualizer.MultiData.KEY:
-                    control = new ep.visualizer.MultiData(viz.title, viz.arguments,this);
-                    break;
-
-                case ep.visualizer.IFrame.KEY:
-                    control = new ep.visualizer.IFrame(viz.title, viz.arguments,this);
-                    break;
-
-                case ep.visualizer.Properties.KEY:
-                    control = new ep.visualizer.Properties(viz.title, viz.arguments,this);
-                    break;
-
-                case ep.visualizer.Data.KEY:
-                    control = new ep.visualizer.Data(viz.title, viz.arguments,this);
-                    break;
-
-                default:
-                    qx.dev.Debug.debugObject(viz, 'Can not handle ' + viz.visualizer);
-            }
-
-            return control;
+            viz.arguments.recIds = this.getRecIds();
+            var control = ep.visualizer.AbstractVisualizer.createVisualizer(viz.visualizer,viz.title, viz.arguments,this);
+            return new ep.ui.ViewPage(control);
         },
 
 
@@ -163,8 +137,8 @@ qx.Class.define("ep.ui.View", {
                         visibility : 'visible',
                         enabled    : true
                     });
-
-                    control.setArgs(viz.arguments);
+                    viz.arguments.recIds = this.getRecIds();
+                    control.getVisualizer().setArgs(viz.arguments);
                 }
                 else {
                     control = this._createVisualizer(viz);

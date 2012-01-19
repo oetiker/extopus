@@ -11,7 +11,7 @@
  * Create an image widget to display the chart within the chart visualizer. The chart
  * is reloaded as the widget size changes.
  */
-qx.Class.define("ep.ui.ChartImage", {
+qx.Class.define("ep.visualizer.chart.Image", {
     extend : ep.ui.LoadingBox,
 
     construct : function() {

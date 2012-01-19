@@ -62,6 +62,7 @@ qx.Class.define("ep.visualizer.AbstractData", {
                 titleContainer.setEnabled(true);
                 dataTable.setInterval(item.getKey());
             }
+            this.setViewProp('interval',dataTable.getInterval());
         },
         this);
 
@@ -79,6 +80,7 @@ qx.Class.define("ep.visualizer.AbstractData", {
 
         dateField.addListener('changeValue', function(e) {
             var date = e.getData();
+            this.setViewProp('endDate',date);
             this.getDataTable().setEndDate(date);
         },
         this);
@@ -164,6 +166,7 @@ qx.Class.define("ep.visualizer.AbstractData", {
             iSel.removeAll();
             iSel.push(newItem);
             this.setCsvUrl(newArgs.csvUrl);
+            this.base(arguments, newArgs, oldArgs);
         }
     }
 });

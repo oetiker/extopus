@@ -49,6 +49,7 @@ qx.Class.define("ep.visualizer.IFrame", {
          */
         _applyArgs : function(newArgs, oldArgs) {
             this.__iFrame.setSource(newArgs.src);
+            this.base(arguments, newArgs, oldArgs);                 
         }
     }
 });
