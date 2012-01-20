@@ -81,6 +81,8 @@ qx.Class.define("ep.ui.Desktop", {
             /* about line */
 
             this._addAbout();
+            /* activate history manager */
+            ep.data.History.getInstance();
         },
 
 

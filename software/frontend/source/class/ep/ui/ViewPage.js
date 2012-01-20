@@ -38,6 +38,16 @@ qx.Class.define("ep.ui.ViewPage", {
             cursor : 'pointer',
             visibility: 'excluded'
         });
+        
+        var linkPop = this._linkPop = new qx.ui.popup.Popup(new qx.ui.layout.Grow());
+
+        
+        this._linkField = new qx.ui.form.TextField().set({
+            width: 400,
+            nativeContextMenu: true
+        });
+
+        linkPop.add(this._linkField);
 
         linkButton.addListener("click", this._buildLink, this);
 
@@ -62,6 +72,10 @@ qx.Class.define("ep.ui.ViewPage", {
         this._viewProps = {};
     },
 
+    events : {
+        breakout: 'qx.event.type.Event'
+    },
+
     properties : {
         /**
          * the vizualization widget contained here
@@ -75,6 +89,8 @@ qx.Class.define("ep.ui.ViewPage", {
     members : {
         _breakOutButton : null,
         _linkButton: null,
+        _linkPop: null,
+        _linkField: null,
         _view: null,
         /**
          * Unhook the contained visualizer from external influence (eg changeing selection of items in the view table)
@@ -117,9 +133,15 @@ qx.Class.define("ep.ui.ViewPage", {
          *
          * @return {void} 
          */
-        _buildLink: function(){
+        _buildLink: function(e){
             var link = this.getVisualizer().buildLink();
-            console.log(link);                
+            this._linkPop.placeToMouse(e);
+            this._linkField.setValue(window.location.href.split('#')[0] + '#' + link);
+            this._linkField.addListenerOnce('appear',function(){
+                this._linkField.focus();
+                this._linkField.selectAllText();
+            },this);
+            this._linkPop.show();
         }
     }
 });

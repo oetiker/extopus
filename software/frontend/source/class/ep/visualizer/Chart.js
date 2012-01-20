@@ -112,7 +112,7 @@ qx.Class.define("ep.visualizer.Chart", {
             this.__viewSelector.setModel(viewModel);
             vSel.removeAll();
             vSel.push(newItem);
-            this.__template = newArgs.template;
+            this.__template = newArgs.template;            
             this.base(arguments, newArgs, oldArgs);
         },
 

@@ -17,11 +17,11 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
     extend : qx.ui.container.Composite,
     type : 'abstract',
     /**
-     * create a visualization widget with the given title
+     * create a visualization widget with the given title.
      * 
      * @param title {String} title to display on the tab
-     * @param args {Map} argument map for the view
-     * @param table {String} the view table
+     * @param args {Map} argument map for the view.
+     * @param table {String} the view table    
      */
     construct : function(title,args,view) {
         this.base(arguments);
@@ -77,7 +77,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
                     break;
 
                 default:
-                    qx.dev.Debug.debugObject(viz, 'Can not handle ' + key);
+                    qx.dev.Debug.debugObject(key, 'Can not handle ');
             }
             return control;
         }
@@ -108,6 +108,15 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
         unhook : function(){},
 
         /**
+         * pre-set the user configurable parts of the visualizer
+         *
+         * @param init {Map} visualizer spacific  argument list
+         */
+        preConfVisualizer: function(map){
+            /* nothing to preconfigure by default */
+        },
+
+        /**
          * Configure the visualizer. This must be overridden in the child code.
          *
          * @param newArgs {Map} old args
@@ -115,9 +124,11 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
-            this.setViewProp('recId',newArgs.recIds.join(','));
+            this.setViewProp('recIds',newArgs.recIds.join(','));            
+            if (newArgs.__init){
+                this.preConfVisualizer(newArgs.__init);
+            }
         },
-
 
         /**
          * Create a linkable argument for this image
