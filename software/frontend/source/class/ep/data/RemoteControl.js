@@ -60,6 +60,8 @@ qx.Class.define('ep.data.RemoteControl', {
                 this.debug('skipping '+state);
                 return;
             }
+            /* we have seen the state, remove it */
+            this.setState('');
             var items = state.split(';');
             var args = this.__args = {};
             for (var i=0;i<items.length;i++){
