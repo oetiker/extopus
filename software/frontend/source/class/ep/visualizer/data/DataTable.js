@@ -127,7 +127,7 @@ qx.Class.define("ep.visualizer.data.DataTable", {
                 var date = Math.round(new Date().getTime() / 1000);
 
                 if (this.getEndDate()) {
-                    date = this.getEndDate());
+                    date = this.getEndDate();
                 }
 
                 var tm = this._model;
