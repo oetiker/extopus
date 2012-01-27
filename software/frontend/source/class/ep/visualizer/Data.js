@@ -87,7 +87,6 @@ qx.Class.define("ep.visualizer.Data", {
             t.setCount(parseInt(d.rows));
             t.setInterval(d.interval);
             t.setEndDate(d.endTime);
-            console.log(d);
         },
         /**
          * Setup visualizer with new configuration
@@ -112,7 +111,6 @@ qx.Class.define("ep.visualizer.Data", {
             var end = Math.round(new Date().getTime() / 1000);
 
             if (data.getEndDate()) {
-                console.log(data.getEndDate());
                 end = Math.round(data.getEndDate().getTime() / 1000);
             }
 

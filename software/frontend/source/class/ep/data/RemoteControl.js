@@ -64,7 +64,8 @@ qx.Class.define('ep.data.RemoteControl', {
             var args = this.__args = {};
             for (var i=0;i<items.length;i++){
                 var item = items[i].split('=');
-                args[item[0]] = decodeURIComponent(item[1]);
+                var value =  decodeURIComponent(item[1]);
+                args[item[0]] = value != 'null' ? value : null;
             }            
             var rpc = ep.data.Server.getInstance();            
             if (args.recIds && args.app){
@@ -101,7 +102,7 @@ qx.Class.define('ep.data.RemoteControl', {
                     });                    
 
                     control.addListener('changeTitle',function(e){
-                        win.setLabel(e.getData());
+                        win.setCaption(e.getData());
                     },this)
 
                     win.setLayout(new qx.ui.layout.Grow());
