@@ -56,7 +56,7 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
                 var date = Math.round(new Date().getTime() / 1000 / 3600 ) * 3600;
 
                 if (this.getEndDate()) {
-                    date = Math.round(this.getEndDate().getTime() / 1000);
+                    date = this.getEndDate();
                 }
 
                 var tm = this._model;
