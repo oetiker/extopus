@@ -158,13 +158,15 @@ qx.Class.define("ep.ui.FormBar", {
         _setData: function(model,data){
             this._settingData = true;
             for (var key in data){
-                var setter = 'set'+qx.lang.String.firstUp(key);
-                if (model[setter]){
-                    model[setter](data[key]);
+                var upkey = qx.lang.String.firstUp(key);
+                var setter = 'set'+upkey;
+                var getter = 'get'+upkey;
+                if (model[setter]){                    
+                    model[setter](qx.lang.Type.isNumber(model[getter]()) ? parseInt(data[key]) : data[key]);
                 }
             }
             this._settingData = false;
-            /* only fire ONE */
+            /* only fire ONE if there was an attempt at change */
             this.fireDataEvent('changeData',this.getData());
         },
         /**

@@ -82,7 +82,7 @@ qx.Class.define("ep.ui.Desktop", {
 
             this._addAbout();
             /* activate history manager */
-            ep.data.History.getInstance();
+            ep.data.RemoteControl.getInstance();
         },
 
 

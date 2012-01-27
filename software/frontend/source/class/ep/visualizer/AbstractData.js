@@ -34,58 +34,17 @@ qx.Class.define("ep.visualizer.AbstractData", {
      * @return {void} 
      *
      */
-    construct : function(title, args, view) {
+    construct : function(title, args, view, form) {
         this.base(arguments, title, args, view);
-        this.set({ layout : new qx.ui.layout.VBox(10) });
-        var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(8).set({ alignY : 'middle' }));
-        this.setTitleContainer(titleContainer);
-        this.add(titleContainer);
+        this._setLayout(new qx.ui.layout.VBox(10));
+        var titleContainer = this.__titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(8).set({ alignY : 'middle' }));
+        this._add(titleContainer);
 
-        // view selector
-        var intervalSelector = this._intervalSelector = new qx.ui.form.VirtualSelectBox().set({
-            labelPath     : 'name',
-            width         : 100,
-            maxListHeight : null
-        });
-
-        titleContainer.add(intervalSelector);
-        var intervalSelection = intervalSelector.getSelection();
-
-        intervalSelection.addListener("change", function(e) {
-            var item = intervalSelection.getItem(0);
-            var dataTable = this.getDataTable();
-            if (item == null) {
-                titleContainer.setEnabled(false);
-                dataTable.setInterval(null);
-            }
-            else {
-                titleContainer.setEnabled(true);
-                dataTable.setInterval(item.getKey());
-            }
-            this.setViewProp('interval',dataTable.getInterval());
-        },
-        this);
-
-        titleContainer.add(new qx.ui.basic.Label(this.tr('end date')).set({ paddingLeft : 5 }));
-
-        var dateField = new qx.ui.form.DateField().set({
-            value       : null,
-            dateFormat  : new qx.util.format.DateFormat("dd.MM.yyyy"),
-            placeholder : 'now'
-        });
-
-        this._endDate = Math.round(new Date().getTime() / 1000);
-
-        titleContainer.add(dateField);
-
-        dateField.addListener('changeValue', function(e) {
-            var date = e.getData();
-            this.setViewProp('endDate',date);
-            this.getDataTable().setEndDate(date);
-        },
-        this);
+        titleContainer.add(form);
 
         titleContainer.add(new qx.ui.core.Spacer(20), { flex : 1 });
+
+        form.addListener('changeData',this._updateData,this);
 
         // create main menu and buttons
         var menu = new qx.ui.menu.Menu();
@@ -118,30 +77,9 @@ qx.Class.define("ep.visualizer.AbstractData", {
         titleContainer.add(menuButton);
     },
 
-    properties: {
-        /**
-         * the widget showing the actual data
-         */
-        dataTable: {
-            init: null            
-        },
-        /**
-         * the title widget
-         */
-        titleContainer: {
-            init: null
-        },
-        /**
-         * the csvUrl
-         */
-        csvUrl: {
-            init: null
-        }
-
-    },
     members : {
-        _intervalSelector : null,
-        _endDate : null,
+        __titleContainer: null,
+        _csvUrl: null,
         /**
          * Setup visualizer with new configuration
          *
@@ -150,23 +88,26 @@ qx.Class.define("ep.visualizer.AbstractData", {
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
-            var intervalModel = qx.data.marshal.Json.createModel(newArgs.intervals);
-            var iSel = this._intervalSelector.getSelection();
-            var newItem = intervalModel.getItem(0);
-            var oldSel = iSel.getItem(0);
-            if (oldSel){
-                var oldKey = oldSel.getKey();
-                intervalModel.forEach(function(item){
-                    if (item.getKey() == oldKey){
-                        newItem = item;
-                    }
-                });
+            var v = newArgs.intervals || [];
+            var sb = [];
+            for (var i=0;i<v.length;i++){
+                sb.push({title: v[i].name, key: v[i].key}); 
             }
-            this._intervalSelector.setModel(intervalModel);
-            iSel.removeAll();
-            iSel.push(newItem);
-            this.setCsvUrl(newArgs.csvUrl);
+            if (sb.length == 0){
+                this.__titleContainer.setEnabled(false);
+            }
+            var cfg = this._userCfg;
+            this._cfgForm.setSelectBoxData('interval',sb );
+            this._csvUrl = newArgs.csvUrl;
             this.base(arguments, newArgs, oldArgs);
+            this._cfgForm.setData(cfg);
+        },
+        /**
+         * force the _updateData function to be overwritten 
+         */
+        _updateData: function(){
+            throw new Error('Your Implementation must provide a _updateData method');
         }
+        
     }
 });

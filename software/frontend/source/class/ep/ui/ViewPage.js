@@ -29,7 +29,7 @@ qx.Class.define("ep.ui.ViewPage", {
 
         visualizer.addListener('changeTitle',function(e){
             this.setLabel(e.getData());
-        })
+        },this)
 
         var button = this.getChildControl('button');            
         var linkButton = this._linkButton = new qx.ui.basic.Atom().set({

@@ -35,46 +35,60 @@ qx.Class.define("ep.visualizer.Data", {
      *
      */
     construct : function(title, args,view) {
-        this.base(arguments, title, args,view);
+        var form = this._cfgForm = new ep.ui.FormBar([
+            {
+                key: 'interval',
+                widget: 'selectBox',
+                set: {
+                    width         : 100
+                }       
+            },
+            {
+                key: 'rows',
+                widget: 'text',
+                label: 'Rows',
+                set: {
+                    value: "1",
+                    filter: /\d+/
+                }
+            },
+            {
+                key: 'endTime',
+                widget: 'date',
+                label: 'End'
+            }
+        ]);
+        this.base(arguments, title, args,view,form);
         this._vizKey = this.self(arguments).KEY;
-        var dataTable = new ep.visualizer.data.DataTable(args.instance, args.columns, args.column_widths, args.column_units);
-        this.setDataTable(dataTable);
-        this.add(dataTable, { flex : 1 });
+        var dataTable = this._dataTable = new ep.visualizer.data.DataTable(args.instance, args.columns, args.column_widths, args.column_units);
+        this._add(dataTable, { flex : 1 });
 
-        var titleContainer = this.getTitleContainer();
-
-        // time span
-        var rowLabel = new qx.ui.basic.Label(this.tr('rows')).set({ paddingLeft : 8 });
-        titleContainer.addAt(rowLabel,1);
-        var rowCount = new qx.ui.form.TextField("1").set({
-            filter         : /[0-9]/,
-            invalidMessage : this.tr('use values between 1 and 100')
-        });
-
-        titleContainer.addAt(rowCount,2);
-
-        rowCount.addListener('changeValue', function(e) {
-            var value = parseInt(e.getData(), 10);
-
-            if (value < 1 || value > 100) {
-                rowCount.set({ valid : false });
-                return;
-            }
-            else {
-                rowCount.set({ valid : true });
-            }
-            dataTable.setCount(value);
-            this.setViewProps('rows',String(value));
-        },
-        this);
-
-        dataTable.setCount(1);
         this.setArgs(args);
+        this._updateData(form);
     },
 
     statics : { KEY : 'data' },
 
     members : {
+        /**
+         * Update Chart Event Handler
+         *
+         * @param newArgs {var} new args
+         * @param oldArgs {var} old args
+         * @return {void} 
+         */
+        _updateData: function(e){
+            var d = e.getData();
+            var t = this._dataTable;
+            if (! d.rows){
+                return;
+            }
+            this._userCfg = d;
+            t.setCount(parseInt(d.rows));
+            t.setInterval(d.interval);
+            t.setEndDate(d.endTime);
+            console.log(d);
+        },
         /**
          * Setup visualizer with new configuration
          *
@@ -83,11 +97,8 @@ qx.Class.define("ep.visualizer.Data", {
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
-            this.base(arguments,newArgs, oldArgs);
-            var dt = this.getDataTable();
-            /* trigger reload */
-            dt.setRecId(newArgs.recId);
             this.base(arguments, newArgs, oldArgs);                 
+            this._dataTable.setRecId(newArgs.recIds[0]);
         },
 
         /**
@@ -97,17 +108,18 @@ qx.Class.define("ep.visualizer.Data", {
          * @return {void} 
          */
         _downloadAction : function(format) {
-            var data = this.getDataTable();
+            var data = this._dataTable;
             var end = Math.round(new Date().getTime() / 1000);
 
             if (data.getEndDate()) {
+                console.log(data.getEndDate());
                 end = Math.round(data.getEndDate().getTime() / 1000);
             }
 
-            var url = this.getCsvUrl() + '?format=' + format 
+            var url = this._csvUrl  + '?format=' + format 
                                        + '&interval=' + data.getInterval() 
                                        + '&end=' + end 
-                                       + '&recid=' + this.getArgs().recId
+                                       + '&recid=' + this.getArgs().recIds[0]
                                        + '&count=' + data.getCount();
             var win = qx.bom.Window.open(url, '_blank');
 

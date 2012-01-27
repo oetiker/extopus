@@ -27,7 +27,7 @@ qx.Class.define("ep.visualizer.Properties", {
         this.base(arguments, title, args, view);
         this._vizKey = this.self(arguments).KEY;
         var scroller = new qx.ui.container.Scroll();
-        this.setLayout(new qx.ui.layout.Grow());
+        this._setLayout(new qx.ui.layout.Grow());
 
         scroller.set({
             padding : 10,
@@ -41,7 +41,7 @@ qx.Class.define("ep.visualizer.Properties", {
         });
 
         scroller.add(l);
-        this.add(scroller);
+        this._add(scroller);
         this.setArgs(args);
     },
 

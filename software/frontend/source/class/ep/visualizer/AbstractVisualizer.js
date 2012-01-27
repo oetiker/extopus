@@ -14,7 +14,7 @@
  * Abstract Visualization widget.
  */
 qx.Class.define("ep.visualizer.AbstractVisualizer", {
-    extend : qx.ui.container.Composite,
+    extend : qx.ui.core.Widget,
     type : 'abstract',
     /**
      * create a visualization widget with the given title.
@@ -27,6 +27,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
         this.base(arguments);
         this.setTitle(title);
         this._viewProps = {};
+        this._userCfg = {};
     },
 
     properties : {
@@ -42,7 +43,8 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
             nullable: true,
             init: 'Untitled',
             event: 'changeTitle'
-        }
+        },
+        recIds: {}
     },
     statics: {
        /**
@@ -86,21 +88,8 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
     members : {
         _view: null,
         _vizKey: null,
-        __viewProps: null,
-        /**
-         * Store for all 'relevant' properties for this view, building the basis
-         * to create links to views representing their curent configuration
-         *
-         * @param prop {String}
-         * @param value {String}
-         * @return {void}
-         */
-        setViewProp: function(prop,value){
-            if (this.__viewProps == null){
-                this.__viewProps = {};
-            }
-            this.__viewProps[prop] = String(value);
-        },
+        _userCfg: null,
+        _cfgForm: null,
         /**
          * Unhook this visualizer from external influence (eg changeing selection of items in the view table)
          * Override in childs
@@ -108,12 +97,15 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
         unhook : function(){},
 
         /**
-         * pre-set the user configurable parts of the visualizer
-         *
-         * @param init {Map} visualizer spacific  argument list
+         * setUserCfg set the user accessible bits of the configuration. If the _cfgForm
+         * member is set, its setData method will be called.
+         * 
+         * @param cfg {Map} visualizer spacific  argument list.
          */
-        preConfVisualizer: function(map){
-            /* nothing to preconfigure by default */
+        setUserCfg: function(map){
+            if (this._cfgForm){
+                this._cfgForm.setData(map);
+            }
         },
 
         /**
@@ -124,10 +116,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
-            this.setViewProp('recIds',newArgs.recIds.join(','));            
-            if (newArgs.__init){
-                this.preConfVisualizer(newArgs.__init);
-            }
+            this.setRecIds(newArgs.recIds.join(','));
         },
 
         /**
@@ -137,9 +126,12 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
          */
         buildLink: function(){
             var link = 'app='+this._vizKey;
-            if (this.__viewProps){
-                for (var prop in this.__viewProps){
-                    link += ';'+ prop + '=' + escape(this.__viewProps[prop]);
+            if (this.getRecIds()){
+                link += ';recIds=' + this.getRecIds();
+            }
+            if (this._userCfg){
+                for (var prop in this._userCfg){
+                    link += ';'+ prop + '=' + encodeURIComponent(this._userCfg[prop]);
                 }
             }
             return link;                

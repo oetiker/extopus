@@ -34,23 +34,33 @@ qx.Class.define("ep.visualizer.MultiData", {
      *
      */
     construct : function(title, args, view) {
-        this.base(arguments, title, args, view);
+        var form = this._cfgForm = new ep.ui.FormBar([
+            {
+                key: 'interval',
+                widget: 'selectBox',
+                set: {
+                    width         : 100
+                }       
+            },
+            {
+                key: 'endTime',
+                widget: 'date',
+                label: 'End'
+            }
+        ]);
+
+        this.base(arguments, title, args, view, form);
         this._vizKey = this.self(arguments).KEY;
 
-        var dataTable = new ep.visualizer.data.MultiDataTable(args.instance, args.columns, args.column_widths, args.column_units);
-        this.setDataTable(dataTable);
+        var dataTable = this._dataTable = new ep.visualizer.data.MultiDataTable(args.instance, args.columns, args.column_widths, args.column_units);
 
-        this.add(dataTable, { flex : 1 });
+        this._add(dataTable, { flex : 1 });
+
         this.setArgs(args);
-
+        this._updateData(form);
         dataTable.addListener('changeTitle',function(e){
             var title = e.getData();
-            this.setLabel(title);
-        },this);
-
-        dataTable.addListener('changeCaption',function(e){
-            var caption = e.getData();
-            this.setUserData('caption',caption);
+            this.setTitle(title);
         },this);
 
         view.addListener('changeRecIds', function(e) {
@@ -59,24 +69,29 @@ qx.Class.define("ep.visualizer.MultiData", {
             if (ids.length > 1){        
                 dataTable.setRecordIds(ids);
             }
-            this.setViewProps('recIds',ids.join(','));
+            this.setRecIds(ids.join(','));
         },this);
+
         dataTable.setRecordIds(view.getRecIds());
     },
 
     statics : { KEY : 'multidata' },
 
     members : {
-        __changeListenerId: null,
-        __selectionModel: null,
         /**
-         * Remove the Table Change listener when we unhook
+         * Update Chart Event Handler
+         *
+         * @param newArgs {var} new args
+         * @param oldArgs {var} old args
+         * @return {void} 
          */
-
-        unhook: function(){
-            this.__selectionModel.removeListenerById(this.__changeListernerId);
+        _updateData: function(e){
+            var d = e.getData();
+            var t = this._dataTable;
+            this._userCfg = d;
+            t.setInterval(d.interval);
+            t.setEndDate(d.endTime);
         },
-
         /**
          * Download data to the client
          *
@@ -84,14 +99,14 @@ qx.Class.define("ep.visualizer.MultiData", {
          * @return {void} 
          */
         _downloadAction : function(format) {
-            var data = this.getDataTable();
+            var data = this._dataTable;
             var end = Math.round(new Date().getTime() / 1000);
 
             if (data.getEndDate()) {
                 end = Math.round(data.getEndDate().getTime() / 1000);
             }
 
-            var url = this.getCsvUrl() + '?format=' + format + '&interval=' + data.getInterval() + '&end=' + end + '&recid=' + data.getRecordIds().join(',');
+            var url = this._csvUrl() + '?format=' + format + '&interval=' + data.getInterval() + '&end=' + end + '&recid=' + data.getRecordIds().join(',');
             var win = qx.bom.Window.open(url, '_blank');
 
             qx.bom.Event.addNativeListener(win, 'load', function(e) {

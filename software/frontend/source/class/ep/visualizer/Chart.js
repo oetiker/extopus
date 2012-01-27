@@ -5,11 +5,6 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/* ***************
-#asset(qx/icon/${qx.icontheme}/16/actions/document-save.png)
-#asset(qx/icon/${qx.icontheme}/16/actions/document-print.png)
-*************** */
-
 /**
  * Show a <b>chart</b> image from the monitoring System.
  */
@@ -36,19 +31,71 @@ qx.Class.define("ep.visualizer.Chart", {
         this.base(arguments, title, args, view);
         this._vizKey = this.self(arguments).KEY;
         this._setLayout(new qx.ui.layout.VBox(10));
-        var titleContainer = this.__titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(8).set({ alignY : 'middle' }));
+        var titleContainer = this.__titleContainer = new qx.ui.container.Composite(
+            new qx.ui.layout.HBox(8).set({ alignY : 'middle' })
+        );
         this._add(titleContainer);
 
         // the chart
         var chart = this.__chart = new ep.visualizer.chart.Image();
         this._add(chart, { flex : 1 });
-
-        titleContainer.add(this._makeViewSelector(),{ flex: 10});
-        titleContainer.add(this._makeTimeSpanSelector());
-        titleContainer.add(this._makeDateField());
-        titleContainer.add(this._makemaxIntervalSelector());
-
+        var form = this._cfgForm = new ep.ui.FormBar([
+            {
+                key: 'view',
+                widget: 'selectBox',                
+                set: {
+                    maxListHeight: null,
+                    maxWidth      : 600,
+                    width         : 400,
+                    minWidth      : 250
+                }
+                
+            },
+            {
+                key: 'timeRange',
+                widget: 'selectBox',
+                set: {
+                    width: 100
+                },
+                cfg : {
+                    structure : [ 
+                        { title : '1 Day',    key : 24 * 3600          },
+                        { title : '2 Days',   key : 2 * 24 * 3600      },
+                        { title : '1 Week',   key : 7 * 24 * 3600      },  
+                        { title : '1 Month',  key : 31 * 24 * 3600     },  
+                        { title : '3 Months', key : 3 * 31 * 24 * 3600 },  
+                        { title : '6 Months', key : 6 * 31 * 24 * 3600 },  
+                        { title : '1 Year',   key : 366 * 24 * 3600    },  
+                        { title : '2 Year',   key : 2 * 366 * 24 * 3600}
+                    ]
+                }
+            },
+            {
+                key: 'endTime',
+                widget: 'date',
+                label: 'End'
+            },
+            {
+                key: 'maxInterval',
+                widget: 'selectBox',
+                set: {
+                    width: 100
+                },
+                cfg : {
+                    structure : [ 
+                        { title : 'no Max',     key : 0                  },
+                        { title : '1 Hour Max', key : 3600               },
+                        { title : '6 Hour Max', key : 6 * 3600           },
+                        { title : '1 Day Max',  key : 24 * 3600          }
+                    ]
+                }
+            }
+        ]);
+        titleContainer.add(form);
         titleContainer.add(new qx.ui.core.Spacer(10), { flex : 1 });
+
+        form.addListener('changeData',this._updateChart,this);
+
         var menu = new qx.ui.menu.Menu();
 
         var pdfButton = new qx.ui.menu.Button(this.tr('Save PDF'), "icon/16/actions/document-save.png");
@@ -81,8 +128,28 @@ qx.Class.define("ep.visualizer.Chart", {
         __printBtn : null,
         __chart : null,
         __template : null,
+        __urlArray : null,
 
-
+        /**
+         * Update Chart Event Handler
+         *
+         * @param newArgs {var} new args
+         * @param oldArgs {var} old args
+         * @return {void} 
+         */
+        _updateChart: function(e){
+            var d = e.getData();
+            var c = this.__chart;
+            if (d.view == null){
+                return;
+            }
+            this._userCfg = d;
+            this.__titleContainer.setEnabled(true);
+            c.setBaseUrl(this.__urlArray[d.view]);
+            c.setTimeRange(d.timeRange);
+            c.setEndTime(/^\d+$/.test(String(d.endTime)) ? parseInt(d.endTime) : null);
+            c.setMaxInterval(d.maxInterval);            
+        },
         /**
          * Setup the Chart view.
          *
@@ -91,29 +158,21 @@ qx.Class.define("ep.visualizer.Chart", {
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
-            var vSel = this.__viewSelector.getSelection();                                                                
-            if (newArgs.views.length == 0){
-                this.__viewSelector.resetModel();
-                vSel.removeAll(); 
-                this.__template = null;
-                return;
+            var v = newArgs.views || [];
+            var urlArray = this.__urlArray = [];
+            var sb = [];
+            for (var i=0;i<v.length;i++){
+                urlArray[i] = v[i].src;
+                sb.push({title: v[i].title, key: i});
             }
-            var oldSel = vSel.getItem(0);            
-            var viewModel = qx.data.marshal.Json.createModel(newArgs.views);
-            var newItem = viewModel.getItem(0);
-            if (oldSel){
-               var oldKey = oldSel.getTitle();
-                   viewModel.forEach(function(item){
-                   if (item.getTitle() == oldKey){
-                       newItem = item;
-                   }
-               });
+            if (sb.length == 0){
+                this.__titleContainer.setEnabled(false);
             }
-            this.__viewSelector.setModel(viewModel);
-            vSel.removeAll();
-            vSel.push(newItem);
+            var cfg = this._userCfg;
+            this._cfgForm.setSelectBoxData('view',sb );
             this.__template = newArgs.template;            
             this.base(arguments, newArgs, oldArgs);
+            this._cfgForm.setData(cfg);
         },
 
 
@@ -192,7 +251,7 @@ qx.Class.define("ep.visualizer.Chart", {
             return input;
         },
 
-
+        
         /**
          * Pop open the print window and start the print dialog.
          *
@@ -208,172 +267,6 @@ qx.Class.define("ep.visualizer.Chart", {
             win.document.write(this._fillTemplate());
             // wait for the image to load before printing ... 
             qx.event.Timer.once(function() { this.stop(); this.print(); },win, 500);
-        },
-        /**
-         * Create View Selector Selectbox and hook up with application
-         *
-         * @return {Widget} Selector
-         */
-        _makeViewSelector: function(){
-            var dummyModel = qx.data.marshal.Json.createModel([ { title : '' } ]);
-            var titleContainer = this.__titleContainer;
-
-            var viewSelector = this.__viewSelector = new qx.ui.form.VirtualSelectBox(dummyModel).set({
-                labelPath     : 'title',
-                maxWidth      : 600,
-                width         : 400,
-                minWidth      : 250,
-                maxListHeight : null
-            });
-
-            var viewSelection = viewSelector.getSelection();
-
-            viewSelection.addListener("change", function(e) {
-                var item = viewSelection.getItem(0);
-
-                if (item == null || item.getSrc == null ) {
-                    this.__chart.setBaseUrl(null);
-                    this.setViewProp('view',null);
-                    titleContainer.setEnabled(false);
-                    this.__printBtn.setEnabled(false);
-                }
-                else {
-                    var url = item.getSrc();
-                    this.setViewProp('view',item.getTitle());
-                    titleContainer.setEnabled(true);
-                    this.__printBtn.setEnabled(this.__template != null);
-                    this.__chart.setBaseUrl(url);
-                }
-            },
-            this);
-            return viewSelector;
-        },
-        /**
-         * Create Time Span Selector and hook up with application
-         *
-         * @return {Widget} Time Span Selector
-         */
-        _makeTimeSpanSelector: function(){        
-            // time span
-            var timeSpan = [ {
-                l : '1 Day',
-                v : 24 * 3600
-            },
-            {
-                l : '2 Days',
-                v : 2 * 24 * 3600
-            },
-            {
-                l : '1 Week',
-                v : 7 * 24 * 3600
-            },
-            {
-                l : '1 Month',
-                v : 31 * 24 * 3600
-            },
-            {
-                l : '3 Months',
-                v : 3 * 31 * 24 * 3600
-            },
-            {
-                l : '6 Months',
-                v : 6 * 31 * 24 * 3600
-            },
-            {
-                l : '1 Year',
-                v : 366 * 24 * 3600
-            },
-            {
-                l : '2 Year',
-                v : 2 * 366 * 24 * 3600
-            } ];
-            var timeSpanModel = qx.data.marshal.Json.createModel(timeSpan);
-    
-            var timeSpanSelector = new qx.ui.form.VirtualSelectBox(timeSpanModel).set({
-                labelPath     : 'l',
-                maxListHeight : null,
-                width         : 100
-            });
-
-            var timeSpanSelection = timeSpanSelector.getSelection();
-
-            timeSpanSelection.addListener("change", function(e) {
-                var span = timeSpanSelection.getItem(0);
-                this.__chart.setTimeRange(span.getV());
-                this.setViewProp('timeSpan',span.getL());
-            }, this);
-
-            this.__chart.setTimeRange(timeSpanSelection.getItem(0).getV());
-            return timeSpanSelector;
-        },
-
-        /**
-         * Create DateField and hook up with application
-         *
-         * @return {Widget} DateField
-         */
-        _makeDateField: function(){
-            var dateField = new qx.ui.form.DateField().set({
-                value       : null,
-                dateFormat  : new qx.util.format.DateFormat("dd.MM.yyyy"),
-                placeholder : 'now'
-            });
-    
-            dateField.addListener('changeValue', function(e) {
-                var date = e.getData();
-    
-                if (date) {
-                    this.__chart.setEndTime(Math.round(date.getTime() / 1000));
-                } else {
-                    this.__chart.setEndTime(null);
-                }
-                this.setViewProp('endTime',this.__chart.getEndTime());
-
-            },this);
-            return dateField;
-        },
-
-        /**
-         * Create Max Line Selector and hook up with application
-         *
-         * @return {Widget} Max Line Selector
-         */
-        _makemaxIntervalSelector: function(){        
-            // time span
-            var maxInterval = [ {
-                l : 'no Max',
-                v : null
-            },
-            {
-                l : '1 Hour Max',
-                v : 3600
-            },
-            {
-                l : '6 Hour Max',
-                v : 6 * 3600
-            },
-            {
-                l : '1 Day Max',
-                v : 24 * 3600
-            } ];
-            var maxIntervalModel = qx.data.marshal.Json.createModel(maxInterval);
-    
-            var maxIntervalSelector = new qx.ui.form.VirtualSelectBox(maxIntervalModel).set({
-                labelPath     : 'l',
-                maxListHeight : null,
-                width         : 120
-            });
-
-            var maxIntervalSelection = maxIntervalSelector.getSelection();
-
-            maxIntervalSelection.addListener("change", function(e) {
-                var mi = maxIntervalSelection.getItem(0);
-                this.__chart.setMaxInterval(mi.getV());
-                this.setViewProp('maxInterval',mi.getL());
-            }, this);
-
-            this.__chart.setMaxInterval(maxIntervalSelection.getItem(0).getV());
-            return maxIntervalSelector;
         }
     }
 });
