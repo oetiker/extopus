@@ -445,8 +445,9 @@ uninstall-am: uninstall-dist_binSCRIPTS uninstall-nobase_dataDATA
 	uninstall-dist_binSCRIPTS uninstall-nobase_dataDATA
 
 
-@BUILD_QOOXDOO_APP_TRUE@public/script/$(QX_CLASS).js: $(shell find ../frontend/source/class/$(QX_CLASS) -name "*.js") $(QOOXDOO_PATH)/framework/config.json
+@BUILD_QOOXDOO_APP_TRUE@public/script/$(QX_CLASS).js: $(shell find ../frontend/source/class/$(QX_CLASS) -name "*.js") $(QOOXDOO_PATH)/framework/config.json ../configure
 @BUILD_QOOXDOO_APP_TRUE@	cd ../frontend && $(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache -m BUILD_PATH:../backend/public build
+@BUILD_QOOXDOO_APP_TRUE@	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;' public/index.html public/script/$(QX_CLASS).js
 
 install-exec-hook:
 	[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(bindir)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' *.pl || true
@@ -454,7 +455,6 @@ install-exec-hook:
 
 dist-hook:
 	$(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(distdir)/lib/$(MJ_CLASS).pm
-	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;' $(distdir)/public/index.html $(distdir)/public/script/$(QX_CLASS).js
 
 install-data-local:
 	mkdir -p $(DESTDIR)$(HTDOCSDIR)
