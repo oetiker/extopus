@@ -63,16 +63,17 @@ qx.Class.define("ep.visualizer.MultiData", {
             this.setTitle(title);
         },this);
 
-        view.addListener('changeRecIds', function(e) {
-            var ids = e.getData();
-            /* we have to have two items selected in any case */
-            if (ids.length > 1){        
-                dataTable.setRecordIds(ids);
-            }
-            this.setRecIds(ids.join(','));
-        },this);
-
-        dataTable.setRecordIds(view.getRecIds());
+        if (view){
+            view.addListener('changeRecIds', function(e) {
+                var ids = e.getData();
+                /* we have to have two items selected in any case */
+                if (ids.length > 1){        
+                    dataTable.setRecordIds(ids);
+                }
+                this.setRecIds(ids.join(','));
+            },this);
+        }
+        dataTable.setRecordIds(args.recIds);
     },
 
     statics : { KEY : 'multidata' },
