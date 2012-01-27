@@ -118,7 +118,7 @@ qx.Class.define("ep.ui.Desktop", {
          * @return {void} 
          */
         _addAbout : function() {
-            var about = new qx.ui.basic.Label(this.tr('Extopus - the Opensource Monitoring Agreggator // #VERSION# // &copy; #YEAR# by OETIKER+PARTNER AG')).set({
+            var about = new qx.ui.basic.Label(this.tr('Extopus - the Opensource Monitoring Aggregator // #VERSION# // &copy; #YEAR# by OETIKER+PARTNER AG')).set({
                 cursor        : 'pointer',
                 alignX        : 'right',
                 paddingRight  : 5,
