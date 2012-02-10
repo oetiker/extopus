@@ -165,14 +165,16 @@ qx.Class.define("ep.visualizer.Chart", {
                 urlArray[i] = v[i].src;
                 sb.push({title: v[i].title, key: i});
             }
-            if (sb.length == 0){
-                this.__titleContainer.setEnabled(false);
-            }
             var cfg = this._userCfg;
             this._cfgForm.setSelectBoxData('view',sb );
             this.__template = newArgs.template;            
             this.base(arguments, newArgs, oldArgs);
-            this._cfgForm.setData(cfg);
+            if (sb.length == 0){
+                this.__titleContainer.setEnabled(false);                                
+            }
+            else {           
+                this._cfgForm.setData(cfg);
+            }
         },
 
 

@@ -66,7 +66,6 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
                 var missingRecIds = this.__filterRecs(newRecIdList,interval,date);
 
                 if (missingRecIds.length == 0){
-                    this.debug('Loading '+interval+' : '+date);
                     tm.setData(this.__fetchRecData(newRecIdList,interval,date));
                     var title = this.__titleCache[String(interval)+':'+String(date)] || this.tr('Cached Title');
                     this.setTitle(title);
@@ -162,7 +161,10 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
                 if (item == null){
                     continue;
                 }
-                data.push(item.data);
+                // skip items where we did not get any data from the server 
+                if (item.data){
+                    data.push(item.data);
+                }
             }                               
             /* drop old data */            
             for ( var recId in cache ){
