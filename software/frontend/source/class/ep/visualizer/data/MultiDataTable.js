@@ -16,7 +16,7 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
     construct : function(instance, columns, widths, units) {
         this.base(arguments,instance, columns, widths, units);
         this.__recCache = {};
-        this.__intervalCache = {};
+        this.__titleCache = {};
     },
 
     properties : {
@@ -43,7 +43,7 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
 
     members : {
         __recCache: null,
-        __intervalCache: null,
+        __titleCache: null,
         /**
          * reload the table if all the required data is provided
          *
@@ -66,8 +66,9 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
                 var missingRecIds = this.__filterRecs(newRecIdList,interval,date);
 
                 if (missingRecIds.length == 0){
+                    this.debug('Loading '+interval+' : '+date);
                     tm.setData(this.__fetchRecData(newRecIdList,interval,date));
-                    var title = this.__intervalCache[String(interval)+':'+String(date)];
+                    var title = this.__titleCache[String(interval)+':'+String(date)] || this.tr('Cached Title');
                     this.setTitle(title);
                     this.setCaption(title);
                     this.setViewMode('ready');
@@ -80,7 +81,7 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
                             var title = ret.title + ' (' + interval + ')';
                             that.setTitle(title);
                             that.setCaption(title);
-                            that.__intervalCache[String(interval)+':'+String(date)] = title;
+                            that.__titleCache[String(interval)+':'+String(date)] = title;
                             that.setViewMode('ready');
                         }
                         else {
