@@ -34,7 +34,7 @@ qx.Class.define("ep.ui.ShortNote", {
             textColor : "tooltip-text",
             backgroundColor : "tooltip",
             decorator: "main-dark",
-            padding : [ 1, 3, 2, 3 ],
+            padding : [ 1, 3, 2, 3 ]
         });
 
         this.add(note);
