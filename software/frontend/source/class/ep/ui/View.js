@@ -21,38 +21,19 @@ qx.Class.define("ep.ui.View", {
         this._add(new ep.ui.Logo());
         this._add(tabView);
         this.__table = table;
-        var sm = table.getSelectionModel();
+        this.__copyBox = new qx.ui.form.TextArea().set({
+            width: 100,
+            height: 100
+        });
+        this.getApplicationRoot().add(this.__copyBox,{top:-120,left: -120});
+
+
+        var sm = this.__selectionModel = table.getSelectionModel();
         sm.setSelectionMode(qx.ui.table.selection.Model.MULTIPLE_INTERVAL_SELECTION);
-        var tm = table.getTableModel();
-        var rpc = ep.data.Server.getInstance();
-        var multiMode = false;
-        sm.addListener('changeSelection', function(e) {
-            var recIds = [];
-            sm.iterateSelection(function(ind) {
-                recIds.push(tm.getValue(0, ind));
-            },this);
-            if (recIds.length == 0){
-                this.__hideTimer = qx.event.Timer.once(function() {
-                    this.__hideTimer = null;
-                    tabView.hide();
-                },
-                this, 200);
-                return;
-            }            
-            if (recIds.length > 1){
-                if (!multiMode){
-                    /* only pass one recId, as this only serves to determine the type of visualizer */
-                    rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', 'multi', recIds[0]);
-                    multiMode = true;
-                }
-            }
-            else {
-                multiMode = false;
-                rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', 'single', recIds[0]);
-            }
-            this.setRecIds(recIds);
-        },
-        this);
+        var tm = this.__tableModel = table.getTableModel();
+        var rpc = this.__rpc = ep.data.Server.getInstance();
+        this.__multiMode = false;
+        sm.addListener('changeSelection', this._onChangeSelection,this);
 
         this.__pageCache = {};
         this.__breakOutKids = {};
@@ -74,6 +55,10 @@ qx.Class.define("ep.ui.View", {
         __tabView : null,
         __table : null,
         __selectedRows: null,
+        __multiMode: null,
+        __selectionModel: null,
+        __tableModel: null,
+        __rpc: null,
 
         /**
          * Create new a visualizer widget according to the given configuration. At first glance the configuration
@@ -242,6 +227,53 @@ qx.Class.define("ep.ui.View", {
                 this.__pageCache[page.getUserData('key')] = page;
             },
             this);
+        },
+        /**
+         * As the selection in the table changes, update the selected RecordIds and activate the appropriate
+         * visualizers.
+         *
+         * @param event {qx.event.type.Data} change selection event
+         */
+        _onChangeSelection: function(e) {
+            var recIds = [];
+
+            var sm = this.__selectionModel;
+            var tm = this.__tableModel;
+            var rpc = this.__rpc;
+            var selText = '';
+            var cc = tm.getColumnCount();
+            sm.iterateSelection(function(ind) {
+                recIds.push(tm.getValue(0, ind));
+                for (var col = 1; col < cc ; col++) {
+                    selText += tm.getValue(col,ind) + (col < cc ? "\t" : "\n");
+                }
+            },this);
+            if (selText){
+                this.__copyBox.setValue(selText);
+                this.__copyBox.focus();
+                this.__copyBox.selectAllText();
+            }
+            if (recIds.length == 0){
+                this.__hideTimer = qx.event.Timer.once(function() {
+                    this.__hideTimer = null;
+                    tabView.hide();
+                },
+                this, 200);
+                return;
+            }            
+
+            if (recIds.length > 1){
+                if (!this.__multiMode){
+                    /* only pass one recId, as this only serves to determine the type of visualizer */
+                    rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', 'multi', recIds[0]);
+                    this.__multiMode = true;
+                }
+            }
+            else {
+                this.__multiMode = false;
+                rpc.callAsyncSmart(qx.lang.Function.bind(this._showVisualizers, this), 'getVisualizers', 'single', recIds[0]);
+            }
+            this.setRecIds(recIds);
         }
     }
 });
