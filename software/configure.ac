@@ -20,10 +20,13 @@
 AC_INIT([extopus],[0.1.10],[tobi@oetiker.ch])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(conftools)
+
+
 # AC_CANONICAL_TARGET
 m4_version_prereq(2.60, [AC_USE_SYSTEM_EXTENSIONS], [#])
 # need this to allow long path names
 AM_INIT_AUTOMAKE([1.9 tar-ustar foreign])
+AM_MAINTAINER_MODE
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
