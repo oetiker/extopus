@@ -17,7 +17,7 @@
 #
 
 
-AC_INIT([extopus],[0.1.9],[tobi@oetiker.ch])
+AC_INIT([extopus],[0.1.10],[tobi@oetiker.ch])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(conftools)
 # AC_CANONICAL_TARGET
