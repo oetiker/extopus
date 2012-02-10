@@ -21,12 +21,6 @@ qx.Class.define("ep.ui.View", {
         this._add(new ep.ui.Logo());
         this._add(tabView);
         this.__table = table;
-        this.__copyBox = new qx.ui.form.TextArea().set({
-            width: 100,
-            height: 100
-        });
-        this.getApplicationRoot().add(this.__copyBox,{top:-120,left: -120});
-
 
         var sm = this.__selectionModel = table.getSelectionModel();
         sm.setSelectionMode(qx.ui.table.selection.Model.MULTIPLE_INTERVAL_SELECTION);
@@ -251,10 +245,7 @@ qx.Class.define("ep.ui.View", {
                 selText += cols.map( function(col){ return tm.getValue(col,ind) }).join("\t") + "\n";
             },this);
             if (selText){
-                ep.ui.ShortNote.getInstance().setNote(this.tr("Press [ctrl]+[c] to copy selection."));
-                this.__copyBox.setValue(selText);
-                this.__copyBox.focus();
-                this.__copyBox.selectAllText();
+                ep.ui.CopyBuffer.getInstance().setBuffer(selText);
             }
             if (recIds.length == 0){
                 this.__hideTimer = qx.event.Timer.once(function() {
