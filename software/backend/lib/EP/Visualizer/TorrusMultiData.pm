@@ -107,9 +107,12 @@ sub getData {
     my $cache = $self->controller->stash('epCache');
     for my $recId (@$recIds){
         my $data =  $self->SUPER::getData($recId,$end,$interval,1);
-        next if not $data->{status};       
-        $stamp =  $data->{stepLabels}[0];
-        push @ret, $data->{data}[0];
+        if ($data->{status}){       
+            $stamp =  $data->{stepLabels}[0];
+            push @ret, $data->{data}[0];
+        } else {
+            push @ret, undef;
+        };
     }
     return {
         status => 1,
