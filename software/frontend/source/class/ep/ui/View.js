@@ -31,6 +31,8 @@ qx.Class.define("ep.ui.View", {
         var sm = this.__selectionModel = table.getSelectionModel();
         sm.setSelectionMode(qx.ui.table.selection.Model.MULTIPLE_INTERVAL_SELECTION);
         var tm = this.__tableModel = table.getTableModel();
+        this.__columnModel = table.getTableColumnModel();
+
         var rpc = this.__rpc = ep.data.Server.getInstance();
         this.__multiMode = false;
         sm.addListener('changeSelection', this._onChangeSelection,this);
@@ -57,6 +59,7 @@ qx.Class.define("ep.ui.View", {
         __selectedRows: null,
         __multiMode: null,
         __selectionModel: null,
+        __columnModel: null,
         __tableModel: null,
         __rpc: null,
 
@@ -236,7 +239,7 @@ qx.Class.define("ep.ui.View", {
          */
         _onChangeSelection: function(e) {
             var recIds = [];
-
+            var tabView = this.__tabView;
             var sm = this.__selectionModel;
             var tm = this.__tableModel;
             var rpc = this.__rpc;
@@ -244,11 +247,11 @@ qx.Class.define("ep.ui.View", {
             var cc = tm.getColumnCount();
             sm.iterateSelection(function(ind) {
                 recIds.push(tm.getValue(0, ind));
-                for (var col = 1; col < cc ; col++) {
-                    selText += tm.getValue(col,ind) + (col < cc ? "\t" : "\n");
-                }
+                var cols = this.__columnModel.getVisibleColumns();
+                selText += cols.map( function(col){ return tm.getValue(col,ind) }).join("\t") + "\n";
             },this);
             if (selText){
+                ep.ui.ShortNote.getInstance().setNote(this.tr("Press [ctrl]+[c] to copy selection."));
                 this.__copyBox.setValue(selText);
                 this.__copyBox.focus();
                 this.__copyBox.selectAllText();
