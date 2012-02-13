@@ -113,8 +113,8 @@ qx.Class.define("ep.ui.DashConfig", {
         _makeAtom: function(x,y){
             var key = String(x) + ':' + String(y);
             var atom = this._atomMap[key] = new qx.ui.basic.Atom("").set({
-                width: 30,
-                height: 30
+                minWidth: 20,
+                minHeight: 20
             });
 
             atom.addListener('mouseover',function(e){
@@ -125,9 +125,14 @@ qx.Class.define("ep.ui.DashConfig", {
                 this._updateDeco(this._firstX,this._firstY,x,y);
             },this);
 
-            atom.addListener('click',function(e){
-                this._first = this._first ? false : true;
+            atom.addListener('mousedown',function(e){
+                this._first = false;
             },this);
+            atom.addListener('mouseup',function(e){
+                this.debug(this._firstX,this._firstY,x,y);
+                this._first = true;
+            },this);
+
 
             return atom;
         },
@@ -211,7 +216,7 @@ qx.Class.define("ep.ui.DashConfig", {
                     var a = that._makeAtom(x,y);
                     that._add(a,{column: x+1, row: y+1});
                 }
-                that._grid.setColumnFlex(that._height+1,1);
+                that._grid.setColumnFlex(that._width,1);
                 that._updateDeco();
             };
 
@@ -222,7 +227,7 @@ qx.Class.define("ep.ui.DashConfig", {
                     var a = that._makeAtom(x,y);
                     that._add(a,{column: x+1, row: y+1});
                 }
-                that._grid.setRowFlex(that._width+1,1);        
+                that._grid.setRowFlex(that._height,1);        
                 that._updateDeco();
             };
 
