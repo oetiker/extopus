@@ -139,7 +139,24 @@ AC_SUBST(VERSION)
 
 AC_OUTPUT
 
-        cat <<NOTES
+if test $QOOXDOO_PATH = no; then
+
+cat <<NOTES
+
+*******************************************************
+   
+You did NOT specify the --with-qooxdoo-sdk configuration
+option. So I do not have the means of re-compiling the
+javascript parts (webinterface) of the application. If
+you intend to modify them, make sure to re-configure
+with qooxdoo-sdk link provided.
+
+Now back to our regular broadcast ...
+
+NOTES
+fi
+
+cat <<NOTES
 
 ** Ready to install extopus ******************************
    
