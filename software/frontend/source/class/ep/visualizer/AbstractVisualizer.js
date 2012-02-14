@@ -116,18 +116,32 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
-            this.setRecIds(newArgs.recIds.join(','));
+            this.setRecIds(qx.lang.Array.clone(newArgs.recIds));
         },
 
         /**
-         * Create a linkable argument for this image
+         * config map for this visulizer. try to actually copy the stuff so that
+         * we do not end up with links.
+         *
+         * @return {void} 
+         */
+        getVizualizerConfig: function(){
+            var cfg = {
+                app: this._vizKey,
+                recIds: qx.lang.Array.clone(this.getRecIds()),
+                userCfg: qx.lang.Object.clone(this._userCfg)
+            };
+            return cfg;                
+        },
+        /**
+         * Create a weblink for this visualizer
          *
          * @return {void} 
          */
         buildLink: function(){
             var link = 'app='+this._vizKey;
             if (this.getRecIds()){
-                link += ';recIds=' + this.getRecIds();
+                link += ';recIds=' + this.getRecIds().join(',');
             }
             if (this._userCfg){
                 for (var prop in this._userCfg){

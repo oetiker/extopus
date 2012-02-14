@@ -37,7 +37,6 @@ qx.Class.define("ep.Application", {
 
             var root = this.getRoot();
             var desktop = ep.ui.Desktop.getInstance();
-
             root.add(desktop, {
                 left   : 0,
                 top    : 0,

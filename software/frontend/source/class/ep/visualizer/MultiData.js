@@ -70,7 +70,7 @@ qx.Class.define("ep.visualizer.MultiData", {
                 if (ids.length > 1){        
                     dataTable.setRecordIds(ids);
                 }
-                this.setRecIds(ids.join(','));
+                this.setRecIds(ids);
             },this);
         }
         dataTable.setRecordIds(args.recIds);

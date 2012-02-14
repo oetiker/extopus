@@ -60,7 +60,7 @@ qx.Class.define("ep.ui.ShortNote", {
             this.show();
             this.__timer = qx.event.Timer.once(function(){
                 this.hide();
-            },this,1500);
+            },this,3000);
         }
     }
 });

@@ -6,8 +6,7 @@
 ************************************************************************ */
 
 /*
-#asset(ep/view-fullscreen.png)
-#asset(ep/view-link.png)
+#asset(ep/view-*.png)
 */
 
 /**
@@ -68,6 +67,24 @@ qx.Class.define("ep.ui.ViewPage", {
             row    : 0,
             column : 6
         });
+
+        var dashButton = this._dashButton = new qx.ui.basic.Atom().set({
+            icon   : 'ep/view-dash.png',
+            show   : 'icon',
+            cursor : 'pointer',
+            visibility: 'excluded'
+        });
+
+        dashButton.addListener('click',function(){
+            ep.ui.DashMenu.getInstance().showMenu(dashButton, this.getVisualizer().getVizualizerConfig());
+        },this);
+        
+        button._add(dashButton, {
+            row    : 0,
+            column : 7
+        });
+
+
         button.addListener('syncAppearance', this._updateButton, this);
         this._viewProps = {};
     },
@@ -88,7 +105,8 @@ qx.Class.define("ep.ui.ViewPage", {
 
     members : {
         _breakOutButton : null,
-        _linkButton: null,
+        _dashButton: null,
+        _linkButton: null,       
         _linkPop: null,
         _linkField: null,
         _view: null,
@@ -121,9 +139,11 @@ qx.Class.define("ep.ui.ViewPage", {
 
             if (button.hasState('checked')) {
                 this._breakOutButton.show();
+                this._dashButton.show();
                 this._linkButton.show();
             } else {
                 this._breakOutButton.exclude();
+                this._dashButton.exclude();
                 this._linkButton.exclude();
             }
         },

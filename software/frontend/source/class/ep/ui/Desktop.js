@@ -10,12 +10,12 @@
  * object and with it the treeView and the searchView are universaly accessible
  */
 qx.Class.define("ep.ui.Desktop", {
-    extend : qx.ui.container.Composite,
+    extend : qx.ui.core.Widget,
     type : 'singleton',
 
     construct : function() {
         this.base(arguments);
-        this.setLayout(new qx.ui.layout.VBox(5));
+        this._setLayout(new qx.ui.layout.VBox(5));
     },
 
     properties : {
@@ -30,6 +30,20 @@ qx.Class.define("ep.ui.Desktop", {
     },
 
     members : {
+        _tabView: null,
+       /**
+        * add an extra Tab to the TabView
+        */
+        add: function(page){
+            this._tabView.add(page);
+        },
+       /**
+        * set the selction in the tabView
+        */
+        setSelection: function(sel){
+            this._tabView.setSelection(sel);
+        },
+        
        /**
         * To populate the desktop object, we need access to the configuration.
         * with this method (to be called only once) we provide the necessary
@@ -46,8 +60,8 @@ qx.Class.define("ep.ui.Desktop", {
 
             /* tab view */
 
-            var tabView = new qx.ui.tabview.TabView();
-            this.add(tabView, { flex : 1 });
+            var tabView = this._tabView = new qx.ui.tabview.TabView();
+            this._add(tabView, { flex : 1 });
 
             /* add tree */
 
@@ -108,7 +122,7 @@ qx.Class.define("ep.ui.Desktop", {
                 this.remove(logo);
             }, this);
 
-            this.add(logo);
+            this._add(logo);
         },
 
 
@@ -132,7 +146,7 @@ qx.Class.define("ep.ui.Desktop", {
                 qx.bom.Window.open('http://extopus.org/', '_blank');
             });
 
-            this.add(about);
+            this._add(about);
         }
     }
 });

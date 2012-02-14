@@ -6,8 +6,10 @@
 ************************************************************************ */
 
 /* ************************************************************************
-#asset(qx/icon/${qx.icontheme}/32/status/dialog-error.png)
-#asset(qx/icon/${qx.icontheme}/32/status/dialog-information.png)
+#asset(ep/up.png)
+#asset(ep/down.png)
+#asset(ep/left.png)
+#asset(ep/right.png)
 ************************************************************************ */
 
 /**
@@ -21,9 +23,13 @@ qx.Class.define("ep.ui.DashConfig", {
      * into a grid setup. The grid setup itself can be changed while
      * placeing the data.
      *
-     * @param cfg {Map} DashConfig map
-     *  
-     * *DashConfig*:
+     * @param minX {Number} minimal X coordinate
+     * @param minY {Number} minimal Y coordinate
+     * @param maxX {Number} maximal X coordinate
+     * @param maxY {Number} maximal Y coordinate
+     */
+  
+     /* *DashConfig*:
      * 
      * <pre>
      *   dimension: [ minX, minY, maxX, maxY ],
@@ -31,13 +37,14 @@ qx.Class.define("ep.ui.DashConfig", {
      * </pre>
      */
 
-    construct : function(cfg) {
+    construct : function(dimensions) {
         this.base(arguments);
+        this.setBackgroundColor('#ffffff');
         var grid = this._grid = new qx.ui.layout.Grid(1,1);
         this._setLayout(grid);
-        this.setDimensions(cfg.dimensions);
+        this.setDimensions(dimensions);
         this._atomMap = {};
-        this._useMap = {};
+        this._blockMap = {};
 
         for (var x=1;x < this._width+1;x++){
             grid.setColumnFlex(x,1);
@@ -45,43 +52,61 @@ qx.Class.define("ep.ui.DashConfig", {
         for (var y=1;y < this._height+1;y++){
             grid.setRowFlex(y,1);    
         }
-        this._addGrowers();
+        this._addGrowHandles();
 
-        for (var key in cfg.items){
-            var item = cfg.items[key];
-            for (var xF = item.x;xF < item.x+item.w;xF++){
-                 for (var yF = item.y;yF < item.y+item.h;yF++){
-                     var keyF = String(xF) + ':' + String(yF);
-                     this._useMap[keyF] = true;
-                 }
-            }
-        }
         for (var x=0;x < this._width;x++){ 
             for (var y=0;y < this._height;y++){
                 var a = this._makeAtom(x,y);
                 this._add(a,{column: x+1, row: y+1});
             }
         }
-        this._updateDeco();
+        this.addListener('appear',function(){
+            this._first = true;
+            ep.ui.ShortNote.getInstance().setNote(this.tr("Select a location for the visualizer."));
+            this._updateDeco();
+        });
+        this._blockMap = {};
+    },
+
+    events: {
+        /**
+         * fire when a location in the dashboard has been selected.
+         */
+        locationSelected: 'qx.event.type.Data'
     },
 
     properties: {
+        /**
+         * minimal X coordinate
+         */
         minX: {
             init: 0,
-            apply: '_updateDimensions',
+            apply: '_updateDimensions'
         },
+        /**
+         * maximal X coordinate
+         */
         maxX: {
             init: 5,
-            apply: '_updateDimensions',
+            apply: '_updateDimensions'
         },
+        /**
+         * minimal Y coordinate
+         */
         minY: {
             init: 0,
-            apply: '_updateDimensions',
+            apply: '_updateDimensions'
         },
+        /**
+         * maximal Y coordinate
+         */
         maxY: {
             init: 0,
-            apply: '_updateDimensions',
+            apply: '_updateDimensions'
         },
+        /**
+         * set minX, minY, maxX, maxY
+         */
         dimensions: {
             group : ['minX','minY','maxX','maxY'],
             mode: 'shorthand'
@@ -90,7 +115,7 @@ qx.Class.define("ep.ui.DashConfig", {
 
     members : {
         _atomMap: null,
-        _useMap: null,
+        _blockMap: null,
         _firstX: null,
         _firstY: null,
         _first: true,
@@ -101,20 +126,43 @@ qx.Class.define("ep.ui.DashConfig", {
         _width: null,
         _height: null,
 
+        /**
+         * let the user pick a position on the grid and run the callback once
+         * it is done, providing a position argument.
+         *
+         * @param callback {Function} function to call with position arument
+         * @param context {Object} context for the function call
+         */
+        selectPosition: function(callback,context){
+            this._updateDeco();
+            this.addListenerOnce('locationSelected',function(e){
+                callback.apply(context,[e.getData()]);
+            })
+        },
+
+        blockPosition: function(item){
+            for (var xF = item.column;xF < item.column+(item.colSpan || 1);xF++){
+                 for (var yF = item.row;yF < item.row+(item.rowSpan || 1);yF++){
+                     var keyF = String(xF) + ':' + String(yF);
+                     this._blockMap[keyF] = true;
+                 }
+            }
+        },
+
         _updateDimensions: function(newArgs,oldArgs){
             this._minX = this.getMinX();
             this._maxX = this.getMaxX();
             this._minY = this.getMinY();
             this._maxY = this.getMaxY();
-            this._width = this._maxX - this._minX;
-            this._height = this._maxY - this._minY;
+            this._width = this._maxX - this._minX + 1;
+            this._height = this._maxY - this._minY + 1;
         },
 
         _makeAtom: function(x,y){
             var key = String(x) + ':' + String(y);
             var atom = this._atomMap[key] = new qx.ui.basic.Atom("").set({
-                minWidth: 20,
-                minHeight: 20
+                minWidth: 40,
+                minHeight: 40
             });
 
             atom.addListener('mouseover',function(e){
@@ -129,10 +177,18 @@ qx.Class.define("ep.ui.DashConfig", {
                 this._first = false;
             },this);
             atom.addListener('mouseup',function(e){
-                this.debug(this._firstX,this._firstY,x,y);
-                this._first = true;
+                var position = {
+                    column: this._firstX,
+                    row:    this._firstY
+                };
+                if (x != this._firstX){
+                    position.colSpan = x - this._firstX;
+                }
+                if (y != this._firstY){
+                    position.rowSpan = y - this._firstY;
+                }
+                this.fireDataEvent('locationSelected',position);
             },this);
-
 
             return atom;
         },
@@ -153,7 +209,7 @@ qx.Class.define("ep.ui.DashConfig", {
                 for (var x = xA;x <= xB;x++){
                     for (var y = yA;y <= yB;y++){
                         var realKey = String(x+this._minX) + ':' + String(y+this._minY);
-                        if (this._useMap[realKey]){
+                        if (this._blockMap[realKey]){
                             collision = true;
                             break;
                         }
@@ -164,13 +220,13 @@ qx.Class.define("ep.ui.DashConfig", {
                 for (var y = 0;y < this._height;y++){                     
                     var realKey = String(x+this._minX) + ':' + String(y+this._minY);
                     var gridKey = String(x) + ':' + String(y);
-                    var c = '#f8f8f8';
-                    if (this._useMap[realKey]){                        
-                        c = '#a0a0a0';
+                    var c = '#eee';
+                    if (this._blockMap[realKey]){                        
+                        c = '#aaa';
                     }
                     if (!collision){
                         if (y >= yA && y <= yB && x >= xA && x <= xB){
-                            c = '#ccf';
+                            c = '#eef';
                         }
                     }
                     this._atomMap[gridKey].set({
@@ -181,26 +237,21 @@ qx.Class.define("ep.ui.DashConfig", {
             }            
         },
 
-        _makeGrowHandle: function(){
-            var handle = new qx.ui.basic.Atom("+").set({
+        _makeGrowHandle: function(icon){
+            var handle = new qx.ui.form.Button(null,icon).set({
                 center: true,
-                width: 15,
-                height: 15
-            });
-            handle.addListener('mouseover',function(e){
-                handle.setBackgroundColor('#fff0f0');
-            });
-            handle.addListener('mouseout',function(e){
-                handle.setBackgroundColor('transparent');
+                show: 'icon',
+                padding: [2,2,2,2],
+                margin: [2,2,2,2]
             });
             return handle;
         },
 
-        _addGrowers: function(){
-            var left = this._makeGrowHandle();
-            var right = this._makeGrowHandle();
-            var top = this._makeGrowHandle();
-            var bottom = this._makeGrowHandle();
+        _addGrowHandles: function(){
+            var left = this._makeGrowHandle("ep/left.png");
+            var right = this._makeGrowHandle("ep/right.png");
+            var top = this._makeGrowHandle("ep/up.png");
+            var bottom = this._makeGrowHandle("ep/down.png");
             var that = this;
             var addHandles = function(){
                 that._add(left  ,{column: 0,             row: 1,              rowSpan: that._height});
