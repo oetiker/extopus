@@ -29,19 +29,20 @@ qx.Class.define("ep.visualizer.AbstractData", {
      * }
      * </pre>
      * 
+     * @param instance {String} unique key for visualizer
      * @param title {String} tab title
      * @param args  {Map} configuration arguments.
      * @return {void} 
      *
      */
-    construct : function(title, args, view, form) {
-        this.base(arguments, title, args, view);
+    construct : function(instance,title, args, view, form) {
+        this.base(arguments, instance,title, args, view);
         this._setLayout(new qx.ui.layout.VBox(10));
         var titleContainer = this.__titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(8).set({ alignY : 'middle' }));
-        this._add(titleContainer);
-
+        if (!args.compact){
+            this._add(titleContainer);
+        }
         titleContainer.add(form);
-
         titleContainer.add(new qx.ui.core.Spacer(20), { flex : 1 });
 
         form.addListener('changeData',this._updateData,this);

@@ -43,7 +43,7 @@
  * </pre>
  *
  */
-qx.Class.define("ep.ui.layout.TardisLayout",
+qx.Class.define("ep.ui.layout.Tardis",
 {
   extend : qx.ui.layout.Basic,
 

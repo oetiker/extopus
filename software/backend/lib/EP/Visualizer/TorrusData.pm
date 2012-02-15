@@ -157,10 +157,11 @@ sub matchRecord {
 
     if ($rec->{$cfg->{selector}} ne $cfg->{type}){
         return;
-    }
+    } 
 
     my $baseProps = {
         visualizer => 'data',
+        instance => $self->instance,
         title => $cfg->{title},
         caption => $cfg->{caption}($rec),
         arguments => {}
@@ -178,7 +179,6 @@ sub matchRecord {
     return {
         %$baseProps,
         arguments => {
-            instance => $self->instance,
             columns => $cfg->{col_names},
             column_widths => $cfg->{col_widths},
             column_units => $cfg->{col_units},

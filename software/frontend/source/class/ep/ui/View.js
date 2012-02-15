@@ -66,7 +66,7 @@ qx.Class.define("ep.ui.View", {
          */
         _createVisualizer : function(viz) {
             viz.arguments.recIds = this.getRecIds();
-            var control = ep.visualizer.AbstractVisualizer.createVisualizer(viz.visualizer,viz.title, viz.arguments,this);
+            var control = ep.visualizer.AbstractVisualizer.createVisualizer(viz,this);
             return new ep.ui.ViewPage(control);
         },
 
@@ -108,11 +108,11 @@ qx.Class.define("ep.ui.View", {
             var cache = this.__pageCache;
             var bar = tabView.getChildControl('bar');
 
-            for (var i=0; i<vizList.length; i++) {
+            for (var i=0;i<vizList.length;i++){
                 var viz = vizList[i];
-                var key = viz.visualizer + ':' + viz.title;
-                active[key] = true;
-                var control = cache[key];
+                var instance = viz.instance;
+                active[instance] = true;
+                var control = cache[instance];
 
                 if (control) {
                     control.getButton().set({
@@ -124,10 +124,9 @@ qx.Class.define("ep.ui.View", {
                 }
                 else {
                     control = this._createVisualizer(viz);
-                    control.setUserData('key', key);
                     tabView.add(control);
                     control.addListener('breakout', this._onBreakOut, this);
-                    cache[key] = control;
+                    cache[instance] = control;
                 }
                 control.setUserData('caption', viz.caption);
                 control.setUserData('position', i);
@@ -140,12 +139,12 @@ qx.Class.define("ep.ui.View", {
             }
 
             var reselect = false;
-            for (var vizKey in cache) {
-                if (!active[vizKey]) {
-                    if (tabView.isSelected(cache[vizKey])) {
+            for (var instance in cache) {
+                if (!active[instance]) {
+                    if (tabView.isSelected(cache[instance])) {
                         reselect = true;
                     }
-                    cache[vizKey].getButton().set({
+                    cache[instance].getButton().set({
                         visibility : 'excluded',
                         enabled    : false
                     });
@@ -170,12 +169,12 @@ qx.Class.define("ep.ui.View", {
             var el = page.getContainerElement().getDomElement();
             var width = qx.bom.element.Dimension.getWidth(el);
             var height = qx.bom.element.Dimension.getHeight(el);
-            var key = page.getUserData('key');
+            var instance = page.getVisualizer().getInstance();
             var tabView = this.__tabView;
 
             /// figure size and set on window
             tabView.remove(page);
-            delete this.__pageCache[key];
+            delete this.__pageCache[instance];
 
             var win = new qx.ui.window.Window(page.getUserData('caption')).set({
                 showClose : false,
@@ -183,7 +182,7 @@ qx.Class.define("ep.ui.View", {
                 height    : height
             });
             win.setUserData('pageWidget',page);
-            this.__breakOutKids[key] = win;
+            this.__breakOutKids[instance] = win;
             win.setLayout(new qx.ui.layout.Grow());
             page.show();
             page.remove;
@@ -196,7 +195,7 @@ qx.Class.define("ep.ui.View", {
             }, this);
 
             win.addListenerOnce('close', function(e) {
-                delete this.__breakOutKids[key];
+                delete this.__breakOutKids[instance];
                 page.getButton().dispose();
                 page.dispose();
                 this.getApplicationRoot().remove(win);
@@ -209,7 +208,7 @@ qx.Class.define("ep.ui.View", {
                 this.getApplicationRoot().remove(win);
                 win.dispose();
 
-                delete this.__breakOutKids[key];
+                delete this.__breakOutKids[instance];
                 tabView.add(page);
                 var button = page.getButton();
                 var bar = tabView.getChildControl('bar');
@@ -221,7 +220,7 @@ qx.Class.define("ep.ui.View", {
                 }
 
                 tabView.setSelection([ page ]);
-                this.__pageCache[page.getUserData('key')] = page;
+                this.__pageCache[page.getVisualizer().getInstance()] = page;
             },
             this);
         },

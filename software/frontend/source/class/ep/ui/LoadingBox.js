@@ -21,8 +21,9 @@ qx.Class.define("ep.ui.LoadingBox", {
      * wrap the loading Box around the given widget
      *
      * @param widget {Widget} widget to wrap
+     * @param tardis {Boolean} in tardis mode, the size of the widget is ignored while layouting
      */
-    construct : function(widget) {
+    construct : function(widget,tardis) {
         this.base(arguments);
 
         this.set({
@@ -31,9 +32,20 @@ qx.Class.define("ep.ui.LoadingBox", {
             allowShrinkX : true,
             allowShrinkY : true
         });
-
+        this.__image = widget;
         this._setLayout(new qx.ui.layout.Grow());
-        this._add(widget);
+        /* the tardis layout does not care for the size of the image contained within */
+        if (tardis){
+            var tardis = new qx.ui.core.Widget();
+            tardis._setLayout(new ep.ui.layout.Tardis());
+            tardis._add(widget);        
+            this._add(tardis);
+        }
+        else {
+            this._add(widget);
+        }
+            
+
 
         var loader = this.__loader = new qx.ui.basic.Atom(null, "ep/loader.gif").set({
             visibility      : 'hidden',
@@ -67,8 +79,11 @@ qx.Class.define("ep.ui.LoadingBox", {
             alignY          : 'middle',
             center          : true
         });
-
         this._add(noData);
+    },
+
+    events : {
+        viewReady: 'qx.event.type.Event'
     },
 
     properties : {
@@ -90,6 +105,7 @@ qx.Class.define("ep.ui.LoadingBox", {
     members : {
         __loader : null,
         __noData : null,
+        __image  : null,
         __runningTimer : null,
 
 
@@ -111,30 +127,31 @@ qx.Class.define("ep.ui.LoadingBox", {
             switch(newValue)
             {
                 case 'loading':                    
-                    this.__runningTimer = qx.event.Timer.once(function() {
+//                    this.__runningTimer = qx.event.Timer.once(function() {
                         this.__runningTimer = null;
                         this.__loader.show();
                         this.__noData.hide();
-                    },
+/*                    },
                     this, 100);
-
+*/
                     break;
 
                 case 'nodata':
-                    this.__runningTimer = qx.event.Timer.once(function() {
+//                    this.__runningTimer = qx.event.Timer.once(function() {
                         this.__runningTimer = null;
                         this.__loader.hide();
                         this.__noData.show();
-
-                    },
-                    this, 300);
+/*                    },
+                    this, 300); */
                     break;
 
                 case 'ready':
+                    this.fireEvent("viewReady");
                     this.__loader.hide();
                     this.__noData.hide();
                     break;
             }
+            qx.html.Element.flush(); 
         }
     }
 });

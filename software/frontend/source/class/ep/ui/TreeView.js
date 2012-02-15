@@ -220,7 +220,7 @@ qx.Class.define("ep.ui.TreeView", {
                     // keep the data array as a normal array and don't have it qooxdooified
                     kid.setLeaves(branch[3]);
                     kids.push(kid);
-                });
+                },this);
 
                 node.setLoaded(true);
             },

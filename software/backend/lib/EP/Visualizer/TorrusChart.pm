@@ -173,6 +173,7 @@ sub matchRecord {
     }    
     return {
         visualizer => 'chart',
+        instance => $self->instance,
         title => $self->cfg->{title},
         caption => $self->cfg->{caption}->($rec),
         arguments => {

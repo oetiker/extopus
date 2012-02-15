@@ -182,10 +182,10 @@ qx.Class.define("ep.ui.DashConfig", {
                     row:    this._firstY
                 };
                 if (x != this._firstX){
-                    position.colSpan = x - this._firstX;
+                    position.colSpan = x - this._firstX + 1;
                 }
                 if (y != this._firstY){
-                    position.rowSpan = y - this._firstY;
+                    position.rowSpan = y - this._firstY + 1;
                 }
                 this.fireDataEvent('locationSelected',position);
             },this);

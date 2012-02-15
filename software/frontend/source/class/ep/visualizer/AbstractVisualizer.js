@@ -5,11 +5,6 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/*
-#asset(ep/view-fullscreen.png)
-#asset(ep/view-link.png)
-*/
-
 /**
  * Abstract Visualization widget.
  */
@@ -19,13 +14,23 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
     /**
      * create a visualization widget with the given title.
      * 
+     * @param instance {String} unique key for visualizer
      * @param title {String} title to display on the tab
-     * @param args {Map} argument map for the view.
+     * @param args {Map} argument map for the view
      * @param table {String} the view table    
+     *
+     * common arguments: recIds: [], compact: true
      */
-    construct : function(title,args,view) {
+    construct : function(instance, title,args,view) {
         this.base(arguments);
+        this.set({
+            allowShrinkX: true,
+            allowShrinkY: true,
+            allowGrowX: true,
+            allowGrowY: true
+        });
         this.setTitle(title);
+        this.setInstance(instance);
         this._viewProps = {};
         this._userCfg = {};
     },
@@ -44,7 +49,11 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
             init: 'Untitled',
             event: 'changeTitle'
         },
-        recIds: {}
+        recIds: {
+            init: []
+        },
+        instance: {
+        }
     },
     statics: {
        /**
@@ -54,32 +63,36 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
          * @param vizMap {Map} visualizer configuration map
          * @return {Widget} visualizer widget
          */
-        createVisualizer : function(key,title,args,view) {
+        createVisualizer : function(viz,view){
+            var visualizer = viz.visualizer;
+            var instance = viz.instance;
+            var title = viz.title;
+            var args = viz.arguments;
             var control;
-            switch(key)
+            switch(visualizer)
             {
                 case ep.visualizer.Chart.KEY:  
-                    control = new ep.visualizer.Chart(title, args,view);
+                    control = new ep.visualizer.Chart(instance, title, args,view);
                     break;
 
                 case ep.visualizer.MultiData.KEY:
-                    control = new ep.visualizer.MultiData(title, args,view);
+                    control = new ep.visualizer.MultiData(instance, title, args,view);
                     break;
 
                 case ep.visualizer.IFrame.KEY:
-                    control = new ep.visualizer.IFrame(title, args,view);
+                    control = new ep.visualizer.IFrame(instance, title, args,view);
                     break;
 
                 case ep.visualizer.Properties.KEY: 
-                    control = new ep.visualizer.Properties(title, args,view);
+                    control = new ep.visualizer.Properties(instance, title, args,view);
                     break;
 
                 case ep.visualizer.Data.KEY:
-                    control = new ep.visualizer.Data(title, args,view);
+                    control = new ep.visualizer.Data(instance, title, args,view);
                     break;
 
                 default:
-                    qx.dev.Debug.debugObject(key, 'Can not handle ');
+                    qx.dev.Debug.debugObject(visualizer, 'Can not handle ');
             }
             return control;
         }
@@ -87,9 +100,10 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
 
     members : {
         _view: null,
-        _vizKey: null,
+        _instance: null,
         _userCfg: null,
         _cfgForm: null,
+        _cfgArea: null,
         /**
          * Unhook this visualizer from external influence (eg changeing selection of items in the view table)
          * Override in childs
@@ -117,6 +131,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
          */
         _applyArgs : function(newArgs, oldArgs) {
             this.setRecIds(qx.lang.Array.clone(newArgs.recIds));
+            this._instance = newArgs.instance;
         },
 
         /**
@@ -127,7 +142,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
          */
         getVizualizerConfig: function(){
             var cfg = {
-                app: this._vizKey,
+                instance: this.getInstance(),
                 recIds: qx.lang.Array.clone(this.getRecIds()),
                 userCfg: qx.lang.Object.clone(this._userCfg)
             };
@@ -139,7 +154,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
          * @return {void} 
          */
         buildLink: function(){
-            var link = 'app='+this._vizKey;
+            var link = 'instance='+this.getInstance();
             if (this.getRecIds()){
                 link += ';recIds=' + this.getRecIds().join(',');
             }

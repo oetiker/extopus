@@ -21,21 +21,22 @@ qx.Class.define("ep.visualizer.Chart", {
      * }
      * </pre>
      * 
+     * @param instance {String} unique key for visualizer
      * @param title {String} tab title
      * @param args  {Map} configuration arguments.
      * @return {void} 
      *
      */
 
-    construct : function(title, args, view) {
-        this.base(arguments, title, args, view);
-        this._vizKey = this.self(arguments).KEY;
+    construct : function(instance,title, args, view) {
+        this.base(arguments, instance,title, args, view);
         this._setLayout(new qx.ui.layout.VBox(10));
         var titleContainer = this.__titleContainer = new qx.ui.container.Composite(
             new qx.ui.layout.HBox(8).set({ alignY : 'middle' })
         );
-        this._add(titleContainer);
-
+        if (!args.compact){
+            this._add(titleContainer);
+        }
         // the chart
         var chart = this.__chart = new ep.visualizer.chart.Image();
         this._add(chart, { flex : 1 });

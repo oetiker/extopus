@@ -70,7 +70,7 @@ qx.Class.define('ep.data.RemoteControl', {
                 args[item[0]] = value != 'null' ? value : null;
             }            
             var rpc = ep.data.Server.getInstance();            
-            if (args.recIds && args.app){
+            if (args.recIds && args.instance){
                 args.recIds = args.recIds.split(',');
                 rpc.callAsyncSmart(
                     qx.lang.Function.bind(this._showVisualizers, this),
@@ -80,7 +80,7 @@ qx.Class.define('ep.data.RemoteControl', {
                 );
             }
             else {
-                this.debug('Ignoring '+state+' could not find recIds and app properties');
+                this.debug('Ignoring '+state+' could not find recIds and instance properties');
             }
             
         },
@@ -91,11 +91,11 @@ qx.Class.define('ep.data.RemoteControl', {
          * @return {void} 
          */       
         _showVisualizers : function(vizList) {
-            for (var i=0; i<vizList.length; i++) {
+           for (var i=0;i<vizList.length;i++){
                 var viz = vizList[i];
-                if (viz.visualizer == this.__args.app){
+                if (viz.instance == this.__args.instance){
                     viz.arguments.recIds = this.__args.recIds;
-                    var control = ep.visualizer.AbstractVisualizer.createVisualizer(viz.visualizer,viz.title, viz.arguments,null);
+                    var control = ep.visualizer.AbstractVisualizer.createVisualizer(viz,null);
                     var win = new qx.ui.window.Window(viz.caption).set({
                         allowMinimize: false,
                         showMinimize: false,

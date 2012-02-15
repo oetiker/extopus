@@ -51,6 +51,7 @@ sub matchRecord {
     }
     return {
         visualizer =>  'properties',
+        instance => $self->instance,
         title => $cfg->{title},
         caption => $cfg->{caption}->($rec),
         arguments => \@list,

@@ -23,9 +23,8 @@ qx.Class.define("ep.visualizer.Properties", {
      * @return {void} 
      *
      */
-    construct : function(title, args, view) {
-        this.base(arguments, title, args, view);
-        this._vizKey = this.self(arguments).KEY;
+    construct : function(instance,title, args, view) {
+        this.base(arguments, instance,title, args, view);
         var scroller = new qx.ui.container.Scroll();
         this._setLayout(new qx.ui.layout.Grow());
 

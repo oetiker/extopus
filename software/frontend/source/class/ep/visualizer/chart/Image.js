@@ -15,14 +15,14 @@ qx.Class.define("ep.visualizer.chart.Image", {
     extend : ep.ui.LoadingBox,
 
     construct : function() {
-        var img = this.__img = new qx.ui.basic.Image().set({
+        var img = this.__img = new qx.ui.basic.Image();
+        img.set({
             allowGrowX   : true,
             allowGrowY   : true,
-            allowShrinkX : true,
-            allowShrinkY : true
+            allowShrinkY : true,
+            allowShrinkX : true
         });
-
-        this.base(arguments, img);
+        this.base(arguments, img,true);
         this.addListener('appear', this.reloadChart, this);
         this.addListener('resize', this.reloadChart, this);
         var timer = this.__timer = new qx.event.Timer(300 * 1000);
@@ -94,8 +94,7 @@ qx.Class.define("ep.visualizer.chart.Image", {
     members : {
         __timer : null,
         __img : null,
-
-
+        __extraReload : null,
         /**
          * Reload the chart. The reload will only happen when all the required information for requesting a chart from the 
          * server are provided.
@@ -104,9 +103,22 @@ qx.Class.define("ep.visualizer.chart.Image", {
          */
         reloadChart : function(newVal,oldVal,key) {            
             // do not reload if something is being set without changeing it
-            if (newVal && oldVal && newVal == oldVal){
+            if (key && newVal && oldVal && newVal == oldVal){
                 return;
             }
+            /* do not reload while loading, but schedule an other reload once this one
+               is done */
+            if (this.getViewMode() == 'loading'){
+                if ( ! this.__extraReload ){
+                    this.addListenerOnce('viewReady',function(){
+                        this.__extraReload = false;
+                        this.reloadChart()
+                    },this);
+                    this.__extraReload = true;
+                }
+                return;
+            }            
+
             var url = this.getBaseUrl();
     
             if (url == null) {
@@ -125,7 +137,10 @@ qx.Class.define("ep.visualizer.chart.Image", {
                 qx.html.Element.flush(); 
                 var width = qx.bom.element.Dimension.getWidth(el);
                 var height = qx.bom.element.Dimension.getHeight(el);
-
+                this.__img.set({
+                    width: width,
+                    height: height
+                });
                 if (width > 0 && height > 0) {
                     var src = url + '&start=' + (end - range) + '&end=' + end + '&width=' + width + '&height=' + height;
                     if (maxInterval){

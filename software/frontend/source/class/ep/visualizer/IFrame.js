@@ -19,15 +19,15 @@ qx.Class.define("ep.visualizer.IFrame", {
      * }
      * </pre>
      * 
+     * @param instance {String} unique key for visualizer
      * @param title {String} tab title
      * @param args  {Map} configuration arguments.
      * @return {void} 
      *
      */
 
-    construct : function(title, args, view) {
-        this.base(arguments, title, args, view);
-        this._vizKey = this.self(arguments).KEY;
+    construct : function(instance,title, args, view) {
+        this.base(arguments, instance, title, args, view);
         this.set({ layout : new qx.ui.layout.Grow() });
         this.__iFrame = new qx.ui.embed.ThemedIframe();
         this.add(this.__iFrame);

@@ -29,12 +29,13 @@ qx.Class.define("ep.visualizer.Data", {
      * }
      * </pre>
      * 
+     * @param instance {String} unique key for visualizer
      * @param title {String} tab title
      * @param args  {Map} configuration arguments.
      * @return {void} 
      *
      */
-    construct : function(title, args,view) {
+    construct : function(instance,title, args,view) {
         var form = this._cfgForm = new ep.ui.FormBar([
             {
                 key: 'interval',
@@ -58,9 +59,8 @@ qx.Class.define("ep.visualizer.Data", {
                 label: 'End'
             }
         ]);
-        this.base(arguments, title, args,view,form);
-        this._vizKey = this.self(arguments).KEY;
-        var dataTable = this._dataTable = new ep.visualizer.data.DataTable(args.instance, args.columns, args.column_widths, args.column_units);
+        this.base(arguments, instance, title, args,view,form);
+        var dataTable = this._dataTable = new ep.visualizer.data.DataTable(instance, args.columns, args.column_widths, args.column_units);
         this._add(dataTable, { flex : 1 });
 
         this.setArgs(args);

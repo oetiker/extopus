@@ -140,15 +140,16 @@ qx.Class.define("ep.ui.DashBoard", {
          * @return {visualizer} 
          */       
         _makeVisualizer : function(cfg,vizList) {
-            for (var i=0; i<vizList.length; i++) {
+            for (var i=0;i<vizList.length;i++){
                 var viz = vizList[i];
-                if (viz.visualizer == cfg.app){
+                if (viz.instance == cfg.instance){
                     viz.arguments.recIds = cfg.recIds;
-                    var control = ep.visualizer.AbstractVisualizer.createVisualizer(viz.visualizer,viz.title, viz.arguments,null);
+                    viz.arguments.compact = true;
+                    var control = ep.visualizer.AbstractVisualizer.createVisualizer(viz,null);
                     control.setUserCfg(cfg.userCfg);
                     return control;
                 }
-            }            
+            };
         }
     }
 });
