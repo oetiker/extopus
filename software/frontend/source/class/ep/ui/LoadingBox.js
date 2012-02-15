@@ -151,7 +151,6 @@ qx.Class.define("ep.ui.LoadingBox", {
                     this.__noData.hide();
                     break;
             }
-            qx.html.Element.flush(); 
         }
     }
 });

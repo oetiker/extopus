@@ -142,6 +142,8 @@ qx.Class.define("ep.visualizer.chart.Image", {
                     height: height
                 });
                 if (width > 0 && height > 0) {
+                    /* clear out the old image first, so we get no flashing */
+                    this.__img.setSource(null);
                     var src = url + '&start=' + (end - range) + '&end=' + end + '&width=' + width + '&height=' + height;
                     if (maxInterval){
                         src += '&maxlinestep=' + String(maxInterval);
