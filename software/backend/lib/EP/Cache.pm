@@ -169,10 +169,11 @@ sub new {
         my $version = $self->inventory->getVersion($user);
         $self->log->debug("checking inventory version '$version' vs '$oldVersion'");     
         if ( $oldVersion  ne  $version){
-            $self->log->debug("loading nodes into ".$self->cacheRoot." for $user");
-            $dbh->begin_work;
+            $self->log->info("loading nodes into ".$self->cacheRoot." for $user");
             $dbh->do("PRAGMA synchronous = 0");
+            $dbh->begin_work;
             if ($oldVersion){
+                $self->log->info("dropping old tables");
                 $self->dropTables;
             }
             $self->createTables;
@@ -180,6 +181,7 @@ sub new {
             $self->inventory->walkInventory($self,$self->user);
             $self->log->debug("nodes for ".$self->user." loaded");
             $dbh->commit;
+            $dbh->do("VACUUM");
             $dbh->do("PRAGMA synchronous = 1");
         }
         $self->setMeta('lastup',time);
@@ -216,10 +218,9 @@ drop data tables
 sub dropTables {
     my $self = shift;
     my $dbh = $self->dbh;
-    $dbh->do("DROP TABLE branch");
-    $dbh->do("DROP TABLE leaf");
-    $dbh->do("DROP TABLE node");            
-    $dbh->do("VACUUM");
+    $dbh->do("DROP TABLE IF EXISTS branch");
+    $dbh->do("DROP TABLE IF EXISTS leaf");
+    $dbh->do("DROP TABLE IF EXISTS node");            
     return;
 }
  
