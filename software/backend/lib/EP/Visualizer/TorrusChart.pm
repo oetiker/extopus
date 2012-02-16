@@ -284,6 +284,8 @@ sub addProxyRoute {
            $rp->code(200);
             my $type = $res->headers->content_type;
            $rp->headers->content_type($type);
+           # this should make the client comfortable caching this for a bit
+           $rp->headers->last_modified(Mojo::Date->new(time-24*3600));
            if (lc $type eq 'application/pdf'){
                my $cache = $ctrl->stash('epCache');
                my $rec = $cache->getNode($recId);

@@ -394,6 +394,8 @@ sub addProxyRoute {
             };
         }
         $rp->headers->content_type($fileData->{contentType});
+        # this should make the client comfortable caching this for a bit
+        $rp->headers->last_modified(Mojo::Date->new(time-24*3600));
         $rp->headers->add('Content-Disposition',$fileData->{contentDisposition});
         $rp->body($fileData->{body});
         $ctrl->tx->res($rp);

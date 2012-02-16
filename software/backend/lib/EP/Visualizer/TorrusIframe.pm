@@ -182,6 +182,7 @@ sub addProxyRoute {
            my $rp = Mojo::Message::Response->new;
            $rp->code(200);
            $rp->headers->content_type($res->headers->content_type);
+           $rp->headers->content_type($res->headers->last_modified);
            $rp->body($body);
            $ctrl->tx->res($rp);
            $ctrl->rendered;
