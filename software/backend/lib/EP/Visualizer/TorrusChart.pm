@@ -137,7 +137,13 @@ sub matchRecord {
     my $leaves = $self->getLeaves($url,$cfg->{call}, { $cfg->{call_arg_pl}->($rec) });
     my @nodes;
     my $mapper = $self->cfg->{VIEW_MAPPER_PL}{_text};
-    for my $token (sort { ($leaves->{$b}{precedence} || 0) <=> ($leaves->{$a}{precedence} || 0) } keys %$leaves){        
+    for my $token (sort { 
+        if (defined $leaves->{$b}{precedence}){
+            ($leaves->{$b}{precedence} || 0) <=> ($leaves->{$a}{precedence} || 0) 
+        } else {
+            ($leaves->{$a}{'cbqos-object-descr'} || $leaves->{$a}{'comment'}) cmp ($leaves->{$b}{'cbqos-object-descr'} || $leaves->{$b}{'comment'})
+        }
+    } keys %$leaves){        
         my $leaf = $leaves->{$token};
         next unless ref $leaf; # skip emtpy leaves
         my $nodeid = $leaf->{nodeid} or next; # skip leaves without nodeid
