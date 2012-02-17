@@ -38,6 +38,7 @@ qx.Class.define("ep.visualizer.data.DataTable", {
             allowGrowY   : true,
             /* make sure the table is a good citizen layout */
             height: 30,
+            width: 50,
             showCellFocusIndicator : false
         });
 
