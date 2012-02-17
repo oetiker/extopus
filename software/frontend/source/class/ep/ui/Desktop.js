@@ -5,6 +5,9 @@
    Utf8Check: äöü
 ************************************************************************ */
 
+/*
+#asset(qx/icon/${qx.icontheme}/16/actions/list-add.png)
+*/
 /**
  * Build the desktop. This is a singleton. So that the desktop
  * object and with it the treeView and the searchView are universaly accessible
@@ -35,7 +38,15 @@ qx.Class.define("ep.ui.Desktop", {
         * add an extra Tab to the TabView
         */
         add: function(page){
-            this._tabView.add(page);
+            // we can not use the regular add, since I added an extra
+            // item to the tabView slide bar ... tabs would get missaligned
+            this._tabView.addAt(page,this._tabView.getChildren().length-1);
+        },
+       /**
+        * addAt an extra Tab to the TabView at a particular position
+        */
+        addAt: function(page,index){
+            this._tabView.addAt(page,index);
         },
        /**
         * set the selction in the tabView
@@ -53,10 +64,6 @@ qx.Class.define("ep.ui.Desktop", {
         * @return {void}  
         */
         populate : function(cfg) {
-
-            /* large logo */
-
-            this._addLogo(cfg.frontend.logo_top);
 
             /* tab view */
 
@@ -81,15 +88,25 @@ qx.Class.define("ep.ui.Desktop", {
             searchPage.add(searchView);
             tabView.add(searchPage);
 
+            /* add New tab Button */
+         
+            this._addPlusMenu();
+   
             /* add title */
 
             if (cfg.frontend.title) {
                 document.title = cfg.frontend.title;
-
-                this.getApplicationRoot().add(new qx.ui.basic.Label(cfg.frontend.title).set({ font : 'bold' }), {
+                var title = new qx.ui.basic.Label(cfg.frontend.title).set({ font : 'bold' });
+                this.getApplicationRoot().add(title, {
                     top   : 8,
                     right : 8
                 });
+                // reserve space for the title
+                title.addListenerOnce('appear',function(){
+                    var el = title.getContainerElement().getDomElement();
+                    var width = qx.bom.element.Dimension.getWidth(el);
+                    tabView.getChildControl('bar').setMarginRight(width + 20);
+                },this);
             }
 
             /* about line */
@@ -97,32 +114,6 @@ qx.Class.define("ep.ui.Desktop", {
             this._addAbout();
             /* activate history manager */
             ep.data.RemoteControl.getInstance();
-        },
-
-
-        /**
-         * Add the Logo to the desktop
-         *
-         * @param url {String} url of the logo
-         * @return {void} 
-         */
-        _addLogo : function(url) {
-            if (!url) {
-                return;
-            }
-
-            var logo = new qx.ui.basic.Atom(null, url).set({
-                alignX      : 'left',
-                padding     : 8,
-                show        : 'icon',
-                toolTipText : 'click to hide'
-            });
-
-            logo.addListener('click', function() {
-                this.remove(logo);
-            }, this);
-
-            this._add(logo);
         },
 
 
@@ -147,6 +138,40 @@ qx.Class.define("ep.ui.Desktop", {
             });
 
             this._add(about);
+        },
+        /**
+         * add the plus menu into the tabview bar
+         */
+        _addPlusMenu: function(){    
+            var plus = new qx.ui.basic.Atom(null,"icon/16/actions/list-add.png").set({
+                margin: [4,4,4,4],
+                appearance: "menubar-button",
+                center: true,
+                show: 'icon'
+            });
+            var menu = new qx.ui.menu.Menu().set({
+                opener: plus
+            });
+            menu.add(new qx.ui.menu.Button("Test"));
+            plus.addListener('click',function(){
+                qx.ui.menu.Manager.getInstance().hideAll();
+                menu.open();
+                plus.addState("pressed");
+            });
+            plus.addListener('mouseover', function(){
+                plus.addState("hovered");
+            });
+            plus.addListener('mouseout', function(){
+                plus.removeState("hovered");
+            });
+            menu.addListener('appear',function(){
+                plus.addState("pressed");                
+            });
+            menu.addListener('disappear',function(){
+                plus.removeState("pressed");                
+            });
+            
+            this._tabView.getChildControl('bar').add(plus);
         }
     }
 });

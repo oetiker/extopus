@@ -125,6 +125,7 @@ qx.Class.define("ep.ui.DashConfig", {
         _maxY: null,
         _width: null,
         _height: null,
+        _collision: true,
 
         /**
          * let the user pick a position on the grid and run the callback once
@@ -145,6 +146,14 @@ qx.Class.define("ep.ui.DashConfig", {
                  for (var yF = item.row;yF < item.row+(item.rowSpan || 1);yF++){
                      var keyF = String(xF) + ':' + String(yF);
                      this._blockMap[keyF] = true;
+                 }
+            }
+        },
+        freePosition: function(item){
+            for (var xF = item.column;xF < item.column+(item.colSpan || 1);xF++){
+                 for (var yF = item.row;yF < item.row+(item.rowSpan || 1);yF++){
+                     var keyF = String(xF) + ':' + String(yF);
+                     delete this._blockMap[keyF];
                  }
             }
         },
@@ -174,26 +183,30 @@ qx.Class.define("ep.ui.DashConfig", {
             },this);
 
             atom.addListener('mousedown',function(e){
-                this._first = false;
+                if (!this._collision){
+                    this._first = false;
+                }
             },this);
             atom.addListener('mouseup',function(e){
-                var position = {
-                    column: this._firstX,
-                    row:    this._firstY
-                };
-                if (x != this._firstX){
-                    position.colSpan = x - this._firstX + 1;
+                if (!this._first && !this._collision){
+                    var position = {
+                        column: this._firstX,
+                        row:    this._firstY
+                    };
+                    if (x != this._firstX){
+                        position.colSpan = x - this._firstX + 1;
+                    }
+                    if (y != this._firstY){
+                        position.rowSpan = y - this._firstY + 1;
+                    }
+                    this.fireDataEvent('locationSelected',position);
                 }
-                if (y != this._firstY){
-                    position.rowSpan = y - this._firstY + 1;
-                }
-                this.fireDataEvent('locationSelected',position);
             },this);
 
             return atom;
         },
         _updateDeco: function(xA,yA,xB,yB){
-            var collision = yB === null;
+            var collision = this._collision = ( yB === null);
             if (xA > xB){
                 var c = xA;
                 xA = xB;
@@ -208,25 +221,28 @@ qx.Class.define("ep.ui.DashConfig", {
             if (!collision){
                 for (var x = xA;x <= xB;x++){
                     for (var y = yA;y <= yB;y++){
-                        var realKey = String(x+this._minX) + ':' + String(y+this._minY);
-                        if (this._blockMap[realKey]){
-                            collision = true;
-                            break;
-                        }
+                         var realKey = String(x+this._minX) + ':' + String(y+this._minY);
+                         if (this._blockMap[realKey]){
+                             collision = this._collision = true;
+                             break;
+                         }
                     }
                 }
+            }
+            if (collision){
+                ep.ui.ShortNote.getInstance().setNote(this.tr("Select a location by dragging the mouse. Enlarge by clicking the Arrows on the edge."));
             }
             for (var x = 0;x < this._width;x++){ 
                 for (var y = 0;y < this._height;y++){                     
                     var realKey = String(x+this._minX) + ':' + String(y+this._minY);
                     var gridKey = String(x) + ':' + String(y);
-                    var c = '#eee';
+                    var c = '#bbb';
                     if (this._blockMap[realKey]){                        
-                        c = '#aaa';
+                        c = '#5b3030';
                     }
                     if (!collision){
                         if (y >= yA && y <= yB && x >= xA && x <= xB){
-                            c = '#eef';
+                            c = '#86e300';
                         }
                     }
                     this._atomMap[gridKey].set({
@@ -234,14 +250,14 @@ qx.Class.define("ep.ui.DashConfig", {
                     });
 
                 }
-            }            
+            } 
         },
 
         _makeGrowHandle: function(icon){
             var handle = new qx.ui.form.Button(null,icon).set({
                 center: true,
                 show: 'icon',
-                padding: [2,2,2,2],
+                padding: [4,4,4,4],
                 margin: [2,2,2,2]
             });
             return handle;

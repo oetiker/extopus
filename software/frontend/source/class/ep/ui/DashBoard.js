@@ -5,9 +5,15 @@
    Utf8Check: äöü
 ************************************************************************ */
 
+/*
+#asset(qx/icon/${qx.icontheme}/16/actions/document-save.png)
+#asset(qx/icon/${qx.icontheme}/48/actions/view-fullscreen.png)
+#asset(qx/icon/${qx.icontheme}/48/actions/dialog-close.png)
+#asset(qx/icon/${qx.icontheme}/48/actions/dialog-cancel.png)
+*/
 /**
  * Dashboard Widget showing multiple of visualization Plugins on a single page
- */
+  */
 qx.Class.define("ep.ui.DashBoard", {
     extend : qx.ui.tabview.Page,
     /**
@@ -19,7 +25,10 @@ qx.Class.define("ep.ui.DashBoard", {
      */
     construct : function(name,dimension) {                
         this.base(arguments, name);        
-        this.setLayout(new qx.ui.layout.Grow);
+        this.set({
+            layout: new qx.ui.layout.Grow,
+            showCloseButton: true
+        });
         this.add(this._boardView = new qx.ui.core.Widget());
         this._boardView._setLayout(this._boardGrid = new qx.ui.layout.Grid(1,1));
         this._boardView.set({
@@ -27,69 +36,91 @@ qx.Class.define("ep.ui.DashBoard", {
         });        
         this.add(this._cfgView = new ep.ui.DashConfig(dimension));
         this._cfgView.hide();
-        if (name == null){
-            this.addListenerOnce("appear",function(){
-                this.editLabel();
-            });
-        }
+        this._addLabelEditor();
+        this._addButtonMenu();
     },
     properties: {
         config: {
             apply: '_applyConfig'
         }
     },
-    
+    events: {
+        startEditMode: 'qx.event.type.Event',
+        endEditMode: 'qx.event.type.Event'
+    },
     members : {
         _cfgView: null,
         _boardView: null,
         _boardGrid: null,
-        removeVisualizer: function(handle){
-        },
-        cfgPosition: function(){
-            /* show DashConfig */
-        },
-        _applyConfig: function(newCfg,oldCfg){
-        },
+        _labelEditor: null,
         /**
-         * edit the label of the DashBoard
+         * create the label editor
          */
-        editLabel: function(){
-            var popup = new qx.ui.popup.Popup(new qx.ui.layout.Grow()).set({
+        _addLabelEditor: function(){
+            var popup = this._labelEditor = new qx.ui.popup.Popup(new qx.ui.layout.Grow()).set({
                 offsetTop: -15,
                 offsetLeft: 10,
                 autoHide: false
             });
             var edit = new qx.ui.form.TextField(this.getLabel()).set({
-                placeholder: this.tr("New Dashboard Name"),
+                placeholder: this.tr("Dashboard Name"),
                 width: 200,
-                required: true
+                required: true,
+                liveUpdate: true
             });
-            edit.addListener("changeValue",function(e){
-                var name = e.getData();
-                if (name){
-                    this.setLabel(name);
+            edit.addListener("keyup", function(e){
+                if (e.getKeyIdentifier() == 'Enter' && this.getLabel()){
                     popup.hide();
-                    this.getApplicationRoot().remove(popup);
-                    popup.dispose();
                 }
             },this);
+            edit.addListener("blur", function(e){
+                if (this.getLabel()){
+                    popup.hide();
+                }
+            },this);
+
+            edit.addListener("changeValue",function(e){
+                this.setLabel(e.getData());
+            },this);
+
             edit.addListener("appear",function(){
                 edit.focus();
+                edit.selectAllText();
             },this);
+
+            this.getChildControl('button').addListener('dblclick',function(e){
+                this.editLabel();
+            },this);
+
+            this.addListener("appear",function(){
+                if (! this.getLabel()){
+                    this.editLabel();
+                }
+            },this);
+
             popup.add(edit);
+        },
+        /**
+         * edit the label of the DashBoard
+         */
+        editLabel: function(){
+            var popup = this._labelEditor;
             var button = this.getChildControl('button');
             popup.placeToWidget(button);
             popup.show();
         },
 
         addVisualizerWidget: function(widget,position){
-
+            var box = new qx.ui.container.Composite(new qx.ui.layout.Grow());
+            box.setUserData('position',position);
+            box.add(widget);
+            box.add(this._makeVizEditBox(box));
             var w = position.column + (position.colSpan || 1);
             var h = position.row + ( position.rowSpan || 1);
 
             var grid = this._boardGrid;
 
-            this._boardView._add(widget,position);
+            this._boardView._add(box,position);
             this._cfgView.blockPosition(position);
             for (var i=0;i<w;i++){
                 grid.setColumnFlex(i,1);
@@ -150,6 +181,92 @@ qx.Class.define("ep.ui.DashBoard", {
                     return control;
                 }
             };
+        },
+        /**
+         * Add the popup menu to the tab button.
+         */       
+        _addButtonMenu: function(){
+            var button =  this.getChildControl('button');
+            var menu = new qx.ui.menu.Menu().set({
+                opener: button
+            });
+            button.setContextMenu(menu);
+            var saveBtn = new qx.ui.menu.Button(this.tr("Save to Server"),"icon/16/actions/document-save.png");
+            var pinBtn = new qx.ui.menu.CheckBox(this.tr("Pin")).set({
+                value: true
+            });
+            var renameBtn = new qx.ui.menu.Button(this.tr("Rename"));
+            var editBtn = new qx.ui.menu.Button(this.tr("Edit"));
+            editBtn.addListener('execute',function(){
+                this.fireEvent('startEditMode');
+            },this);
+            var removeBtn = new qx.ui.menu.Button(this.tr("Remove from Server"));
+            menu.add(pinBtn);
+            menu.add(renameBtn);
+            menu.add(editBtn);
+            menu.add(saveBtn);
+            menu.add(removeBtn);              
+        },
+        /**
+         * Make a visualizer Edit Box
+         */       
+        _makeVizEditBox: function(visualizer){
+            var editBox = new qx.ui.container.Composite(new qx.ui.layout.HBox(3,'center').set({
+                alignY: 'middle'
+            })).set({
+                allowGrowX: true,
+                allowGrowY: true,
+                backgroundColor: 'rgba(0,0,0,0.4)',
+                visibility: 'excluded'
+            });
+            var moveBtn = new qx.ui.form.Button(null,"icon/48/actions/view-fullscreen.png").set({
+                allowGrowY: false
+            });
+            var removeBtn = new qx.ui.form.Button(null,"icon/48/actions/dialog-close.png").set({
+                allowGrowY: false
+            });            
+            editBox.add(moveBtn);
+            editBox.add(removeBtn);
+
+            var cancelBtn = new qx.ui.form.Button(null,"icon/48/actions/dialog-cancel.png").set({
+                allowGrowY: false
+            });            
+            editBox.add(cancelBtn);
+
+            cancelBtn.addListener('execute',function(){
+                this.fireEvent('endEditMode');
+            },this);
+
+
+            var startLst = this.addListener('startEditMode',function(){
+                editBox.show();
+            });
+            var endLst = this.addListener('endEditMode',function(){
+                editBox.hide();
+            });
+
+            removeBtn.addListenerOnce('execute',function(){
+                this._boardView._remove(visualizer);
+                this.removeListenerById(startLst);
+                this.removeListenerById(endLst);                    
+                this._cfgView.freePosition(visualizer.getUserData('position'));
+                visualizer.dispose();
+            },this);
+
+            moveBtn.addListener('execute',function(){
+                var cfgView = this._cfgView;
+                cfgView.show();
+                cfgView.freePosition(visualizer.getUserData('position'));
+                this._boardView._remove(visualizer);
+                cfgView.selectPosition(function(position){
+                    cfgView.hide();
+                    cfgView.blockPosition(position);
+                    visualizer.setUserData('position',position);
+                    this._boardView._add(visualizer,position);
+                 },this);
+            },this);
+
+            return editBox;          
         }
     }
 });

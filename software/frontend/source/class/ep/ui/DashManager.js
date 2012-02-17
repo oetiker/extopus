@@ -31,10 +31,14 @@ qx.Class.define("ep.ui.DashManager", {
         newBoard: function(name,dimension){
             var dt = ep.ui.Desktop.getInstance();
             var board = new ep.ui.DashBoard(name,dimension);
-            ep.ui.DashMenu.getInstance().registerBoard(board);
-            dt.add(board);           
+            var menu = ep.ui.DashMenu.getInstance();
+            menu.registerBoard(board);
+            dt.addAt(board,2);
             dt.setSelection([board]);
             this.getBoardList().push(board);
+            board.addListener('close',function(){
+                this.setBoardList(this.getBoardList().filter(function(item){item !== board},this));
+            },this);
             return board;
         }
     }

@@ -142,6 +142,7 @@ qx.Class.define("ep.visualizer.Chart", {
             var d = e.getData();
             var c = this.__chart;
             if (d.view == null){
+                c.setViewMode('nodata');
                 return;
             }
             this._userCfg = d;
@@ -171,7 +172,8 @@ qx.Class.define("ep.visualizer.Chart", {
             this.__template = newArgs.template;            
             this.base(arguments, newArgs, oldArgs);
             if (sb.length == 0){
-                this.__titleContainer.setEnabled(false);                                
+                this.__titleContainer.setEnabled(false);
+                this.__chart.setViewMode('nodata');
             }
             else {           
                 this._cfgForm.setData(cfg);

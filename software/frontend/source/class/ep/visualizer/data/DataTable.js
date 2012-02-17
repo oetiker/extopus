@@ -36,6 +36,8 @@ qx.Class.define("ep.visualizer.data.DataTable", {
             allowShrinkY : true,
             allowGrowX   : true,
             allowGrowY   : true,
+            /* make sure the table is a good citizen layout */
+            height: 30,
             showCellFocusIndicator : false
         });
 
