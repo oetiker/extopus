@@ -112,7 +112,6 @@ qx.Class.define("ep.ui.DashBoard", {
 
         addVisualizerWidget: function(widget,position){
             var box = new qx.ui.container.Composite(new qx.ui.layout.Grow());
-            box.setUserData('position',position);
             box.add(widget);
             box.add(this._makeVizEditBox(box));
             var w = position.column + (position.colSpan || 1);
@@ -249,19 +248,18 @@ qx.Class.define("ep.ui.DashBoard", {
                 this._boardView._remove(visualizer);
                 this.removeListenerById(startLst);
                 this.removeListenerById(endLst);                    
-                this._cfgView.freePosition(visualizer.getUserData('position'));
+                this._cfgView.freePosition(visualizer.getLayoutProperties());
                 visualizer.dispose();
             },this);
 
             moveBtn.addListener('execute',function(){
                 var cfgView = this._cfgView;
                 cfgView.show();
-                cfgView.freePosition(visualizer.getUserData('position'));
+                cfgView.freePosition(visualizer.getLayoutProperties());
                 this._boardView._remove(visualizer);
                 cfgView.selectPosition(function(position){
                     cfgView.hide();
                     cfgView.blockPosition(position);
-                    visualizer.setUserData('position',position);
                     this._boardView._add(visualizer,position);
                  },this);
             },this);

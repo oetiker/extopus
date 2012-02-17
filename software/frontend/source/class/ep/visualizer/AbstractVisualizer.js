@@ -33,6 +33,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
         this.setInstance(instance);
         this._viewProps = {};
         this._userCfg = {};
+
     },
 
     properties : {

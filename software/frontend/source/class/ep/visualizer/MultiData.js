@@ -64,14 +64,15 @@ qx.Class.define("ep.visualizer.MultiData", {
         },this);
 
         if (view){
-            view.addListener('changeRecIds', function(e) {
+            this.__view = view;
+            this.__viewListener = view.addListener('changeRecIds', function(e) {
                 var ids = e.getData();
                 /* we have to have two items selected in any case */
                 if (ids.length > 1){        
                     dataTable.setRecordIds(ids);
                 }
                 this.setRecIds(ids);
-            },this);
+            },this);            
         }
         dataTable.setRecordIds(args.recIds);
     },
@@ -79,6 +80,18 @@ qx.Class.define("ep.visualizer.MultiData", {
     statics : { KEY : 'multidata' },
 
     members : {
+        
+        __viewListener: null,
+        __view: null,
+
+        /**
+         * sever the connection to the record selection once the view is unhooked
+         */            
+        unhook: function(){
+            if (this.__view){
+                this.__view.removeListenerById(this.__viewListener);
+            }
+        },
         /**
          * Update Chart Event Handler
          *

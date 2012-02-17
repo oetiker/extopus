@@ -92,6 +92,9 @@ qx.Class.define("ep.visualizer.Chart", {
                 }
             }
         ]);
+        form.addListener('changeData',function(){               
+            ep.data.RemoteControl.getInstance().setState(this.buildLink())    
+        },this);    
         titleContainer.add(form);
         titleContainer.add(new qx.ui.core.Spacer(10), { flex : 1 });
 
