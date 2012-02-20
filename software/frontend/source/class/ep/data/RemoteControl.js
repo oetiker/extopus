@@ -53,11 +53,11 @@ qx.Class.define('ep.data.RemoteControl', {
         _loadVisualizer : function() {
             var state = this.__history.getState();
             if (! state){
-                this.debug('no initial state');
+//              this.debug('no initial state');
                 return;
             }
             if (! this.__enabled){
-                this.debug('skipping '+state);
+//              this.debug('skipping '+state);
                 return;
             }
             /* we have seen the state, remove it */
