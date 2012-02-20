@@ -26,8 +26,7 @@ qx.Class.define("ep.ui.DashBoard", {
     construct : function(name,dimension) {                
         this.base(arguments, name);        
         this.set({
-            layout: new qx.ui.layout.Grow,
-            showCloseButton: true
+            layout: new qx.ui.layout.Grow
         });
         this.add(this._boardView = new qx.ui.core.Widget());
         this._boardView._setLayout(this._boardGrid = new qx.ui.layout.Grid(1,1));
@@ -185,26 +184,31 @@ qx.Class.define("ep.ui.DashBoard", {
          * Add the popup menu to the tab button.
          */       
         _addButtonMenu: function(){
-            var button =  this.getChildControl('button');
-            var menu = new qx.ui.menu.Menu().set({
-                opener: button
+            var button = this.getChildControl('button');            
+
+            var menuButton = this._menuButton = new qx.ui.basic.Atom().set({
+                icon   : 'ep/view-menu.png',
+                show   : 'icon',
+                cursor : 'pointer',
+                visibility: 'excluded'
             });
-            button.setContextMenu(menu);
-            var saveBtn = new qx.ui.menu.Button(this.tr("Save to Server"),"icon/16/actions/document-save.png");
-            var pinBtn = new qx.ui.menu.CheckBox(this.tr("Pin")).set({
-                value: true
+
+            button._add(menuButton, {
+                row    : 0,
+                column : 6
             });
-            var renameBtn = new qx.ui.menu.Button(this.tr("Rename"));
-            var editBtn = new qx.ui.menu.Button(this.tr("Edit"));
-            editBtn.addListener('execute',function(){
-                this.fireEvent('startEditMode');
+
+            button.addListener('syncAppearance', function(){
+                if (button.hasState('checked')) {
+                    menuButton.show();
+                } else {
+                    menuButton.exclude();
+                }
             },this);
-            var removeBtn = new qx.ui.menu.Button(this.tr("Remove from Server"));
-            menu.add(pinBtn);
-            menu.add(renameBtn);
-            menu.add(editBtn);
-            menu.add(saveBtn);
-            menu.add(removeBtn);              
+
+            menuButton.addListener('click',function(){
+                ep.ui.DashMenu.getInstance().showMenu(menuButton, this);
+            },this);
         },
         /**
          * Make a visualizer Edit Box

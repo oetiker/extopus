@@ -31,7 +31,7 @@ qx.Class.define("ep.ui.DashManager", {
         newBoard: function(name,dimension){
             var dt = ep.ui.Desktop.getInstance();
             var board = new ep.ui.DashBoard(name,dimension);
-            var menu = ep.ui.DashMenu.getInstance();
+            var menu = ep.ui.ViewMenu.getInstance();
             menu.registerBoard(board);
             dt.addAt(board,2);
             dt.setSelection([board]);

@@ -4,6 +4,9 @@
    Authors:   Tobi Oetiker <tobi@oetiker.ch>
    Utf8Check: äöü
 ************************************************************************ */
+/*
+#asset(ep/view-*.png)
+*/
 
 /**
  * The Dashboard Menu
@@ -15,47 +18,30 @@ qx.Class.define("ep.ui.DashMenu", {
 
     construct : function() {
         this.base(arguments);
-        var dm = ep.ui.DashManager.getInstance();
-        dm.getBoardList().forEach(this.registerBoard,this);
-        var nd;
-        this.add(new qx.ui.menu.Button("Add to Dashboard").set({
-            enabled: false
-        }));
-        this.add(nd = new qx.ui.menu.Button("New ..."));
-        nd.addListener('execute',function(){
-            var board = ep.ui.DashManager.getInstance().newBoard(null,[0,0,1,1]);
-            board.addVisualizer(this._cfg);
+        var btn = [
+            [ 'ren',this.tr("Rename Tab"),   null, function(e){ this._board.editLabel(); }],
+            [ 'edt',this.tr("Edit Board"),   null, function(e){ this._board.fireEvent.call(this._board,'startEditMode'); }],
+            [ 'rm',this.tr("Remove Tab"),    null, function(e){ this._board.fireEvent.call(this._board,'close'); }]
+        ];
+        var menuBtn = {};
+        btn.forEach(function(item){
+            var bt = menuBtn[item[0]] = new qx.ui.menu.Button(item[1],item[2]);
+            if (item[3]){
+                bt.addListener('execute',item[3],this);
+            }
+            this.add(bt);
         },this);
     },
     members: {
-        _cfg: null,
-        /**
-         * add a new board to the menu
-         * 
-         * @param board {qx.ui.tabview.Page} dashboard
-         */
-        registerBoard: function(board){
-            var button = new qx.ui.menu.Button(board.getLabel());
-            board.getChildControl('button').addListener('changeLabel',function(e){
-                button.setLabel(e.getData());
-            });
-            button.addListener('execute',function(){
-                ep.ui.Desktop.getInstance().setSelection([board]);
-                board.addVisualizer(this._cfg);
-            },this);
-            board.addListenerOnce('close',function(){
-                this.remove(button);
-            },this);
-            this.addAt(button,1);            
-        },
+        _board: null,
         /**
          * Show the dashBoard menu at the given widget position
          * 
          * @param widget {Widget} widget for positioning the menu
          */
-        showMenu: function(widget,cfg){
-            this._cfg = cfg;
-            this.setOpener(widget);
+        showMenu: function(button,board){
+            this._board = board;
+            this.setOpener(button);
             qx.ui.menu.Manager.getInstance().hideAll();
             this.open();
         }

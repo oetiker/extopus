@@ -32,44 +32,30 @@ qx.Class.define("ep.ui.ViewPage", {
 
         var button = this.getChildControl('button');            
 
-        var breakOutButton = this._breakOutButton = new qx.ui.basic.Atom().set({
-            icon   : 'ep/view-fullscreen.png',
+        var menuButton = this._menuButton = new qx.ui.basic.Atom().set({
+            icon   : 'ep/view-menu.png',
             show   : 'icon',
             cursor : 'pointer',
             visibility: 'excluded'
         });
-        breakOutButton.addListener("click", this._onBreakOutButtonClick, this);
 
-        button._add(breakOutButton, {
+        button._add(menuButton, {
             row    : 0,
             column : 6
         });
 
-        var dashButton = this._dashButton = new qx.ui.basic.Atom().set({
-            icon   : 'ep/view-dash.png',
-            show   : 'icon',
-            cursor : 'pointer',
-            visibility: 'excluded'
-        });
-
-        dashButton.addListener('click',function(){
-            ep.ui.DashMenu.getInstance().showMenu(dashButton, this.getVisualizer().getVizualizerConfig());
+        menuButton.addListener('click',function(){
+            ep.ui.ViewMenu.getInstance().showMenu(menuButton, this);
         },this);
-        
-        button._add(dashButton, {
-            row    : 0,
-            column : 7
-        });
-
 
         button.addListener('syncAppearance', this._updateButton, this);
         this._viewProps = {};
         button.addListener('click',function(){
-            ep.data.RemoteControl.getInstance().setState(visualizer.buildLink());
         },this);
     },
 
     events : {
+        /* the ViewMenu breakout button actually fires this event for us */        
         breakout: 'qx.event.type.Event'
     },
 
@@ -84,8 +70,7 @@ qx.Class.define("ep.ui.ViewPage", {
     },
 
     members : {
-        _breakOutButton : null,
-        _dashButton: null,
+        _menuButton: null,
         _view: null,
 
         /**
@@ -97,17 +82,6 @@ qx.Class.define("ep.ui.ViewPage", {
         },
 
         /**
-         * Fire a breakout event for clicks on the breakOut button
-         *
-         * @param e {Event} click event
-         * @return {void} 
-         */
-        _onBreakOutButtonClick : function(e) {
-            this.fireDataEvent("breakout", this);
-            e.stop();
-        },
-
-        /**
          * Only show the breakOut button when the tab is selected.
          *
          * @return {void} 
@@ -116,11 +90,10 @@ qx.Class.define("ep.ui.ViewPage", {
             var button = this.getChildControl('button');
 
             if (button.hasState('checked')) {
-                this._breakOutButton.show();
-                this._dashButton.show();
+                ep.data.RemoteControl.getInstance().setState(this.getVisualizer().buildLink());
+                this._menuButton.show();
             } else {
-                this._breakOutButton.exclude();
-                this._dashButton.exclude();
+                this._menuButton.exclude();
             }
         }
     }

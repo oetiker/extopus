@@ -152,7 +152,7 @@ qx.Class.define("ep.ui.Desktop", {
             var menu = new qx.ui.menu.Menu().set({
                 opener: plus
             });
-            menu.add(new qx.ui.menu.Button("Test"));
+            menu.add(new qx.ui.menu.Button("Add Tab from Server"));
             plus.addListener('click',function(){
                 qx.ui.menu.Manager.getInstance().hideAll();
                 menu.open();
