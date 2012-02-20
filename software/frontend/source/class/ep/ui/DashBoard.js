@@ -258,13 +258,26 @@ qx.Class.define("ep.ui.DashBoard", {
 
             moveBtn.addListener('execute',function(){
                 var cfgView = this._cfgView;
-                cfgView.show();
+                var boardView = this._boardView;
                 cfgView.freePosition(visualizer.getLayoutProperties());
-                this._boardView._remove(visualizer);
+                cfgView.show();
+                boardView._remove(visualizer);
+                this._boardGrid.invalidateLayoutCache();
                 cfgView.selectPosition(function(position){
                     cfgView.hide();
                     cfgView.blockPosition(position);
-                    this._boardView._add(visualizer,position);
+                    boardView._add(visualizer,position);
+                    var w = position.column + (position.colSpan || 1);
+                    var h = position.row + ( position.rowSpan || 1);
+
+                    var grid = this._boardGrid;
+
+                    for (var i=0;i<w;i++){
+                        grid.setColumnFlex(i,1);
+                    }
+                    for (var i=0;i<h;i++){
+                        grid.setRowFlex(i,1);
+                    }
                  },this);
             },this);
 

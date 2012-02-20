@@ -146,6 +146,7 @@ qx.Class.define("ep.ui.DashConfig", {
                  for (var yF = item.row;yF < item.row+(item.rowSpan || 1);yF++){
                      var keyF = String(xF) + ':' + String(yF);
                      this._blockMap[keyF] = true;
+                    this.debug("block "+keyF);
                  }
             }
         },
@@ -153,6 +154,7 @@ qx.Class.define("ep.ui.DashConfig", {
             for (var xF = item.column;xF < item.column+(item.colSpan || 1);xF++){
                  for (var yF = item.row;yF < item.row+(item.rowSpan || 1);yF++){
                      var keyF = String(xF) + ':' + String(yF);
+                    this.debug("free "+keyF);
                      delete this._blockMap[keyF];
                  }
             }
@@ -191,14 +193,10 @@ qx.Class.define("ep.ui.DashConfig", {
                 if (!this._first && !this._collision){
                     var position = {
                         column: this._firstX,
-                        row:    this._firstY
+                        row:    this._firstY,
+                        colSpan: x - this._firstX + 1,
+                        rowSpan: y - this._firstY + 1
                     };
-                    if (x != this._firstX){
-                        position.colSpan = x - this._firstX + 1;
-                    }
-                    if (y != this._firstY){
-                        position.rowSpan = y - this._firstY + 1;
-                    }
                     this.fireDataEvent('locationSelected',position);
                 }
             },this);
