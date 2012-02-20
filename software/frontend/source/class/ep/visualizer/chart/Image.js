@@ -37,19 +37,6 @@ qx.Class.define("ep.visualizer.chart.Image", {
             }
         },
         this);
-
-        img.addListener('loaded', function() {
-            this.debug('image loaded');
-            timer.restart();
-            this.setViewMode('ready');
-        },
-        this);
-
-        img.addListener('loadingFailed', function() {
-            this.setViewMode('nodata');
-        }, this);
-
-    
         timer.start();
     },
 
@@ -144,6 +131,7 @@ qx.Class.define("ep.visualizer.chart.Image", {
                 if (width > 0 && height > 0) {
                     /* clear out the old image first, so we get no flashing */
                     this.__img.setSource(null);
+                    this.__timer.stop();
                     var src = url + '&start=' + (end - range) + '&end=' + end + '&width=' + width + '&height=' + height;
                     if (maxInterval){
                         src += '&maxlinestep=' + String(maxInterval);
@@ -154,10 +142,20 @@ qx.Class.define("ep.visualizer.chart.Image", {
                     }
                     if (!qx.io.ImageLoader.isLoaded(src)) {
                         this.setViewMode('loading');
-                        this.__img.setSource(src);
+                        qx.io.ImageLoader.load(src,function(src,status){
+                            if (status.loaded){
+                                this.__img.setSource(src);
+                                this.__timer.restart();
+                                this.setViewMode('ready');
+                            }
+                            else {
+                                this.setViewMode('nodata');
+                            }
+                        },this);
                     }
-                    else {
+                    else {                         
                         this.__img.setSource(src);
+                        this.__timer.restart();
                         this.setViewMode('ready');
                     }
                 }
