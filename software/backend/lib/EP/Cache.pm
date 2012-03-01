@@ -28,7 +28,9 @@ EP::Cache - extopus data cache
 
 =head1 DESCRIPTION
 
-Provide node Cache services to Extopus.
+Provide node Cache services to Extopus. The cache is stored in two SQLite
+databases. One for the actual cache and the other one for persistance
+information.
 
 =cut
 
@@ -110,13 +112,21 @@ meta information on the cache content
 
 has 'meta'      => sub { {} };
 
-=head3 dbh
+=head3 dbhCa
 
 the db handle used by the cache.
 
 =cut
 
-has 'dbh';
+has 'dbhCa';
+
+=head3 dbhPe
+
+the db handle used by the persistance db.
+
+=cut
+
+has 'dbhPe';
 
 has encodeUtf8  => sub { find_encoding('utf8') };
 has tree        => sub { [] };
@@ -145,9 +155,10 @@ A hash pointer for a list of tree building configurations.
 
 =cut
 
-sub new {
-    my $self =  shift->SUPER::new(@_);
-    my $path = $self->cacheRoot.'/'.$self->user.'.sqlite';
+sub _connect {
+    my $self = shift;
+    my $suffix = shift;
+    my $path = $self->cacheRoot.'/'.$self->user.'_'.$suffix.'.sqlite';
     $self->log->debug("connecting to sqlite cache $path");
     my $dbh = DBI->connect_cached("dbi:SQLite:dbname=$path","","",{
          RaiseError => 1,
@@ -156,11 +167,16 @@ sub new {
          ShowErrorStatement => 1,
          sqlite_unicode => 1,
     });
-    $self->dbh($dbh); 
+    return $dbh;
+}
+sub new {
+    my $self =  shift->SUPER::new(@_);
+    $self->dbhCa(my $dbc = $self->_connect('cache'));
+    $self->dbhPe(my $dbp = $self->_connect('persistant'));
     do { 
-        local $dbh->{RaiseError} = undef;
-        local $dbh->{PrintError} = undef;
-        $self->meta({ map { @$_ } @{$dbh->selectall_arrayref("select key,value from meta")||[]} });
+        local $dbc->{RaiseError} = undef;
+        local $dbc->{PrintError} = undef;
+        $self->meta({ map { @$_ } @{$dbc->selectall_arrayref("select key,value from meta")||[]} });
     };
     $self->{treeCache} = {};
     my $user = $self->user;
@@ -170,8 +186,9 @@ sub new {
         $self->log->debug("checking inventory version '$version' vs '$oldVersion'");     
         if ( $oldVersion  ne  $version){
             $self->log->info("loading nodes into ".$self->cacheRoot." for $user");
-            $dbh->do("PRAGMA synchronous = 0");
-            $dbh->begin_work;
+            $dbc->do("PRAGMA synchronous = 0");
+            $dbc->begin_work;
+            $dbp->begin_work;
             if ($oldVersion){
                 $self->log->info("dropping old tables");
                 $self->dropTables;
@@ -180,9 +197,10 @@ sub new {
             $self->setMeta('version',$version);
             $self->inventory->walkInventory($self,$self->user);
             $self->log->debug("nodes for ".$self->user." loaded");
-            $dbh->commit;
-            $dbh->do("VACUUM");
-            $dbh->do("PRAGMA synchronous = 1");
+            $dbc->commit;
+            $dbp->commit;
+            $dbc->do("VACUUM");
+            $dbc->do("PRAGMA synchronous = 1");
         }
         $self->setMeta('lastup',time);
     }
@@ -197,15 +215,21 @@ crate the cache tables
 
 sub createTables {
     my $self = shift;
-    my $dbh = $self->dbh;
-    $dbh->do("CREATE TABLE branch ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
-    $dbh->do("CREATE INDEX branch_idx ON branch ( parent,name )");
-    $dbh->do("CREATE TABLE leaf ( parent INTEGER, node INTEGER)");
-    $dbh->do("CREATE INDEX leaf_idx ON leaf (parent )");
-    $dbh->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
-    $dbh->do("CREATE TABLE IF NOT EXISTS meta ( key TEXT PRIMARY KEY, value TEXT)");
-    $dbh->do("CREATE TABLE IF NOT EXISTS stable ( numid INTEGER PRIMARY KEY, textkey TEXT)");
-    $dbh->do("CREATE UNIQUE INDEX IF NOT EXISTS stable_idx ON stable(textkey)");
+    my $dbc = $self->dbhCa;
+    my $dbp = $self->dbhPe;
+    # cache tables
+    $dbc->do("CREATE TABLE branch ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
+    $dbc->do("CREATE INDEX branch_idx ON branch ( parent,name )");
+    $dbc->do("CREATE TABLE leaf ( parent INTEGER, node INTEGER)");
+    $dbc->do("CREATE INDEX leaf_idx ON leaf (parent )");
+    $dbc->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
+    $dbc->do("CREATE TABLE IF NOT EXISTS meta ( key TEXT PRIMARY KEY, value TEXT)");
+
+    # persistance tables
+    $dbp->do("CREATE TABLE IF NOT EXISTS stable (numid INTEGER PRIMARY KEY, textkey TEXT)");
+    $dbp->do("CREATE UNIQUE INDEX IF NOT EXISTS stable_idx ON stable(textkey)");
+    $dbp->do("CREATE TABLE IF NOT EXISTS dash (numid INTEGER PRIMARY KEY, lastupdate INTEGER, config TEXT)");
+    $dbp->do("CREATE INDEX IF NOT EXISTS dash_idx ON dash(lastupdate)");    
     return;
 }
 
@@ -217,7 +241,7 @@ drop data tables
 
 sub dropTables {
     my $self = shift;
-    my $dbh = $self->dbh;
+    my $dbh = $self->dbhCa;
     $dbh->do("DROP TABLE IF EXISTS branch");
     $dbh->do("DROP TABLE IF EXISTS leaf");
     $dbh->do("DROP TABLE IF EXISTS node");            
@@ -234,15 +258,16 @@ sub add {
     my $self = shift;
     my $rawNodeId = shift;
     my $nodeData = shift;
-    my $dbh = $self->dbh;
-    my $nodeId = $dbh->selectrow_array("SELECT numid FROM stable WHERE textkey = ?",{},$rawNodeId);
+    my $dbc = $self->dbhCa;
+    my $dbp = $self->dbhPe;
+    my $nodeId = $dbp->selectrow_array("SELECT numid FROM stable WHERE textkey = ?",{},$rawNodeId);
     if (not defined $nodeId){
-        $dbh->do("INSERT INTO stable (textkey) VALUES (?)",{},$rawNodeId);
-        $nodeId = $dbh->last_insert_id("","","","");
+        $dbp->do("INSERT INTO stable (textkey) VALUES (?)",{},$rawNodeId);
+        $nodeId = $dbp->last_insert_id("","","","");
     }
     $self->log->debug("keygen $rawNodeId => $nodeId");
     eval {
-        $dbh->do("INSERT INTO node (rowid,data) VALUES (?,?)",{},$nodeId,$self->json->encode($nodeData));
+        $dbc->do("INSERT INTO node (rowid,data) VALUES (?,?)",{},$nodeId,$self->json->encode($nodeData));
     };
     if ($@){
         $self->log->warn("$@");
@@ -265,7 +290,7 @@ sub setMeta {
     my $self = shift;
     my $key = shift;
     my $value = shift;
-    my $dbh = $self->dbh;
+    my $dbh = $self->dbhCa;
     $dbh->do("INSERT OR REPLACE INTO meta (key,value) VALUES (?,?)",{},$key,$value);
     $self->meta->{$key} = $value;
     return;
@@ -281,7 +306,7 @@ sub addTreeNode {
     my $self = shift;
     my $nodeId = shift;
     my $node = shift;
-    my $dbh = $self->dbh;    
+    my $dbh = $self->dbhCa;    
     my $cache = $self->{treeCache};
     my $treeData = $self->tree->($node);
     LEAF:
@@ -324,7 +349,7 @@ sub getNodeCount {
     my $self = shift;
     my $expression = shift;
     return 0 unless defined $expression;
-    my $dbh = $self->dbh;    
+    my $dbh = $self->dbhCa;    
     my $re = $dbh->{RaiseError};
     $dbh->{RaiseError} = 0;
     my $answer = (($dbh->selectrow_array("SELECT count(docid) FROM node WHERE data MATCH ?",{},$self->encodeUtf8->encode($expression)))[0]);
@@ -348,7 +373,7 @@ sub getNodes {
     return [] unless defined $expression;
     my $limit = shift || 100;
     my $offset = shift || 0;
-    my $dbh = $self->dbh;
+    my $dbh = $self->dbhCa;
     my $sth = $dbh->prepare("SELECT docid,data FROM node WHERE data MATCH ? LIMIT ? OFFSET ?");
     $sth->execute($self->encodeUtf8->encode($expression),$limit,$offset);
     my $json = $self->json;
@@ -371,7 +396,7 @@ Return node matching the given nodeId. Including the __nodeId attribute.
 sub getNode {
     my $self = shift;
     my $nodeId = shift;    
-    my $dbh = $self->dbh;
+    my $dbh = $self->dbhCa;
     my @row = $dbh->selectrow_array("SELECT data FROM node WHERE docid = ?",{},$nodeId);
     my $json = $self->json;
     my $ret = $json->decode($row[0]);
@@ -391,7 +416,7 @@ Return the data makeing up the branch starting off parent.
 sub getBranch {
     my $self = shift;
     my $parent = shift;
-    my $dbh = $self->dbh;
+    my $dbh = $self->dbhCa;
     my $sth;
 
 
