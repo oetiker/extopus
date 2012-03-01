@@ -34,6 +34,9 @@ our %allow = (
     getNodeCount => 1,
     getNodes => 1,
     getNode => 1,
+    saveDash => 1,
+    getDashCfg => 1,
+    removeDash => 1,
     getVisualizers => 1,
     visualize => 1,
 );
@@ -154,6 +157,42 @@ sub visualize {   ## no critic (RequireArgUnpacking)
     $self->visualizer->controller($self->controller);
     return $self->visualizer->visualize($instance,@_);
 }
+
+=head2 saveDash(properties,id)
+
+Save the given dashboard properties. Returns the id associated. If the id is 'null' a new id will be created
+
+=cut
+
+sub saveDash {
+    my $self = shift;
+    my $props = shift;
+    my $id = shift;
+}
+
+=head2 removeDash(id)
+
+Remove the give Dashboard from the server. Return 1 on success.
+
+=cut
+
+sub removeDash {
+    my $self = shift;
+    my $id = shift;
+    return 1;
+}
+
+=head2 getDashCfg(lastUpdate)
+
+Returns the configuration data for all the dashboards that have changed since
+the given lastUpdate timestam (EPOCH).
+
+=cut
+
+sub getDashCfg {
+    my $self = shift;
+    return # $cfg;
+}        
 
 1;
 __END__
