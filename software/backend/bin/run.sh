@@ -5,7 +5,7 @@ export QX_SRC_MODE=1
 #export QX_SRC_PATH=
 export HTTP_PROXY=http://localhost:31283
 export PERL5LIB=`pwd`/../../../../upc-torrus/upc-software/SIAM-Driver-Cablecom/lib
-#export PERL5OPT="-I../../thirdparty/lib/perl5 -d:NYTProf"
-#export NYTPROF=start=no
+#export PERL5OPT="-I../thirdparty/lib/perl5 -d:NYTProf"
+# export NYTPROF=start=no
 # export EXTOPUS_CONF=/home/oetiker/checkouts/extopus/software/backend/etc/extopus.cfg
 exec ./ep.pl daemon --listen 'http://*:18476'
