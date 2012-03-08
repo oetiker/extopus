@@ -159,7 +159,7 @@ sub _connect {
     my $self = shift;
     my $suffix = shift;
     my $path = $self->cacheRoot.'/'.$self->user.'_'.$suffix.'.sqlite';
-    $self->log->debug("connecting to sqlite cache $path");
+    # $self->log->debug("connecting to sqlite cache $path");
     my $dbh = DBI->connect_cached("dbi:SQLite:dbname=$path","","",{
          RaiseError => 1,
          PrintError => 1,
@@ -442,6 +442,85 @@ sub getBranch {
         push @sortedBranches, $branch;
     }
     return \@sortedBranches;
+}
+
+=head2 getDashList(lastFetch)
+
+Return a list of Dashboards on file, supplying detailed configuration data for those
+that changed since lastFetch (epoch time).
+
+ [
+    { id => i1, up => x1, cfg => z1 }
+    { id => i2, up => x2, cfg => z2 }
+    { id => i3 }
+ ]
+
+=cut
+
+sub getDashList {
+    my $self = shift;
+    my $lastUp = shift;
+    my $dbh = $self->dbhPe;
+    my @data = @{$dbh->selectall_arrayref("SELECT numid, lastupdate, CASE WHEN lastupdate > ? THEN config ELSE 0 END AS cf FROM dash",{},$lastUp)};
+    my @ret;
+    for (@data){
+        my %r;
+        $r{id} = $_->[0];
+        if ($_->[2]){
+           $r{up} = $_->[1];
+           $r{cfg} = $self->json->decode($_->[2]);
+        }
+        push @ret, \%r;
+    }
+    return \@ret;
+}
+
+=head2 saveDash(config,id,updateTime)
+
+Save the given dashboard properties. Returns the id associated. If the id is
+'null' a new id will be created. If the id is given, but the update time is
+different in the dash on file, then a new copy of the dash will be written
+to disk and appropriate information returned
+
+Returns:
+
+ { id => x, up => y }
+
+=cut
+
+sub saveDash  {
+    my $self = shift;
+    my $cfg = $self->json->encode(shift);
+    my $id = shift;
+    my $updateTime = shift;
+    my $dbh = $self->dbhPe;
+    my $now = time;
+    if ($id){
+        my $rows = $dbh->do("UPDATE dash SET lastupdate = ?, config = ? WHERE numid = ? and lastupdate = ?",{},
+            $now,$cfg,$id,$updateTime);
+        if ($rows == 1){
+            return { id => $id, updateTime => $now }
+        }
+    }
+    $dbh->do("INSERT INTO dash (lastupdate,config) VALUES (?,?)",{},$now,$cfg);
+    my $newId = $dbh->last_insert_id("","","","");
+    return { id => $newId,  up => $now };
+}
+
+=head2 deleteDash(id, updateTime)
+
+Remove the said dashboard, but only if the updateTime is correct.
+
+Returns 1 for success and 0 for failure.
+
+=cut
+
+sub deleteDash {
+    my $self = shift;
+    my $id = shift;
+    my $updateTime = shift;
+    my $rows = $self->dbhPe->do("DELETE FROM dash WHERE numid = ? and lastupdate = ?",{},$id,$updateTime);
+    return $rows == 1;
 }
 
 1;

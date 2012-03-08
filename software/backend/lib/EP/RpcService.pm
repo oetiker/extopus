@@ -158,40 +158,58 @@ sub visualize {   ## no critic (RequireArgUnpacking)
     return $self->visualizer->visualize($instance,@_);
 }
 
-=head2 saveDash(properties,id)
+=head2 saveDash(config,id,update)
 
-Save the given dashboard properties. Returns the id associated. If the id is 'null' a new id will be created
+Save the given dashboard properties. Returns the id associated. If the id is
+'null' a new id will be created. If the id is given, but the update time is
+different in the dash on file, then a new copy of the dash will be written
+to disk and appropriate information returned
+
+Returns:
+
+ { id => x, up => y }
 
 =cut
 
 sub saveDash {
     my $self = shift;
-    my $props = shift;
+    my $config = shift;
     my $id = shift;
+    my $updateTime = shift; 
+    return $self->cache->saveDash($config,$id,$updateTime);
 }
 
-=head2 removeDash(id)
+=head2 removeDash(id,update)
 
-Remove the give Dashboard from the server. Return 1 on success.
+Remove the give Dashboard from the server if id AND updateTime match. Return
+1 on success.
 
 =cut
 
 sub removeDash {
     my $self = shift;
     my $id = shift;
-    return 1;
+    my $updateTime = shift;
+    return $self->cache->removeDash($id,$updateTime);
 }
 
-=head2 getDashCfg(lastUpdate)
+=head2 getDashList(lastUpdate)
 
-Returns the configuration data for all the dashboards that have changed since
-the given lastUpdate timestam (EPOCH).
+Return a list of Dashboards on file, supplying detailed configuration data for those
+that changed since lastFetch (epoch time).
+
+ [
+    { id => i1, up => x1, cfg => z1 }
+    { id => i2, up => x2, cfg => z2 }
+    { id => i3 }
+ ]
 
 =cut
 
-sub getDashCfg {
+sub getDashList {
     my $self = shift;
-    return # $cfg;
+    my $lastUpdate = shift;    
+    return $self->cache->getDashList($lastUpdate);
 }        
 
 1;
