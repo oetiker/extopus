@@ -13,7 +13,6 @@ for module in \
     Mojo::JSON::Any \
     Excel::Writer::XLSX  \
     Spreadsheet::WriteExcel \
-    Mojolicious::Plugin::MySQLViewerLite \
 ; do
     perlmodule $module
 done
