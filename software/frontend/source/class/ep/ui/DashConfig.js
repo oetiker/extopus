@@ -37,14 +37,16 @@ qx.Class.define("ep.ui.DashConfig", {
      * </pre>
      */
 
-    construct : function(dimensions) {
+    construct : function(masterGrid) {
         this.base(arguments);
         this.setBackgroundColor('#ffffff');
         var grid = this._grid = new qx.ui.layout.Grid(1,1);
         this._setLayout(grid);
-        this.setDimensions(dimensions);
         this._atomMap = {};
         this._blockMap = {};
+        this._masterGrid = masterGrid;
+
+        this.setDimensions([0,0,1,1]);
 
         for (var x=1;x < this._width+1;x++){
             grid.setColumnFlex(x,1);
@@ -64,7 +66,7 @@ qx.Class.define("ep.ui.DashConfig", {
             this._first = true;
             ep.ui.ShortNote.getInstance().setNote(this.tr("Select a location for the visualizer."));
             this._updateDeco();
-        });
+        },this);
         this._blockMap = {};
     },
 
@@ -126,7 +128,26 @@ qx.Class.define("ep.ui.DashConfig", {
         _width: null,
         _height: null,
         _collision: true,
-
+        _masterGrid: null,
+        _ghLeft: false,
+        _ghRight: false,
+        _ghTop: false,
+        _ghBottom: false,
+        /**
+         * adjust the grid size to that of the master grid 
+         */
+        syncGrid: function(){
+            var mgcc = this._masterGrid.getColumnCount();
+            for (var x = this._width; x < mgcc; x++){
+                this.setMaxX(this.getMaxX()+1);
+                this._addCol();
+            }
+            var mgrc = this._masterGrid.getRowCount();
+            for (var y = this._height; y < mgrc; y++){
+                this.setMaxY(this.getMaxY()+1);
+                this._addRow();
+            }
+        },
         /**
          * let the user pick a position on the grid and run the callback once
          * it is done, providing a position argument.
@@ -262,61 +283,59 @@ qx.Class.define("ep.ui.DashConfig", {
         },
 
         _addGrowHandles: function(){
-            var left = this._makeGrowHandle("ep/left.png");
-            var right = this._makeGrowHandle("ep/right.png");
-            var top = this._makeGrowHandle("ep/up.png");
-            var bottom = this._makeGrowHandle("ep/down.png");
+            var left = this._ghLeft = this._makeGrowHandle("ep/left.png");
+            var right = this._ghRight = this._makeGrowHandle("ep/right.png");
+            var top = this._ghTop = this._makeGrowHandle("ep/up.png");
+            var bottom = this._ghBottom = this._makeGrowHandle("ep/down.png");
             var that = this;
-            var addHandles = function(){
-                that._add(left  ,{column: 0,             row: 1,              rowSpan: that._height});
-                that._add(right ,{column: that._width+1, row: 1,              rowSpan: that._height});
-                that._add(top   ,{column: 1,             row: 0,              colSpan: that._width});
-                that._add(bottom,{column: 1,             row: that._height+1, colSpan: that._width});
-            };
-
-            var addCol = function(){
-                addHandles();
-                for(var y=0;y<that._height;y++){
-                    var x = that._width-1;
-                    var a = that._makeAtom(x,y);
-                    that._add(a,{column: x+1, row: y+1});
-                }
-                that._grid.setColumnFlex(that._width,1);
-                that._updateDeco();
-            };
-
-            var addRow = function(){
-                addHandles();
-                for(var x=0;x<that._width;x++){
-                    var y = that._height-1;
-                    var a = that._makeAtom(x,y);
-                    that._add(a,{column: x+1, row: y+1});
-                }
-                that._grid.setRowFlex(that._height,1);        
-                that._updateDeco();
-            };
-
             left.addListener('click',function(e){
                 that.setMinX(that.getMinX()-1);
-                addCol();
+                that._addCol();
             });
 
             right.addListener('click',function(e){
                 that.setMaxX(that.getMaxX()+1);
-                addCol();
+                that._addCol();
             });
 
             top.addListener('click',function(e){
                 that.setMinY(that.getMinY()-1);
-                addRow();
+                that._addRow();
             });
 
             bottom.addListener('click',function(e){
                 that.setMaxY(that.getMaxY()+1);
-                addRow();
+                that._addRow();
             });
+            that._addHandles();
+        },
+        _addHandles: function(){
+            this._add(this._ghLeft  ,{column: 0,             row: 1,              rowSpan: this._height});
+            this._add(this._ghRight ,{column: this._width+1, row: 1,              rowSpan: this._height});
+            this._add(this._ghTop   ,{column: 1,             row: 0,              colSpan: this._width});
+            this._add(this._ghBottom,{column: 1,             row: this._height+1, colSpan: this._width});
+         },
 
-            addHandles();
+        _addCol: function(){
+            this._addHandles();
+            for(var y=0;y<this._height;y++){
+                var x = this._width-1;
+                var a = this._makeAtom(x,y);
+                this._add(a,{column: x+1, row: y+1});
+            }
+            this._grid.setColumnFlex(this._width,1);
+            this._updateDeco();
+         },
+
+         _addRow: function(){
+            this._addHandles();
+            for(var x=0;x<this._width;x++){
+                var y = this._height-1;
+                var a = this._makeAtom(x,y);
+                this._add(a,{column: x+1, row: y+1});
+            }
+            this._grid.setRowFlex(this._height,1);        
+            this._updateDeco()
         }
     }
 });

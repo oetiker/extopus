@@ -212,14 +212,19 @@ qx.Class.define("ep.ui.MsgBox", {
         warn : function(titel, text, exec_action) {
             this.__body.setIcon("icon/32/status/dialog-warning.png");
             this.setIcon("icon/16/status/dialog-warning.png");
-            this.__btn_ok.setVisibility('excluded');
-            this.__btn_cnl.setVisibility('visible');
-            this.__btn_app.setVisibility('visible');
             if (exec_action){
+                this.__btn_ok.setVisibility('excluded');
+                this.__btn_cnl.setVisibility('visible');
+                this.__btn_app.setVisibility('visible');
                 var listener = this.__btn_app.addListenerOnce("execute", exec_action);
                 this.addListenerOnce('close', function() {
                     this.removeListenerById(listener);
                 }, this);
+            }
+            else {
+                this.__btn_app.setVisibility('excluded');
+                this.__btn_cnl.setVisibility('excluded');
+                this.__btn_ok.setVisibility('visible');
             }
             this.__open(titel, text);
         }

@@ -7,12 +7,11 @@
 
 /*
 #asset(qx/icon/${qx.icontheme}/16/actions/document-save.png)
-#asset(qx/icon/${qx.icontheme}/48/actions/view-fullscreen.png)
-#asset(qx/icon/${qx.icontheme}/48/actions/dialog-close.png)
-#asset(qx/icon/${qx.icontheme}/48/actions/dialog-cancel.png)
+#asset(qx/icon/${qx.icontheme}/48/actions/document-properties.png)
+#asset(qx/icon/${qx.icontheme}/48/places/user-trash.png)
 */
 /**
- * Dashboard Widget showing multiple of visualization Plugins on a single page
+  * Dashboard Widget showing multiple of visualization Plugins on a single page
   */
 qx.Class.define("ep.ui.DashBoard", {
     extend : qx.ui.tabview.Page,
@@ -21,9 +20,8 @@ qx.Class.define("ep.ui.DashBoard", {
      * a unique identity with the {ep.ui.DashManager}.
      * 
      * @param name {String} name for the dashboard page
-     * @param dimension {Array} minX,minY,maxX,maxY
      */
-    construct : function(name,dimension) {                
+    construct : function(name) {                
         this.base(arguments, name);        
         this.set({
             layout: new qx.ui.layout.Grow
@@ -33,14 +31,26 @@ qx.Class.define("ep.ui.DashBoard", {
         this._boardView.set({
             backgroundColor: '#bfbfbf'
         });        
-        this.add(this._cfgView = new ep.ui.DashConfig(dimension));
+        this.add(this._cfgView = new ep.ui.DashConfig(this._boardGrid));
         this._cfgView.hide();
         this._addLabelEditor();
         this._addButtonMenu();
+        this.setConfig([]);
     },
     properties: {
         config: {
-            apply: '_applyConfig'
+        },
+        /**
+         * the server side identification number of the dashboard
+         */
+        dashId: {            
+            nullable: true
+        },
+        /**
+         * when was the dashboard last updated on the server
+         */
+        updateTime: {
+            nullable: true
         }
     },
     events: {
@@ -52,6 +62,18 @@ qx.Class.define("ep.ui.DashBoard", {
         _boardView: null,
         _boardGrid: null,
         _labelEditor: null,
+        /**
+         * Save the Dashboard on the server
+         */
+        save: function(){
+            var rpc = ep.data.Server.getInstance();
+            var that = this;
+            rpc.callAsyncSmart(function(ret){
+                that.setDashId(ret.id);
+                that.setUpdateTime(ret.up);
+            },'saveDash',this.getConfig(),this.getLabel(),this.getDashId(),this.getUpdateTime());        
+
+        },
         /**
          * create the label editor
          */
@@ -74,6 +96,7 @@ qx.Class.define("ep.ui.DashBoard", {
             },this);
             edit.addListener("blur", function(e){
                 if (this.getLabel()){
+                    this.save();
                     popup.hide();
                 }
             },this);
@@ -109,10 +132,10 @@ qx.Class.define("ep.ui.DashBoard", {
             popup.show();
         },
 
-        addVisualizerWidget: function(widget,position){
+        _addVisualizerWidget: function(widget,position){
             var box = new qx.ui.container.Composite(new qx.ui.layout.Grow());
             box.add(widget);
-            box.add(this._makeVizEditBox(box));
+            box.add(this._makeVizEditBox(box,widget));
             var w = position.column + (position.colSpan || 1);
             var h = position.row + ( position.rowSpan || 1);
 
@@ -143,18 +166,27 @@ qx.Class.define("ep.ui.DashBoard", {
             var rpc = ep.data.Server.getInstance();
             var that = this;
             rpc.callAsyncSmart(function(vizList){
+                    var cfgList = that.getConfig();
                     var ctrl = that._makeVisualizer(cfg,vizList);
                     if (ctrl){
+                        var cfgListItem = { cfg: cfg };
+                        ctrl.setUserData('cfgListItem',cfgListItem);
                         if (position == null){
                             that._cfgView.show();
-                            that._cfgView.selectPosition(function(position){
-                                that._cfgView.hide();
-                                that.addVisualizerWidget(ctrl,position);
+                            that._cfgView.selectPosition(function(position){        
+                                cfgListItem.position = position;
+                                cfgList.push(cfgListItem);
+                                that.save();
+                                that._cfgView.hide();                                
+                                that._addVisualizerWidget(ctrl,position);
                             },that);
                         }
                         else {
-                            that.addVisualizerWidget(ctrl,position);
+                            that._addVisualizerWidget(ctrl,position);
+                            cfgListItem.position = position;
+                            cfgList.push(cfgListItem);
                         }
+                        that._cfgView.syncGrid();
                     }   
                 },
                 'getVisualizers', 
@@ -213,7 +245,7 @@ qx.Class.define("ep.ui.DashBoard", {
         /**
          * Make a visualizer Edit Box
          */       
-        _makeVizEditBox: function(visualizer){
+        _makeVizEditBox: function(box,visualizer){
             var editBox = new qx.ui.container.Composite(new qx.ui.layout.HBox(3,'center').set({
                 alignY: 'middle'
             })).set({
@@ -222,21 +254,18 @@ qx.Class.define("ep.ui.DashBoard", {
                 backgroundColor: 'rgba(0,0,0,0.4)',
                 visibility: 'excluded'
             });
-            var moveBtn = new qx.ui.form.Button(null,"icon/48/actions/view-fullscreen.png").set({
+            var moveBtn = new qx.ui.basic.Atom(null,"icon/48/actions/document-properties.png").set({
                 allowGrowY: false
             });
-            var removeBtn = new qx.ui.form.Button(null,"icon/48/actions/dialog-close.png").set({
+            var removeBtn = new qx.ui.basic.Atom(null,"icon/48/places/user-trash.png").set({
                 allowGrowY: false
             });            
             editBox.add(moveBtn);
             editBox.add(removeBtn);
-
-            var cancelBtn = new qx.ui.form.Button(null,"icon/48/actions/dialog-cancel.png").set({
-                allowGrowY: false
-            });            
-            editBox.add(cancelBtn);
-
-            cancelBtn.addListener('execute',function(){
+            editBox.addListener('click',function(){
+                this.fireEvent('endEditMode');
+            },this);
+            editBox.addListener('disappear',function(){
                 this.fireEvent('endEditMode');
             },this);
 
@@ -248,25 +277,36 @@ qx.Class.define("ep.ui.DashBoard", {
                 editBox.hide();
             });
 
-            removeBtn.addListenerOnce('execute',function(){
-                this._boardView._remove(visualizer);
+            removeBtn.addListenerOnce('click',function(){
+                this._boardView._remove(box);
                 this.removeListenerById(startLst);
                 this.removeListenerById(endLst);                    
-                this._cfgView.freePosition(visualizer.getLayoutProperties());
-                visualizer.dispose();
+                this._cfgView.freePosition(box.getLayoutProperties());
+                var cfgList = this.getConfig();
+                var cfgItem = visualizer.getUserData('cfgListItem');
+                for (var i = 0; i < cfgList.length;i++){
+                    if (cfgList[i] === cfgItem){
+                        cfgList.splice(i,1);
+                        break;
+                    }
+                }
+                this.save();
+                box.dispose();
             },this);
 
-            moveBtn.addListener('execute',function(){
+            moveBtn.addListener('click',function(){
                 var cfgView = this._cfgView;
                 var boardView = this._boardView;
-                cfgView.freePosition(visualizer.getLayoutProperties());
+                cfgView.freePosition(box.getLayoutProperties());
                 cfgView.show();
-                boardView._remove(visualizer);
+                boardView._remove(box);
                 this._boardGrid.invalidateLayoutCache();
                 cfgView.selectPosition(function(position){
                     cfgView.hide();
                     cfgView.blockPosition(position);
-                    boardView._add(visualizer,position);
+                    visualizer.getUserData('cfgListItem').position = position;
+                    this.save();
+                    boardView._add(box,position);
                     var w = position.column + (position.colSpan || 1);
                     var h = position.row + ( position.rowSpan || 1);
 

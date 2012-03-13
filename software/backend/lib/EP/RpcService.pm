@@ -34,11 +34,11 @@ our %allow = (
     getNodeCount => 1,
     getNodes => 1,
     getNode => 1,
-    saveDash => 1,
-    getDashCfg => 1,
-    removeDash => 1,
     getVisualizers => 1,
     visualize => 1,
+    saveDash => 1,
+    getDashList => 1,
+    deleteDash => 1,
 );
 
 has 'controller';
@@ -158,7 +158,7 @@ sub visualize {   ## no critic (RequireArgUnpacking)
     return $self->visualizer->visualize($instance,@_);
 }
 
-=head2 saveDash(config,id,update)
+=head2 saveDash(config,label,id,update)
 
 Save the given dashboard properties. Returns the id associated. If the id is
 'null' a new id will be created. If the id is given, but the update time is
@@ -173,24 +173,19 @@ Returns:
 
 sub saveDash {
     my $self = shift;
-    my $config = shift;
-    my $id = shift;
-    my $updateTime = shift; 
-    return $self->cache->saveDash($config,$id,$updateTime);
+    return $self->cache->saveDash(@_);
 }
 
-=head2 removeDash(id,update)
+=head2 deleteDash(id,update)
 
 Remove the give Dashboard from the server if id AND updateTime match. Return
 1 on success.
 
 =cut
 
-sub removeDash {
+sub deleteDash {
     my $self = shift;
-    my $id = shift;
-    my $updateTime = shift;
-    return $self->cache->removeDash($id,$updateTime);
+    return $self->cache->deleteDash(@_);
 }
 
 =head2 getDashList(lastUpdate)
@@ -208,8 +203,7 @@ that changed since lastFetch (epoch time).
 
 sub getDashList {
     my $self = shift;
-    my $lastUpdate = shift;    
-    return $self->cache->getDashList($lastUpdate);
+    return $self->cache->getDashList(@_);
 }        
 
 1;

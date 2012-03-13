@@ -202,10 +202,6 @@ qx.Class.define("ep.ui.View", {
             },
             this);
 
-            win.addListener('focus',function(){
-                 ep.data.RemoteControl.getInstance().setState(page.getVisualizer().buildLink())
-            },this);
-
             win.addListenerOnce('minimize', function(e) {
                 win.remove(page);
                 this.getApplicationRoot().remove(win);

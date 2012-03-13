@@ -22,19 +22,27 @@ qx.Class.define("ep.ui.ViewMenu", {
         var dm = ep.ui.DashManager.getInstance();
         dm.getBoardList().forEach(this.registerBoard,this);
 
-        var breakOutBtn = new qx.ui.menu.Button(this.tr("Breakout"));
+        var breakOutBtn = new qx.ui.menu.Button(this.tr("Breakout Window"));
         breakOutBtn.addListener('execute',function(e){
             this._tab.fireDataEvent("breakout", this._tab);
         },this);
         this.add(breakOutBtn);
+
+        var link = new qx.ui.menu.Button(this.tr("Show Direkt Link"));
+        link.addListener('execute',function(e){
+            ep.data.RemoteControl.getInstance().setState(this._tab.getVisualizer().buildLink());
+        },this);
+        this.add(link);
+        
         var nd;
         var dashMenu = this._dashMenu = new qx.ui.menu.Menu();
         this.add(new qx.ui.menu.Button(this.tr("Add to Dashboard"),null,null,dashMenu));
 
         dashMenu.add(nd = new qx.ui.menu.Button("New ..."));
         nd.addListener('execute',function(){
-            var board = ep.ui.DashManager.getInstance().newBoard(null,[0,0,1,1]);
+            var board = ep.ui.DashManager.getInstance().newBoard(null);
             board.addVisualizer(this._tab.getVisualizer().getVizualizerConfig());
+            ep.ui.Desktop.getInstance().setSelection([board]);
         },this);
     },
     members: {

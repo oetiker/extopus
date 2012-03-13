@@ -4,10 +4,6 @@
    Authors:   Tobi Oetiker <tobi@oetiker.ch>
    Utf8Check: äöü
 ************************************************************************ */
-
-/*
-#asset(qx/icon/${qx.icontheme}/16/actions/list-add.png)
-*/
 /**
  * Build the desktop. This is a singleton. So that the desktop
  * object and with it the treeView and the searchView are universaly accessible
@@ -40,7 +36,7 @@ qx.Class.define("ep.ui.Desktop", {
         add: function(page){
             // we can not use the regular add, since I added an extra
             // item to the tabView slide bar ... tabs would get missaligned
-            this._tabView.addAt(page,this._tabView.getChildren().length-1);
+            this._tabView.addAt(page,this._tabView.getChildren().length);
         },
        /**
         * addAt an extra Tab to the TabView at a particular position
@@ -88,10 +84,16 @@ qx.Class.define("ep.ui.Desktop", {
             searchPage.add(searchView);
             tabView.add(searchPage);
 
-            /* add New tab Button */
-         
-            this._addPlusMenu();
-   
+            searchPage.getChildControl('button').set({
+                marginRight: 4
+            });
+            /* add ServerMenu tab Button */
+
+            var dashServerMenu = new ep.ui.DashServerMenu();
+            tabView.getChildControl('bar').add(dashServerMenu.getOpener());
+
+                     
+
             /* add title */
 
             if (cfg.frontend.title) {
@@ -136,42 +138,7 @@ qx.Class.define("ep.ui.Desktop", {
             about.addListener('click', function() {
                 qx.bom.Window.open('http://extopus.org/', '_blank');
             });
-
             this._add(about);
-        },
-        /**
-         * add the plus menu into the tabview bar
-         */
-        _addPlusMenu: function(){    
-            var plus = new qx.ui.basic.Atom(null,"icon/16/actions/list-add.png").set({
-                margin: [4,4,4,4],
-                appearance: "menubar-button",
-                center: true,
-                show: 'icon'
-            });
-            var menu = new qx.ui.menu.Menu().set({
-                opener: plus
-            });
-            menu.add(new qx.ui.menu.Button("Add Tab from Server"));
-            plus.addListener('click',function(){
-                qx.ui.menu.Manager.getInstance().hideAll();
-                menu.open();
-                plus.addState("pressed");
-            });
-            plus.addListener('mouseover', function(){
-                plus.addState("hovered");
-            });
-            plus.addListener('mouseout', function(){
-                plus.removeState("hovered");
-            });
-            menu.addListener('appear',function(){
-                plus.addState("pressed");                
-            });
-            menu.addListener('disappear',function(){
-                plus.removeState("pressed");                
-            });
-            
-            this._tabView.getChildControl('bar').add(plus);
         }
     }
 });

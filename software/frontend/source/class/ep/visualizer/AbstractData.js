@@ -37,9 +37,9 @@ qx.Class.define("ep.visualizer.AbstractData", {
      */
     construct : function(instance,title, args, view, form) {
         this.base(arguments, instance,title, args, view);
-        form.addListener('changeData',function(){
-            ep.data.RemoteControl.getInstance().setState(this.buildLink())
-        },this);
+//        form.addListener('changeData',function(){
+//            ep.data.RemoteControl.getInstance().setState(this.buildLink())
+//        },this);
         this._setLayout(new qx.ui.layout.VBox(10));
         var titleContainer = this.__titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(8).set({ alignY : 'middle' }));
         if (!args.compact){

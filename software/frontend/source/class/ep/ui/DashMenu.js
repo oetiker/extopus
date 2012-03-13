@@ -19,9 +19,10 @@ qx.Class.define("ep.ui.DashMenu", {
     construct : function() {
         this.base(arguments);
         var btn = [
-            [ 'ren',this.tr("Rename Tab"),   null, function(e){ this._board.editLabel(); }],
+            [ 'ren',this.tr("Rename Board"),   null, function(e){ this._board.editLabel(); }],
             [ 'edt',this.tr("Edit Board"),   null, function(e){ this._board.fireEvent.call(this._board,'startEditMode'); }],
-            [ 'rm',this.tr("Remove Tab"),    null, function(e){ this._board.fireEvent.call(this._board,'close'); }]
+            [ 'rm',this.tr("Hide Board"),    null, function(e){ this._board.fireEvent.call(this._board,'close'); }],
+            [ 'srm',this.tr("Delete Board"),  null, this._deleteBoard]
         ];
         var menuBtn = {};
         btn.forEach(function(item){
@@ -34,11 +35,21 @@ qx.Class.define("ep.ui.DashMenu", {
     },
     members: {
         _board: null,
+        _deleteBoard: function(e){
+            var rpc = ep.data.Server.getInstance();
+            var board = this._board;
+            rpc.callAsyncSmart(function(ret){
+                if (!ret){
+                    ep.ui.MsgBox.getInstance().warn("Failed to Remove Dashboard","The Dashboard may have been modified in the mean time.");
+                }
+                board.fireEvent.call(board,'close');
+            },'deleteDash',board.getDashId(),board.getUpdateTime());
+        },
         /**
          * Show the dashBoard menu at the given widget position
          * 
          * @param widget {Widget} widget for positioning the menu
-         */
+         */        
         showMenu: function(button,board){
             this._board = board;
             this.setOpener(button);

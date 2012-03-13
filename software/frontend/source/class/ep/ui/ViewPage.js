@@ -90,7 +90,7 @@ qx.Class.define("ep.ui.ViewPage", {
             var button = this.getChildControl('button');
 
             if (button.hasState('checked')) {
-                ep.data.RemoteControl.getInstance().setState(this.getVisualizer().buildLink());
+//              ep.data.RemoteControl.getInstance().setState(this.getVisualizer().buildLink());
                 this._menuButton.show();
             } else {
                 this._menuButton.exclude();

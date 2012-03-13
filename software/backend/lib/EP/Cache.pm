@@ -228,7 +228,7 @@ sub createTables {
     # persistance tables
     $dbp->do("CREATE TABLE IF NOT EXISTS stable (numid INTEGER PRIMARY KEY, textkey TEXT)");
     $dbp->do("CREATE UNIQUE INDEX IF NOT EXISTS stable_idx ON stable(textkey)");
-    $dbp->do("CREATE TABLE IF NOT EXISTS dash (numid INTEGER PRIMARY KEY, lastupdate INTEGER, config TEXT)");
+    $dbp->do("CREATE TABLE IF NOT EXISTS dash (numid INTEGER PRIMARY KEY, lastupdate INTEGER, label TEXT, config TEXT)");
     $dbp->do("CREATE INDEX IF NOT EXISTS dash_idx ON dash(lastupdate)");    
     return;
 }
@@ -450,8 +450,8 @@ Return a list of Dashboards on file, supplying detailed configuration data for t
 that changed since lastFetch (epoch time).
 
  [
-    { id => i1, up => x1, cfg => z1 }
-    { id => i2, up => x2, cfg => z2 }
+    { id => i1, up => x1, lb => l1, cfg => z1 }
+    { id => i2, up => x2, lb => l2, cfg => z2 }
     { id => i3 }
  ]
 
@@ -459,23 +459,24 @@ that changed since lastFetch (epoch time).
 
 sub getDashList {
     my $self = shift;
-    my $lastUp = shift;
+    my $lastUp = shift // 0;
     my $dbh = $self->dbhPe;
-    my @data = @{$dbh->selectall_arrayref("SELECT numid, lastupdate, CASE WHEN lastupdate > ? THEN config ELSE 0 END AS cf FROM dash",{},$lastUp)};
+    my @data = @{$dbh->selectall_arrayref("SELECT numid, lastupdate, label, CASE WHEN lastupdate > ? THEN config ELSE 0 END AS cf FROM dash ORDER by label",{},$lastUp)};
     my @ret;
     for (@data){
         my %r;
         $r{id} = $_->[0];
-        if ($_->[2]){
+        if ($_->[3]){
            $r{up} = $_->[1];
-           $r{cfg} = $self->json->decode($_->[2]);
+           $r{lb} = $_->[2];
+           $r{cfg} = $self->json->decode($_->[3]);
         }
         push @ret, \%r;
     }
     return \@ret;
 }
 
-=head2 saveDash(config,id,updateTime)
+=head2 saveDash(config,label,id,updateTime)
 
 Save the given dashboard properties. Returns the id associated. If the id is
 'null' a new id will be created. If the id is given, but the update time is
@@ -491,18 +492,19 @@ Returns:
 sub saveDash  {
     my $self = shift;
     my $cfg = $self->json->encode(shift);
+    my $label = shift;
     my $id = shift;
     my $updateTime = shift;
     my $dbh = $self->dbhPe;
     my $now = time;
     if ($id){
-        my $rows = $dbh->do("UPDATE dash SET lastupdate = ?, config = ? WHERE numid = ? and lastupdate = ?",{},
-            $now,$cfg,$id,$updateTime);
+        my $rows = $dbh->do("UPDATE dash SET lastupdate = ?, label = ?, config = ? WHERE numid = ? and lastupdate = ?",{},
+            $now,$label,$cfg,$id,$updateTime);
         if ($rows == 1){
-            return { id => $id, updateTime => $now }
+            return { id => $id, up => $now }
         }
     }
-    $dbh->do("INSERT INTO dash (lastupdate,config) VALUES (?,?)",{},$now,$cfg);
+    $dbh->do("INSERT INTO dash (lastupdate,label,config) VALUES (?,?,?)",{},$now,$label,$cfg);
     my $newId = $dbh->last_insert_id("","","","");
     return { id => $newId,  up => $now };
 }

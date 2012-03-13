@@ -92,9 +92,9 @@ qx.Class.define("ep.visualizer.Chart", {
                 }
             }
         ]);
-        form.addListener('changeData',function(){               
-            ep.data.RemoteControl.getInstance().setState(this.buildLink())    
-        },this);    
+//        form.addListener('changeData',function(){               
+//            ep.data.RemoteControl.getInstance().setState(this.buildLink())    
+//        },this);    
         titleContainer.add(form);
         titleContainer.add(new qx.ui.core.Spacer(10), { flex : 1 });
 
@@ -180,6 +180,7 @@ qx.Class.define("ep.visualizer.Chart", {
             }
             else {           
                 this._cfgForm.setData(cfg);
+                this.__chart.reloadChart();
             }
         },
 
