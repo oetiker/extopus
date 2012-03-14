@@ -140,7 +140,7 @@ qx.Class.define("ep.ui.DashBoard", {
             var h = position.row + ( position.rowSpan || 1);
 
             var grid = this._boardGrid;
-
+            /* do not die if we fail to add an item */
             this._boardView._add(box,position);
             this._cfgView.blockPosition(position);
             for (var i=0;i<w;i++){
@@ -174,17 +174,29 @@ qx.Class.define("ep.ui.DashBoard", {
                         if (position == null){
                             that._cfgView.show();
                             that._cfgView.selectPosition(function(position){        
-                                cfgListItem.position = position;
-                                cfgList.push(cfgListItem);
-                                that.save();
                                 that._cfgView.hide();                                
-                                that._addVisualizerWidget(ctrl,position);
+                                /* only add and save if successfully placed */
+                                try { 
+                                    that._addVisualizerWidget(ctrl,position);
+                                    cfgList.push(cfgListItem);
+                                    cfgListItem.position = position;
+                                    that.save();
+                                }
+                                catch(err){
+                                    this.debug(err);
+                                }
                             },that);
                         }
                         else {
-                            that._addVisualizerWidget(ctrl,position);
-                            cfgListItem.position = position;
-                            cfgList.push(cfgListItem);
+                            /* only add and save if successfully placed */
+                            try { 
+                                that._addVisualizerWidget(ctrl,position);
+                                cfgListItem.position = position;
+                                cfgList.push(cfgListItem);
+                            }
+                            catch(err){
+                                this.debug(err);
+                            }
                         }
                         that._cfgView.syncGrid();
                     }   
@@ -303,10 +315,16 @@ qx.Class.define("ep.ui.DashBoard", {
                 this._boardGrid.invalidateLayoutCache();
                 cfgView.selectPosition(function(position){
                     cfgView.hide();
-                    cfgView.blockPosition(position);
-                    visualizer.getUserData('cfgListItem').position = position;
-                    this.save();
-                    boardView._add(box,position);
+                    try {
+                        boardView._add(box,position);
+                        cfgView.blockPosition(position);
+                        visualizer.getUserData('cfgListItem').position = position;
+                        this.save();
+                    }
+                    catch (err){
+                        this.debug(err);
+                    }
+                        
                     var w = position.column + (position.colSpan || 1);
                     var h = position.row + ( position.rowSpan || 1);
 

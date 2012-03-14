@@ -129,10 +129,8 @@ qx.Class.define("ep.ui.DashConfig", {
         _height: null,
         _collision: true,
         _masterGrid: null,
-        _ghLeft: false,
-        _ghRight: false,
-        _ghTop: false,
-        _ghBottom: false,
+        _ghRight: null,
+        _ghBottom: null,
         /**
          * adjust the grid size to that of the master grid 
          */
@@ -276,33 +274,20 @@ qx.Class.define("ep.ui.DashConfig", {
             var handle = new qx.ui.form.Button(null,icon).set({
                 center: true,
                 show: 'icon',
-                padding: [4,4,4,4],
+                padding: [6,6,6,6],
                 margin: [2,2,2,2]
             });
             return handle;
         },
 
         _addGrowHandles: function(){
-            var left = this._ghLeft = this._makeGrowHandle("ep/left.png");
             var right = this._ghRight = this._makeGrowHandle("ep/right.png");
-            var top = this._ghTop = this._makeGrowHandle("ep/up.png");
             var bottom = this._ghBottom = this._makeGrowHandle("ep/down.png");
             var that = this;
-            left.addListener('click',function(e){
-                that.setMinX(that.getMinX()-1);
-                that._addCol();
-            });
-
             right.addListener('click',function(e){
                 that.setMaxX(that.getMaxX()+1);
                 that._addCol();
             });
-
-            top.addListener('click',function(e){
-                that.setMinY(that.getMinY()-1);
-                that._addRow();
-            });
-
             bottom.addListener('click',function(e){
                 that.setMaxY(that.getMaxY()+1);
                 that._addRow();
@@ -310,9 +295,7 @@ qx.Class.define("ep.ui.DashConfig", {
             that._addHandles();
         },
         _addHandles: function(){
-            this._add(this._ghLeft  ,{column: 0,             row: 1,              rowSpan: this._height});
             this._add(this._ghRight ,{column: this._width+1, row: 1,              rowSpan: this._height});
-            this._add(this._ghTop   ,{column: 1,             row: 0,              colSpan: this._width});
             this._add(this._ghBottom,{column: 1,             row: this._height+1, colSpan: this._width});
          },
 
