@@ -18,9 +18,9 @@ configuration information from the main config file.
  *** INVENTORY: siam1 ***
  module=SIAM
  siam_cfg=test.yaml 
- # how to identify this record based on original record inputraw record input
+ # how to identify this record based on original raw record properties (see MAP section)
  stableid_pl = $R{'torrus.nodeid'}
- # do not add nodes satisfying this condition based on raw record properties
+ # do not add nodes satisfying this condition based on raw record properties (see MAP section)
  skipnode_pl = $R{'cablecom.port.display'} eq 'skip'
 
  # load all data regardles of user

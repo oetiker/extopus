@@ -258,6 +258,10 @@ sub add {
     my $self = shift;
     my $rawNodeId = shift;
     my $nodeData = shift;
+    if (not defined $rawNodeId){
+        $self->log->warn("Check stableid_pl settings no stableid provided for ".Dumper($nodeData));
+        return;
+    }
     my $dbc = $self->dbhCa;
     my $dbp = $self->dbhPe;
     my $nodeId = $dbp->selectrow_array("SELECT numid FROM stable WHERE textkey = ?",{},$rawNodeId);
