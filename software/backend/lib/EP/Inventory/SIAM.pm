@@ -148,8 +148,8 @@ sub walkInventory {
         if (not @srv){
             my $raw_rec = {%cntr};
             next if defined $skip and $skip->($raw_rec);
-            my $rec = $self->buildRecord($stableId->($raw_rec),$raw_rec);
-            $storeCallback->($rec);
+            my $rec = $self->buildRecord($raw_rec);
+            $storeCallback->($stableId->($raw_rec),$rec);
             $count++;
             next;
         }
