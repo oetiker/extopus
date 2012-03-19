@@ -6,10 +6,7 @@
 ************************************************************************ */
 
 /* ************************************************************************
-#asset(ep/up.png)
-#asset(ep/down.png)
-#asset(ep/left.png)
-#asset(ep/right.png)
+#asset(qx/icon/${qx.icontheme}/32/actions/list-add.png)
 ************************************************************************ */
 
 /**
@@ -275,14 +272,15 @@ qx.Class.define("ep.ui.DashConfig", {
                 center: true,
                 show: 'icon',
                 padding: [6,6,6,6],
-                margin: [2,2,2,2]
+                margin: [2,2,2,2],
+                toolTipText: this.tr("Grow Dashboard")
             });
             return handle;
         },
 
         _addGrowHandles: function(){
-            var right = this._ghRight = this._makeGrowHandle("ep/right.png");
-            var bottom = this._ghBottom = this._makeGrowHandle("ep/down.png");
+            var right = this._ghRight = this._makeGrowHandle("icon/32/actions/list-add.png");
+            var bottom = this._ghBottom = this._makeGrowHandle("icon/32/actions/list-add.png");
             var that = this;
             right.addListener('click',function(e){
                 that.setMaxX(that.getMaxX()+1);
