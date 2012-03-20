@@ -147,7 +147,7 @@ sub startup {
     my $apiDocRoot = $self->home->rel_dir('apidoc');
     if (-d $apiDocRoot){
         my $apiDoc = Mojolicious::Static->new();
-        $apiDoc->root($apiDocRoot);
+        $apiDoc->paths([$apiDocRoot]);
         $routes->get('/apidoc/(*path)' =>  { path => 'index.html' } => sub {
             my $self = shift;
             my $file = $self->param('path') || '';
