@@ -33,6 +33,20 @@ tree =       prod, cust, data_type, inv_id, device_name, port
 tree_width = 2,    2,    1,          2,      1,           1
 tree_props = S,   H,      A,    A,      A,    A
 
+*** INVENTORY: topx ***
+module=Static
+stableid_pl = ('TopX:'.$R{l})
+
++TREE
+'TopX',$R{label}
+
++DATA_PL
+[{ 
+   label => 'Custom Report',
+   viz_type => 'SqlReportA',
+   title => 'TopX Port Report',
+}]
+
 *** INVENTORY: siam1 ***
 module=SIAM
 siam_cfg=/home/torrusde/pm/etc/siam.yaml
@@ -136,6 +150,69 @@ col_data = "$R{prod} $R{inv_id}",$R{car},int($D{inbytes}{AVG}*8/1e4)/1e2, \
            int($D{inbytes}{MAX}*8/1e5)/1e1, \
            int($D{outbytes}{MAX}*8/1e5)/1e1, \
            int($D{inbytes}{AVAIL})
+
+*** VISUALIZER: topx ***
+
+module = SiamSqlReport
+title = Report
+rec_match_pl = $R{viz_type} ~~ "SqlReportA"
+caption = $R{title}
+siam_dbh = cablecom.topx.dbhandle
+siam_cfg=/home/oetiker/checkouts/extopus/software/backend/etc/test-mdb-vpntunnel.siam.yaml
+# reload every day
+reload_day = 1
+
++FORM_PL
+[{
+    key => 'counter',
+    widget => 'counterSelect',
+    label => 'Counter'
+ },
+ {
+    key => 'nettype',
+    widget => 'networkTypeSelect',
+    label => 'Type'
+ },
+ {
+    key => 'date',
+    widget => 'date',
+    label => 'End'
+ },
+ {
+    key => 'days',
+    widget => 'selectBox',
+    label => 'Duration',
+    cfg => {
+        structure => [ 
+            { title => '1 Day',  key => 1 },
+            { title => '2 Days',  key => 2 * 24 * 3600 },
+            { title => '1 Week',  key => 7 },  
+            { title => '4 Weeks', key => 28 },  
+        ]
+    }
+ }
+]
+
+# PortId,Value,Unit
+
++SQL_TX
+SELECT * FROM
+( SELECT NODE_NAME || ' - ' || PORT_NAME_SHORT AS T_KEY, 
+         ROUND(AVG(DAILY_RATE_AVG)) AS T_VALUE,
+         COUNTER_DESCR AS T_COUNTER
+    FROM TOPX_DAILY_PORT_TRAFFIC
+        JOIN TOPX_COUNTER_INFO ON TOPX_COUNTER_INFO.COUNTER_ID = TOPX_DAILY_PORT_TRAFFIC.COUNTER_ID
+         JOIN PORT ON PORT.NC_PORTID=TOPX_DAILY_PORT_TRAFFIC.NC_PORTID
+         JOIN NODE ON PORT.NC_NODEID=NODE.NC_NODEID
+    WHERE AGGR_DATE <= TO_DATE(<%= strftime('%Y-%m-%d',localtime($C{date})) %>, 'YYYY-MM-DD')
+      AND AGGR_DATE > TO_DATE(<%= strftime('%Y-%m-%d',localtime($C{date}-3600*24*$C{days})) %>, 'YYYY-MM-DD')
+      AND TOPX_DAILY_PORT_TRAFFIC.COUNTER_ID = <%= $C{counter} %>
+      AND PORT.PORT_NETWORKTYPEID = <%= $C{nettype} %>
+ GROUP BY NODE_NAME,PORT_NAME_SHORT,COUNTER_DESCR
+ ORDER BY T_VALUE DESC
+)
+WHERE ROWNUM <= 20
+
 
 *** VISUALIZER: prop ***
 module=Properties

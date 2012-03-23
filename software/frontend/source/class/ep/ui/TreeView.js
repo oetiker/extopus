@@ -271,10 +271,12 @@ qx.Class.define("ep.ui.TreeView", {
                             pattern += 'N';
                         }
                     }
+                    var visCount = 0;
                     if (pattern != this.__dataPattern){
                         for (var i = 1;i<data[0].length;i++){
                             if (showCol[i] == 'Y'){
                                 tcm.setColumnVisible(i, true);
+                                visCount ++;
                             }
                             else {
                                 tcm.setColumnVisible(i, false);
@@ -284,12 +286,18 @@ qx.Class.define("ep.ui.TreeView", {
                     }
                 }
                 table.resetSelection();                
-
+                /* if there is only one match and no visible properties
+                   hide the leavetable completely */
+                if (data.length == 1 && visCount == 0){
+                    table.exclude();
+                }
+                else {
+                    table.show();
+                }
                 tm.setData(data);
-
                 if (data.length) {
                     sm.setSelectionInterval(0, 0);
-                }
+                } 
             }
         }
     }

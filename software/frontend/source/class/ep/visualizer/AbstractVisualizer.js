@@ -92,6 +92,10 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
                     control = new ep.visualizer.Data(instance, title, args,view);
                     break;
 
+                case ep.visualizer.DirectData.KEY:
+                    control = new ep.visualizer.DirectData(instance, title, args,view);
+                    break;
+
                 default:
                     qx.dev.Debug.debugObject(visualizer, 'Can not handle ');
             }

@@ -106,6 +106,7 @@ qx.Class.define("ep.ui.View", {
             this.__breakOutKids = {};
             var cache = this.__pageCache;
             var bar = tabView.getChildControl('bar');
+            var oldSelection = tabView.getSelection()[0];
 
             for (var i=0;i<vizList.length;i++){
                 var viz = vizList[i];
@@ -139,9 +140,9 @@ qx.Class.define("ep.ui.View", {
 
             var reselect = false;
             for (var instance in cache) {
-                if (!active[instance]) {
+                if (!active[instance]){
                     if (tabView.isSelected(cache[instance])) {
-                        reselect = true;
+                       reselect = true;
                     }
                     cache[instance].getButton().set({
                         visibility : 'excluded',
@@ -149,8 +150,15 @@ qx.Class.define("ep.ui.View", {
                     });
                 }
             }
-            if (reselect){
-                tabView.setSelection([ tabView.getSelectables(false)[0] ]);
+            if (reselect || tabView.getSelection()[0] !== oldSelection ){
+                var list = tabView.getSelectables(false);
+                var bar = tabView.getChildControl('bar');
+                list.forEach(function(page){
+                    var button = page.getButton();    
+                    if (bar.indexOf(button) == 0){
+                        tabView.setSelection([page]);
+                    }
+                });
             }
 
 

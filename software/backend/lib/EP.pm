@@ -52,6 +52,7 @@ has 'cfg' => sub {
     my $conf = EP::Config->new( 
         file=> ( $ENV{EXTOPUS_CONF} || $self->home->rel_file('etc/extopus.cfg') )
     );
+    $self->log->info("reading ".$conf->file);
     return $conf->parse_config();
 };
 

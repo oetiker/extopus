@@ -13,8 +13,7 @@ EP::Visualizer::SiamSqlReport - run custom sql and show result in extopus
  caption = $R{title}
  siam_dbh = cablecom.topx.dbhandle
  siam_cfg=/etc/test-mdb-vpntunnel.siam.yaml
- siammap_pl = $R{'torrus.port.shortname'}
-
+ reload_day = 1
 
  +FORM_PL
  [{
@@ -106,10 +105,11 @@ sub new {
     my $sql = $self->cfg->{SQL_TX}{_text};
     my $args = $self->args;    
 
-    while ($sql =~ s/<%=(.+?)%>/%/){
-        my $sub = eval 'sub { my %C = (%{$_[0]});'.${1}.'}';
+    while ($sql =~ s/<%=(.+?)%>/?/){
+        my $sub = eval 'sub { my %C = (%{$_[0]});my %R = (%{$_[1]});'.${1}.'}';
         if ($@){
-            die mkerror(38402, "Failed to compile $1");
+            $self->app->log->error("Failed to compile $1");
+            $sub = sub { undef };            
         }
         push @$args, $sub;
     }    
@@ -133,30 +133,34 @@ can we handle this type of record
 sub matchRecord {
     my $self = shift;
     my $type = shift;
-    return  unless $type eq 'single';
     my $rec = shift;
     my $cfg = $self->cfg;
+    return  unless $type eq 'single' and $cfg->{rec_match_pl}->($rec);
     my $form = $self->cfg->{FORM_PL}{_text}->($rec);
     # replace magic selectboxes ...  they will require sql queries to determine
     # content later on
     for my $item (@$form){
         given ($item->{widget}){
             when ('counterSelect'){
-                $item->{wiget} = 'selectBox';
+                $item->{widget} = 'selectBox';
+                my $dbh = $self->dbh;
+                my $data = $dbh->selectall_arrayref('SELECT COUNTER_TITLE as "title", COUNTER_ID as "key" from TOPX_COUNTER_INFO order by COUNTER_TITLE',{Slice => {}});
+                if ($dbh->err){
+                    die mkerror(9172, 'fetching counter types: '.$dbh->errstr);
+                }                 
                 $item->{cfg} = {
-                    structure => [ 
-                        { title => 'InBit',   key => 1 },
-                        { title => 'OutBit',  key => 2 },
-                    ]
+                    structure => $data,
                 };   
             }
             when ('networkTypeSelect'){
-                $item->{wiget} = 'selectBox';
+                $item->{widget} = 'selectBox';
+                my $dbh = $self->dbh;
+                my $data = $dbh->selectall_arrayref('SELECT NETWORK_TYPE_NAME as "title", NETWORK_TYPE_ID as "key" from NETWORK_TYPE order by NETWORK_TYPE_NAME',{Slice => {}});
+                if ($dbh->err){
+                    die mkerror(9172, 'fetching network types: '.$dbh->errstr);
+                }                 
                 $item->{cfg} = {
-                    structure => [ 
-                        { title => 'Fast',   key => 68 },
-                        { title => 'Slow',   key => 15 },
-                    ]
+                    structure => $data
                 };   
             }
         }
@@ -181,23 +185,44 @@ provide rpc data access
 
 sub rpcService {
     my $self = shift;
-    my $arg = shift;
+    my $args = shift;
+    my $form = $args->{form};
+    my $rec =  $self->controller->stash('epCache')->getNode($args->{recId});
     my $cfg = $self->cfg;
-    my $sth = $self->dbh->prepare($self->sql);
-    $sth->execute(map { $_->($arg) } @{$self->args});
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($self->sql);
+    # replace empty date keys with current time
+    my $formCfg = $self->cfg->{FORM_PL}{_text}->($rec);
+    for my $item (@$formCfg){
+        if ($item->{widget} eq 'date' and not $form->{$item->{key}} ){
+            $form->{$item->{key}} = time;
+        }
+    }
+    if ($dbh->err){
+        die mkerror(33527, 'preparing: '.$dbh->errstr);
+    }
+    my @args = map { $_->($form,$rec) } @{$self->args};
+    $self->app->log->debug("execute: ".join(',',@args));
+    $sth->execute(@args);
+    if ($sth->err){
+        die mkerror(75322, 'executing:'.$sth->errstr);
+    }
 
     my $data = $sth->fetchall_arrayref();
     if ($sth->err){
-        die mkerror(7527, "fetching ".$self->sql.": ".$sth->errstr);
+        die mkerror(7527, "fetching: ".$sth->errstr);
+    }
+    my $unit = $data->[0][-1];
+
+    for (@$data) {
+        pop @$_;
     }
 
-    if ($cfg->{siammap_pl}){
-        for (@$data) {
-            my $obj = $self-siam->instantiate_object('SIAM::ServiceDataElement', "SIAM::ServiceUnit//$_[0]");
-            $_[0] = $cfg->{port_pl}->($obj->attributes);
-        }
-    } 
-    return $data;
+    return {
+        unit => $unit,
+        data => $data,
+        reload => ($cfg->{reload_day} // 1)*24*3600
+    }
 }
 
 1;

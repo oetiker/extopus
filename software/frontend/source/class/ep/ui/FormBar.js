@@ -95,7 +95,7 @@ qx.Class.define("ep.ui.FormBar", {
                     }
                 }, {
                     converter: function(data) {
-                        if (qx.lang.Type.isDate(data)){
+                        if (qx.lang.Type.isDate(data)){                            
                             return Math.round((data.getTime()/1000)); 
                         }
                         return null;

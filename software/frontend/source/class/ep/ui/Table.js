@@ -24,7 +24,10 @@ qx.Class.define("ep.ui.Table", {
         };
 
         this.base(arguments, tm, tableOpts);
-        this.set({ showCellFocusIndicator : false });
+        this.set({ 
+            showCellFocusIndicator : false,
+            statusBarVisible: false 
+        });
         
         // hide the first column as it contains the internal
         // id of the node

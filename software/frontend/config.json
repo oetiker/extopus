@@ -44,6 +44,15 @@
 
   "jobs" :
   {
+   "libraries" : {
+       "library" : [
+       {
+         "manifest"   : "contrib://CanvasCell/trunk/Manifest.json"
+       }
+       ]
+    },
+
+
     "build" :
     {
 //      "copy-files": {
