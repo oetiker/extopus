@@ -178,6 +178,7 @@ ${E}head1 SYNOPSIS
  module = xyc
  title = Tab Title
  caption = \$R{cust}
+ caption_live = "\$R{cust} \$C{date}"
 
  xycany_pl = \$R{cust}
  +XYC_TX
@@ -207,12 +208,24 @@ sub _make_parser {
         my $code = $_[0];
         # check and modify content in place
         my $perl;
-        if ($code =~ /[{("';\[]/){
+        if ($code =~ /[{("';\[\$\%]/){
             $perl = 'sub { my %R = (%{$_[0]}); '.$code.'}';
         }
         else {
            $perl = 'sub { $_[0]->{"'.$code.'"}}';
         }
+        my $sub = eval $perl; ## no critic (ProhibitStringyEval)
+        if ($@){
+            return "Failed to compile $code: $@ ";
+        }
+        $_[0] = $sub;
+        return;
+    };
+
+    my $compileRC = sub { 
+        my $code = $_[0];
+        # check and modify content in place
+        my $perl = 'sub { my %R = (%{$_[0]}); my %C = (%{$_[1]});'.$code.'}';
         my $sub = eval $perl; ## no critic (ProhibitStringyEval)
         if ($@){
             return "Failed to compile $code: $@ ";
@@ -365,7 +378,7 @@ EX
         '/VISUALIZER:\s+\S+/' => {
             _order => 1,
             _doc => 'Instanciate a visualizer object',
-            _vars => [ qw(module title caption /[-._a-z]+_pl/ /[-._a-z]+/) ],
+            _vars => [ qw(module title caption caption_live /[-._a-z]+_pl/ /[-._a-z]+/) ],
             _mandatory => [ qw(module title caption) ],
             _sections => [qw(/[-._A-Z]+_TX/ /[-._A-Z]+_PL/ /[-._A-Z]+/) ],
             module => {
@@ -377,6 +390,10 @@ EX
             caption => {
                 _doc => 'Caption for the window if the tab gets broken out. Access Record via %R',
                 _sub => $compileR,
+            },
+            caption_live => {
+                _doc => 'Live Caption for the window if the tab gets broken out. Access Record via %R and further date via %C',
+                _sub => $compileRC,
             },
             '/[-._a-z]+/' => {
                 _doc => 'Any key value settings appropriate for the instance at hand'

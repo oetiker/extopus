@@ -244,7 +244,7 @@ qx.Class.define("ep.ui.DashConfig", {
                 }
             }
             if (collision){
-                ep.ui.ShortNote.getInstance().setNote(this.tr("Select a location by dragging the mouse. Enlarge by clicking the Arrows on the edge."));
+                ep.ui.ShortNote.getInstance().setNote(this.tr("Select a location by dragging the mouse. Enlarge the grid by clicking the [+] buttons."));
             }
             for (var x = 0;x < this._width;x++){ 
                 for (var y = 0;y < this._height;y++){                     

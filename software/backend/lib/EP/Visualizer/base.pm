@@ -54,35 +54,11 @@ The current controller. (Gets set before the visualizer is sent into action).
 
 has 'controller';
 
-has 'caption_sub';
-has 'caption_live_sub';
-
 =head1 METHODS
 
 All the methods of L<Mojo::Base> as well as these:
 
 =cut
-
-sub new {
-    my $self =  shift->SUPER::new(@_);    
-
-    my $cap = eval 'sub { my %R = (%{$_[0]});'.$self->cfg->{caption}.'}';
-    if ($@){
-       $self->app->log->error("Failed to compile caption ".$self->cfg->{caption}.": $@");
-       $cap = sub { 'Failed to compile Caption Expression' };
-    }
-    $self->caption_sub($cap);
-    if ($self->cfg->{caption_live}){
-        my $cap_live = eval 'sub { my %R = (%{$_[0]});my %C = (%{$_[1]});'.$self->cfg->{caption_live}.'}';
-        if ($@){
-           $self->app->log->error("Failed to compile caption_live ".$self->cfg->{caption_live}.": $@");
-           $cap_live = sub { 'Failed to compile Caption_Live Expression' };
-        }
-        $self->caption_live_sub($cap_live);
-    }
-    
-    return $self;
-}
 
 =head2 matchRecord(rec)
 
@@ -129,7 +105,7 @@ provided in the caption property of the viaualizer configuration.
 sub caption {
     my $self = shift;
     my $rec = shift;
-    my $cap = eval { $self->caption_sub->($rec) };
+    my $cap = eval { $self->cfg->{caption}->($rec) };
     if ($@){
         $cap = 'Caption Error: '.$@;
     }
@@ -138,18 +114,20 @@ sub caption {
 
 =head2 caption_live
 
-The same as caption but it is called in the rcpService method to provide an updated caption based on the record AND any additional
-properties the rpcService wants to provide. The config option is called caption_live.
+The same as caption but it is called in the rcpService method to provide an
+updated caption based on the record AND any additional properties the
+rpcService wants to provide. The config option is called caption_live.
 
 =cut
 
 sub caption_live {
     my $self = shift;
-    return '' unless $self->{caption_live_sub};   
-
     my $rec = shift;
+    
+    return $self->caption($rec) unless $self->cfg->{caption_live};
+
     my $conf = shift;
-    my $cap = eval { $self->caption_live_sub->($rec,$conf) };
+    my $cap = eval { $self->cfg->{caption_live}->($rec,$conf) };
     if ($@){
         $cap = 'Caption Error: '.$@;
     }

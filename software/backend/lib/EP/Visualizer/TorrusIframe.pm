@@ -85,7 +85,7 @@ sub matchRecord {
             visualizer =>  'iframe',
             instance => $self->instance,   
             title => $self->cfg->{title},
-            caption => $self->cfg->{caption}($rec),
+            caption => $self->caption($rec),
             arguments => {
                 src => $plain_src,
                 title => $leaf->{comment},
