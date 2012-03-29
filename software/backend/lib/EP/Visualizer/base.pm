@@ -20,7 +20,6 @@ The base class for extopus visualizers
 
 use Mojo::Base -base;
 use Mojo::Util qw(hmac_md5_sum);
-use POSIX qw(strftime);
 
 =head2 cfg
 
