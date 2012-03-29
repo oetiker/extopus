@@ -39,6 +39,7 @@ qx.Class.define("ep.visualizer.DirectData", {
             table.setRecId(this.getRecIds()[0]);
         },this);
         this.setArgs(args);
+        table.addListener('changeCaption',function(e){this.setCaption(e.getData())},this);
         this._add(table, { flex : 1 });
     },
 

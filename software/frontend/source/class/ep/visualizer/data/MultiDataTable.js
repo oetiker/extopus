@@ -28,16 +28,6 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
             check: 'Array',
             apply: 'reloadTable',
             nullable: true
-        },
-        title: {
-            init: null,
-            nullable: true,
-            event: 'changeTitle'
-        },
-        caption: {
-            init: null,
-            nullable: true,
-            event: 'changeCaption'
         }
     },
 
@@ -82,6 +72,7 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
                             that.setCaption(title);
                             that.__titleCache[String(interval)+':'+String(date)] = title;
                             that.setViewMode('ready');
+                            that.setCaption(ret.caption);
                         }
                         else {
                             that.setViewMode('nodata');    

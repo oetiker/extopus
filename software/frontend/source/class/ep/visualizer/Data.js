@@ -61,6 +61,7 @@ qx.Class.define("ep.visualizer.Data", {
         ]);
         this.base(arguments, instance, title, args,view,form);
         var dataTable = this._dataTable = new ep.visualizer.data.DataTable(instance, args.columns, args.column_widths, args.column_units);
+        dataTable.addListener('changeCaption',function(e){this.setCaption(e.getData())},this);
         this._add(dataTable, { flex : 1 });
 
         this.setArgs(args);

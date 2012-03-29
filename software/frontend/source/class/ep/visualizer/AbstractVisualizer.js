@@ -50,6 +50,11 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
             init: 'Untitled',
             event: 'changeTitle'
         },
+        caption: {
+            nullable: true,
+            init: 'Uncaptioned',
+            event: 'changeCaption'
+        },
         recIds: {
             init: []
         },
@@ -99,6 +104,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
                 default:
                     qx.dev.Debug.debugObject(visualizer, 'Can not handle ');
             }
+            control.setCaption(viz.caption);
             return control;
         }
     },
@@ -135,7 +141,9 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
          * @return {void} 
          */
         _applyArgs : function(newArgs, oldArgs) {
-            this.setRecIds(qx.lang.Array.clone(newArgs.recIds));
+            this.set({
+                recIds: qx.lang.Array.clone(newArgs.recIds)
+            });
             this._instance = newArgs.instance;
         },
 

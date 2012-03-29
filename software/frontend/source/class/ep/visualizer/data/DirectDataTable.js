@@ -93,7 +93,16 @@ qx.Class.define("ep.visualizer.data.DirectDataTable", {
         recId : {
             init     : null,
             nullable : true
+        },
+        /**
+         * caption for the data
+         */
+        caption: {
+            init: null,
+            nullable: true,
+            event: 'changeCaption'
         }
+
     },
 
     members : {
@@ -133,13 +142,14 @@ qx.Class.define("ep.visualizer.data.DirectDataTable", {
                         rsb.setWidth(1,'2*');
                         rsb.setWidth(2,'1*');
                         tm.setData(ret.data);
+                        that.setCaption(ret.caption);
                     }
                     else {
                         tm.setData([]);
                         that.setViewMode('nodata');
                     }
                     if (ret.reload){
-                        var timer = this._timer;
+                        var timer = that._timer;
                         timer.setInterval(ret.reload*1000);
                         timer.restart();
                     }

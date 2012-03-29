@@ -61,7 +61,7 @@ qx.Class.define("ep.visualizer.Properties", {
             var l = this._label;
             var data = '<table>';
 
-            newArgs.map(function(row) {
+            newArgs.forEach(function(row) {
                 data += '<tr><td>' + qx.bom.String.escape(row[0]) + ':&nbsp;</td><td>' + qx.bom.String.escape(row[1]) + '</td></tr>';
             });
 

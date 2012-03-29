@@ -11,7 +11,8 @@ EP::Visualizer::TorrusMultiData - pull numeric data associated with sellected to
  selector = data_type
  type = PortTraffic
  title = Multi Node Traffic Data
- caption = Multi Node Traffic Review
+ caption = "Multi Node Traffic Review"
+ caption_live = "Multi Node Traffic ($C{recCount} records) ".strftime('%Y-%m-%d',localtime($C{endDate})." ($C{interval})"
  skiprec_pl = $R{display} eq 'data_unavailable'
  savename_pl = "multi_node_data"
 
@@ -118,6 +119,7 @@ sub getData {
         status => 1,
         title => $stamp,
         data => \@ret,
+        caption => $self->caption_live({},{interval => $interval, endDate => $end, recCount => scalar @$recIds })
     };
 }
 

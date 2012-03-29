@@ -12,6 +12,7 @@ EP::Visualizer::TorrusData - pull numeric data associated with torrus data sourc
  type = PortTraffic 
  title = Traffic Data
  caption = "$R{prod} $R{inv_id} $R{device_name}:$R{port}"
+ caption_live = "Traffic Analysis $R{device_name}:$R{port}"
  skiprec_pl = $R{display} eq 'data_unavailable'
  savename_pl = $R{cust}.'_'.$R{inv_id}
 
@@ -312,6 +313,7 @@ sub getData {
         status => 1,
         stepLabels => \@stepLabels,
         data => \@return,
+        caption => $self->caption_live($rec,{interval => $interval, endDate => $end })
     };
 }
 

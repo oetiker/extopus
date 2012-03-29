@@ -107,6 +107,12 @@ qx.Class.define("ep.visualizer.data.DataTable", {
             check    : 'Integer',
             apply    : 'reloadTable',
             nullable : true
+        },
+        /* the caption for this table */
+        caption: {
+            init     : 'No Caption',
+            nullable : true,
+            event    : 'changeCaption'
         }
     },
 
@@ -143,11 +149,12 @@ qx.Class.define("ep.visualizer.data.DataTable", {
                     if (ret.status) {
                         that.setViewMode('ready');
                         tm.setData(ret.data);
+                        that.setCaption(ret.caption);
                     }
                     else {
                         that.setViewMode('nodata');
                         tm.setData([]);
-                    }
+                    }        
                 },
                 'visualize', this.getInstance(), {
                     interval : this.getInterval(),

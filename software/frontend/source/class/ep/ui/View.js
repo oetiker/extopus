@@ -58,9 +58,8 @@ qx.Class.define("ep.ui.View", {
         __rpc: null,
 
         /**
-         * Create new a visualizer widget according to the given configuration. At first glance the configuration
-         * map has a <code>title</code>, <code>caption</code> and <code>arguments</code> property.
-         *
+         * Create new a visualizer widget according to the given configuration.
+
          * @param viz {Map} visualizer configuration map
          * @return {Widget} visualizer widget
          */
@@ -128,7 +127,6 @@ qx.Class.define("ep.ui.View", {
                     control.addListener('breakout', this._onBreakOut, this);
                     cache[instance] = control;
                 }
-                control.setUserData('caption', viz.caption);
                 control.setUserData('position', i);
                 var button = control.getButton();
 
@@ -183,11 +181,12 @@ qx.Class.define("ep.ui.View", {
             tabView.remove(page);
             delete this.__pageCache[instance];
 
-            var win = new qx.ui.window.Window(page.getUserData('caption')).set({
+            var win = new qx.ui.window.Window(page.getCaption()).set({
                 showClose : false,
                 width     : width,
                 height    : height
             });
+            var capListener = page.addListener('changeCaption',function(e){win.setCaption(e.getData())},this);
             win.setUserData('pageWidget',page);
             this.__breakOutKids[instance] = win;
             win.setLayout(new qx.ui.layout.Grow());
@@ -207,14 +206,15 @@ qx.Class.define("ep.ui.View", {
                 page.dispose();
                 this.getApplicationRoot().remove(win);
                 win.dispose();
+                
             },
             this);
 
             win.addListenerOnce('minimize', function(e) {
                 win.remove(page);
                 this.getApplicationRoot().remove(win);
+                page.removeListenerById(capListener);
                 win.dispose();
-
                 delete this.__breakOutKids[instance];
                 tabView.add(page);
                 tabView.setSelection([page]);

@@ -53,8 +53,8 @@ sub matchRecord {
         visualizer =>  'properties',
         instance => $self->instance,
         title => $cfg->{title},
-        caption => $cfg->{caption}->($rec),
-        arguments => \@list,
+        caption => $self->caption($rec),
+        arguments => \@list
     };
 }
 

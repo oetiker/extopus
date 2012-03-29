@@ -11,6 +11,8 @@ EP::Visualizer::SiamSqlReport - run custom sql and show result in extopus
  title = Report
  rec_match_pl = $R{viz_type} eq "SqlReportA"
  caption = $R{title}
+ caption_live = $R{title}." ".strftime('%Y-%m-%d',localtime($C{date}-3600*24*$C{days})). \
+                " - ".strftime('%Y-%m-%d',localtime($C{date}));
  siam_dbh = cablecom.topx.dbhandle
  siam_cfg=/etc/test-mdb-vpntunnel.siam.yaml
  reload_day = 1
@@ -170,7 +172,7 @@ sub matchRecord {
         visualizer => 'directdata',
         instance => $self->instance,
         title => $cfg->{title},
-        caption => $cfg->{caption}($rec),
+        caption => $self->caption($rec),
         arguments => {
             form => $form
         }
@@ -221,7 +223,8 @@ sub rpcService {
     return {
         unit => $unit,
         data => $data,
-        reload => ($cfg->{reload_day} // 1)*24*3600
+        reload => ($cfg->{reload_day} // 1)*24*3600,
+        caption => $self->caption_live($rec,$form),
     }
 }
 
