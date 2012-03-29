@@ -133,16 +133,18 @@ qx.Class.define("ep.ui.DashBoard", {
         },
 
         _addVisualizerWidget: function(widget,position){
-            var box = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+            var box = new qx.ui.container.Composite(new qx.ui.layout.Grow());
+            var content = new qx.ui.container.Composite(new qx.ui.layout.VBox());
             var caption = new qx.ui.basic.Label(widget.getCaption()).set({
                 allowGrowX: true,
                 padding: [ 4, 4, 0 , 4],
                 backgroundColor: '#fff',
                 font: 'bold'
             });
-            box.add(caption);
+            content.add(caption);
             widget.addListener('changeCaption',function(e){caption.setValue(e.getData())},this);
-            box.add(widget,{flex: 1});
+            content.add(widget,{flex: 1});
+            box.add(content);
             box.add(this._makeVizEditBox(box,widget));
             var w = position.column + (position.colSpan || 1);
             var h = position.row + ( position.rowSpan || 1);
