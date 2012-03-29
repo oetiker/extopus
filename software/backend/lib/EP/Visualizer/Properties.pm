@@ -19,9 +19,6 @@ you can limit the properties which are shown to the user.
 
 =cut
 
-use strict;
-use warnings;
-
 use Mojo::Base 'EP::Visualizer::base';
 
 =head1 METHODS
