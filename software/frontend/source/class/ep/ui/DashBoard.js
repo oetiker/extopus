@@ -44,7 +44,8 @@ qx.Class.define("ep.ui.DashBoard", {
          * the server side identification number of the dashboard
          */
         dashId: {            
-            nullable: true
+            nullable: true,
+            event: 'changeDashId'
         },
         /**
          * when was the dashboard last updated on the server

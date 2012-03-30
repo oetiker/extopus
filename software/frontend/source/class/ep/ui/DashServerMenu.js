@@ -54,6 +54,7 @@ qx.Class.define("ep.ui.DashServerMenu", {
             this._updateing = true;
             menu.removeAll();
             menu.add(this._menuBusy);
+            var dashMgr = ep.ui.DashManager.getInstance();
             rpc.callAsyncSmart(function(ret){
                 menu.removeAll();
                 ret.forEach(function(item){
@@ -71,7 +72,9 @@ qx.Class.define("ep.ui.DashServerMenu", {
                         }
                         button.setUserData('item',item);
                     }
+                    cache[item.id].setEnabled(!dashMgr.isBoardOpen(item.id));
                     menu.add(cache[item.id]);
+                    
                 });
                 menu._updateing = false;
             },'getDashList',this._lastUpdate);
@@ -84,10 +87,6 @@ qx.Class.define("ep.ui.DashServerMenu", {
             board.set({
                 dashId: item.id,
                 updateTime: item.up
-            });
-            button.setEnabled(false);
-            board.addListener('close',function(){
-               button.setEnabled(true);
             });
             item.cfg.forEach(function(viz){
                 board.addVisualizer(viz.cfg,viz.position);

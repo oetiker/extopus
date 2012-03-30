@@ -21,12 +21,11 @@ qx.Class.define("ep.ui.DashMenu", {
         var btn = [
             [ 'ren',this.tr("Rename"),   null, function(e){ this._board.editLabel(); }],
             [ 'edt',this.tr("Edit"),   null, function(e){ this._board.fireEvent.call(this._board,'startEditMode'); }],
-            [ 'rm',this.tr("Hide"),    null, function(e){ this._board.fireEvent.call(this._board,'close'); }],
+            [ 'close',this.tr("Close"),    null, function(e){ this._board.fireEvent.call(this._board,'close'); }],
             [ 'srm',this.tr("Delete"),  null, this._deleteBoard]
         ];
-        var menuBtn = {};
         btn.forEach(function(item){
-            var bt = menuBtn[item[0]] = new qx.ui.menu.Button(item[1],item[2]);
+            var bt = new qx.ui.menu.Button(item[1],item[2]);
             if (item[3]){
                 bt.addListener('execute',item[3],this);
             }
