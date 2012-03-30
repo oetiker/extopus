@@ -58,7 +58,6 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
                 if (missingRecIds.length == 0){
                     tm.setData(this.__fetchRecData(newRecIdList,interval,date));
                     var title = this.__titleCache[String(interval)+':'+String(date)] || this.tr('Cached Title');
-                    this.setTitle(title);
                     this.setCaption(title);
                     this.setViewMode('ready');
                 }
@@ -68,7 +67,6 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
                             that.__updateRecCache(ret.data,missingRecIds,interval,date);
                             tm.setData(that.__fetchRecData(newRecIdList,interval,date));
                             var title = ret.title + ' (' + interval + ')';
-                            that.setTitle(title);
                             that.setCaption(title);
                             that.__titleCache[String(interval)+':'+String(date)] = title;
                             that.setViewMode('ready');
