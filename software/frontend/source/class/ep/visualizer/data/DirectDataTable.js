@@ -6,12 +6,15 @@
    Utf8Check:  äöü
 
 ************************************************************************ */
-
+/*
+#asset(qx/icon/${qx.icontheme}/16/actions/system-search.png)
+*/
 /**
  * Create a table widget for the Data visualizer.
  */
 qx.Class.define("ep.visualizer.data.DirectDataTable", {
     extend : ep.ui.LoadingBox,
+
 
     /**
      * setup the data table
@@ -42,6 +45,8 @@ qx.Class.define("ep.visualizer.data.DirectDataTable", {
             showCellFocusIndicator : false,
             statusBarVisible: false
         });
+
+        table.setContextMenuHandler(0, this._ctxMenu,this);
 
         table.getDataRowRenderer().setHighlightFocusRow(false);
 
@@ -176,6 +181,15 @@ qx.Class.define("ep.visualizer.data.DirectDataTable", {
             if (selText){
                 ep.ui.CopyBuffer.getInstance().setBuffer(selText);
             }
+        },
+        _ctxMenu: function (col, row, table, dataModel, contextMenu) {
+              var term = String(dataModel.getValue(col,row));
+              var search = new qx.ui.menu.Button("Find '"+term+"'","icon/16/actions/system-search.png");
+              contextMenu.add(search);
+              search.addListener('execute',function(){
+                 ep.ui.Desktop.getInstance().getSearchView().search(term);
+              },this);
+              return true;
         }
     }
 });

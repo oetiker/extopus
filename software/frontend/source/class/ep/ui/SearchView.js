@@ -10,7 +10,6 @@
  */
 qx.Class.define("ep.ui.SearchView", {
     extend : qx.ui.core.Widget,
-
     /**
      * @param colDef {Map} column definition with names and ids propperties
      */
@@ -33,6 +32,19 @@ qx.Class.define("ep.ui.SearchView", {
         __vPane : null,
         __searchBox: null,
         __table: null,
+        __field: null,
+        __button: null,
+    
+        /**
+         * Show the search box and find the term
+         *
+         * @return {void} 
+         */
+        search: function(term){
+            ep.ui.Desktop.getInstance().openSearchPage();
+            this.__field.setValue(term);
+            this.__button.execute();
+        },
 
         /**
          * Setup the search Text field
@@ -43,12 +55,12 @@ qx.Class.define("ep.ui.SearchView", {
             var sbox  = new qx.ui.container.Composite(new qx.ui.layout.HBox(3).set({
                 alignY: 'middle'
             }));            
-            var field  = new qx.ui.form.TextField().set({
+            var field  = this.__field = new qx.ui.form.TextField().set({
                 placeholder : this.tr('wor* AND ( this OR that )'),
                 enabled     : false
             });
             sbox.add(field,{flex: 1});
-            var sb = new qx.ui.form.Button(this.tr('Search'));
+            var sb = this.__button = new qx.ui.form.Button(this.tr('Search'));
             field.addListener('keyup',function(e){
                 if (e.getKeyIdentifier() == 'Enter'){
                     sb.execute()

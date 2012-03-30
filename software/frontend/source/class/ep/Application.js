@@ -25,6 +25,7 @@ qx.Class.define("ep.Application", {
             // Call super class
             this.base(arguments);
             qx.Class.include(qx.ui.treevirtual.TreeVirtual, qx.ui.treevirtual.MNode);
+            qx.Class.include(qx.ui.table.Table, qx.ui.table.MTableContextMenu);
 
             // Enable logging in debug variant
             if (qx.core.Environment.get("qx.debug")) {

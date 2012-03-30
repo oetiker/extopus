@@ -30,6 +30,7 @@ qx.Class.define("ep.ui.Desktop", {
 
     members : {
         _tabView: null,
+        _searchPage: null,
        /**
         * add an extra Tab to the TabView
         */
@@ -79,7 +80,7 @@ qx.Class.define("ep.ui.Desktop", {
 
             var searchView = new ep.ui.SearchView(cfg.searchCols);
             this.setSearchView(searchView);
-            var searchPage = new qx.ui.tabview.Page(this.tr("Search"));
+            var searchPage = this._searchPage = new qx.ui.tabview.Page(this.tr("Search"));
             searchPage.setLayout(new qx.ui.layout.Grow());
             searchPage.add(searchView);
             tabView.add(searchPage);
@@ -139,6 +140,9 @@ qx.Class.define("ep.ui.Desktop", {
                 qx.bom.Window.open('http://extopus.org/', '_blank');
             });
             this._add(about);
+        },
+        openSearchPage: function(){
+            this.setSelection([this._searchPage]);
         }
     }
 });
