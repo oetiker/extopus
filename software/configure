@@ -4230,12 +4230,29 @@ fi
 
 
 
-QOOXDOO_PATH=no
+QOOXDOO_PATH=
 
 # Check whether --with-qooxdoo-sdk was given.
 if test "${with_qooxdoo_sdk+set}" = set; then :
-  withval=$with_qooxdoo_sdk; QOOXDOO_PATH=$withval
+  withval=$with_qooxdoo_sdk;
+        if test -d $withval/framework; then
+             QOOXDOO_PATH=$withval
+        else
+        cat <<NOTES
+
+** Aborting Configure ******************************
+
+   You specified --with-qooxdoo-sdk=DIR without pointing it
+   to a copy of the qooxdoo sdk. If you specify the option,
+   make sure there is a copy of the qooxdoo sdk present.
+   get your copy form www.qooxdoo.org.
+
+NOTES
+          exit 1
+        fi
+
 fi
+
 
 
 
@@ -4300,7 +4317,7 @@ $as_echo "Failed" >&6; }
 
 NOTES
       exit 1
-   fi
+ fi
 
 fi
 
@@ -5615,7 +5632,7 @@ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
 
-if test $QOOXDOO_PATH = no; then
+if test x$QOOXDOO_PATH = x; then
 
 cat <<NOTES
 
