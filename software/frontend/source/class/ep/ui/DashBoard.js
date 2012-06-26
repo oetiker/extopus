@@ -242,7 +242,7 @@ qx.Class.define("ep.ui.DashBoard", {
             var button = this.getChildControl('button');            
 
             var menuButton = this._menuButton = new qx.ui.basic.Atom().set({
-                icon   : 'ep/view-menu.png',
+                icon   : 'ep/view-menu-black.png',
                 show   : 'icon',
                 cursor : 'pointer',
                 visibility: 'excluded'

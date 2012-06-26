@@ -14,33 +14,30 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-AUTOMAKE_OPTIONS =  foreign
+AUTOMAKE_OPTIONS=foreign
+CLASS=ep
 
 EXTRA_DIST = config.json Manifest.json source/index.html $(shell find source/class/ -name "*.js") $(wildcard source/translation/*.po source/resource/*/*.png  source/resource/*/*.gif)
 
 if BUILD_QOOXDOO_APP
 
-.PHONY: source lint pretty
+GENTARGETS := lint pretty migration translation api
 
-source: source/script/ep.js
+.PHONY: $(GENTARGETS) source source-full
 
-lint:
-	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache lint
+source: source/script/$(CLASS).js
 
-pretty:
-	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache pretty
-
-api:
-	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache api
+$(GENTARGETS):
+	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache $@
 
 source-full:
 	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache source
 	
-source/script/ep.js: $(shell find source/class/ -name "*.js")
+source/script/$(CLASS).js: $(shell find source/class/ -name "*.js")
 	$(QOOXDOO_PATH)/tool/bin/generator.py -m QOOXDOO_PATH:$(QOOXDOO_PATH) -m CACHE:./cache source-hybrid
 
 endif
 
 clean-local:
 	test -d ./cache && rm -r ./cache || true
-	test -f source/script/ep.js && rm source/script/* || true
+	test -f source/script/$(CLASS).js && rm source/script/* || true
