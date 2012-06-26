@@ -9,6 +9,6 @@
  * Using the standard decoration configuration
  */
 qx.Theme.define("ep.theme.Decoration", {
-    extend      : qx.theme.simple.Decoration,
+    extend      : qx.theme.indigo.Decoration,
     decorations : {}
 });

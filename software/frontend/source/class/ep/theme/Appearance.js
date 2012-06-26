@@ -11,10 +11,10 @@
  * Qooxdoo has no apperance overrides.
  */
 qx.Theme.define("ep.theme.Appearance", {
-    extend : qx.theme.simple.Appearance,
+    extend : qx.theme.indigo.Appearance,
 
     appearances : {
-        "virtual-tree" : "list",
+/*         "virtual-tree" : "list",
         "datefield/button" :  {
            alias : "button",
            include : "button",
@@ -26,5 +26,6 @@ qx.Theme.define("ep.theme.Appearance", {
               }
            }
         }
+*/
     }
 });

@@ -9,6 +9,6 @@
  * no special fonts for extopus
  */
 qx.Theme.define("ep.theme.Font", {
-    extend : qx.theme.simple.Font,
+    extend : qx.theme.indigo.Font,
     fonts  : {}
 });
