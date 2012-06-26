@@ -19,7 +19,7 @@ qx.Theme.define("ep.theme.Color", {
     extend : qx.theme.indigo.Color,
     colors : {
         "table-row-background-even"     : "#f3f3f3",
-        "table-row-background-odd"      : "#fff",
+        "table-row-background-odd"      : "#fff"
 /*
         "dark-blue"                     : window.darkBlue,
         "table-row-background-selected" : window.lightBlue,
