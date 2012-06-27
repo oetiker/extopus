@@ -128,10 +128,10 @@ qx.Class.define("ep.visualizer.Chart", {
 
     members : {
         __titleContainer: null,
-        __viewSelector : null,
         __printBtn : null,
         __chart : null,
         __template : null,
+        __sbArray: null,
         __urlArray : null,
 
         /**
@@ -166,9 +166,11 @@ qx.Class.define("ep.visualizer.Chart", {
             var v = newArgs.views || [];
             var urlArray = this.__urlArray = [];
             var sb = [];
+            this.__sbArray = [];
             for (var i=0;i<v.length;i++){
                 urlArray[i] = v[i].src;
                 sb.push({title: v[i].title, key: i});
+                this.__sbArray.push(v[i].title);
             }
             var cfg = this._userCfg;
             this._cfgForm.setSelectBoxData('view',sb );
@@ -227,8 +229,7 @@ qx.Class.define("ep.visualizer.Chart", {
             var chart = this.__chart;
             var end = chart.getEndTime() || Math.round(new Date().getTime() / 1000);
             var start = end - chart.getTimeRange();
-            var view = this.__viewSelector.getSelection();
-
+            var that = this;
             var map = {
                 'SRC' : function() {
                     return chart.getBaseUrl() + '&width=800&height=600&start=' + start + '&end=' + end + '&format=.png';
@@ -246,7 +247,7 @@ qx.Class.define("ep.visualizer.Chart", {
                 },
 
                 'VIEW' : function() {
-                    return view.getItem(0).getTitle();
+                    return that.__sbArray[that._cfgForm.getData().view];
                 }
             };
 
