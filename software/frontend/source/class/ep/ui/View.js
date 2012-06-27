@@ -33,6 +33,7 @@ qx.Class.define("ep.ui.View", {
 
         this.__pageCache = {};
         this.__breakOutKids = {};
+        ep.ui.CopyBuffer.getInstance().selectOnCtrlDown(table);
     },
     properties: {
         /**
@@ -254,6 +255,7 @@ qx.Class.define("ep.ui.View", {
             },this);
             if (selText){
                 ep.ui.CopyBuffer.getInstance().setBuffer(selText);
+
             }
             if (recIds.length == 0){
                 this.__hideTimer = qx.event.Timer.once(function() {

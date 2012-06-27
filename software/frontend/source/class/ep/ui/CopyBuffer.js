@@ -25,7 +25,8 @@ qx.Class.define("ep.ui.CopyBuffer", {
             width: 100,
             height: 100
         });
-        this.getApplicationRoot().add(this,{top:-120,left: -120});
+        var root = this.getApplicationRoot();
+        root.add(this,{top:-120,left: -120});
     },
 
     members: {
@@ -36,9 +37,16 @@ qx.Class.define("ep.ui.CopyBuffer", {
          */
         setBuffer: function(text){
             this.setValue(text);
-            this.focus();
-            this.selectAllText();
             ep.ui.ShortNote.getInstance().setNote(this.tr("Press [ctrl]+[c] to copy selection."));
+        },
+        selectOnCtrlDown: function(el){ 
+            el.addListener('keydown',function(e){
+                var key = e.getKeyIdentifier();
+                if (key == 'Control' || key == 'Meta'){
+                    this.focus();
+                    this.selectAllText();
+                }   
+            },this);            
         }
     }
 });
