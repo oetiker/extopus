@@ -28,6 +28,7 @@ use warnings;
 use MojoX::Dispatcher::Qooxdoo::Jsonrpc;
 use Mojolicious::Plugin::QooxdooJsonrpc;
 use Mojo::URL;
+use Mojo::Util qw(hmac_sha1_sum slurp);
 
 use EP::RpcService;
 use EP::Config;
@@ -47,10 +48,12 @@ The cfg property is set automatically on startup.
 
 =cut
 
+has 'cfg_file' => sub { $ENV{EXTOPUS_CONF} || $_[0]->home->rel_file('etc/extopus.cfg' ) };
+
 has 'cfg' => sub {
     my $self = shift;
     my $conf = EP::Config->new( 
-        file=> ( $ENV{EXTOPUS_CONF} || $self->home->rel_file('etc/extopus.cfg') )
+        file => $self->cfg_file
     );
     return $conf->parse_config();
 };
@@ -111,6 +114,8 @@ sub startup {
 
     # session is valid for 1 day
     $self->sessions->default_expiration(1*24*3600);
+    # prevent our cookie from colliding
+    $self->sessions->cookie_name('EP_'.hmac_sha1_sum(slurp($self->cfg_file)));
     # run /setUser/oetiker to launch the application for a particular user
     my $app = $self;
     $self->hook(before_dispatch => sub {
