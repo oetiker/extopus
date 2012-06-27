@@ -39,6 +39,8 @@ qx.Class.define("ep.ui.DashServerMenu", {
                 this._updateMenu();
             }
         },this);
+        /* make sure the view menu is initialized and can track dashboards as they are added */ 
+        ep.ui.ViewMenu.getInstance();
     },
     members: {
         _lastUpdate: null,
