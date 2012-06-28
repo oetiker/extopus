@@ -49,7 +49,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(top_srcdir)/configure AUTHORS \
+	$(srcdir)/Makefile.in $(top_srcdir)/configure AUTHORS TODO \
 	conftools/install-sh conftools/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
