@@ -120,7 +120,7 @@ qx.Class.define("ep.visualizer.MultiData", {
                 end = Math.round(data.getEndDate().getTime() / 1000);
             }
 
-            var url = this._csvUrl() + '?format=' + format + '&interval=' + data.getInterval() + '&end=' + end + '&recid=' + data.getRecordIds().join(',');
+            var url = this._csvUrl + '?format=' + format + '&interval=' + data.getInterval() + '&end=' + end + '&recid=' + data.getRecordIds().join(',');
             var win = qx.bom.Window.open(url, '_blank');
 
             qx.bom.Event.addNativeListener(win, 'load', function(e) {
