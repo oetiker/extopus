@@ -181,6 +181,7 @@ qx.Class.define("ep.ui.TreeView", {
             var tm = new qx.ui.table.model.Simple();
             tm.setColumns(names, ids);
             var control = new ep.ui.Table(tm, widths, props);
+            control.exclude();
             this.setTable(control);
             return control;
         },
@@ -244,6 +245,7 @@ qx.Class.define("ep.ui.TreeView", {
                 var sm = table.getSelectionModel();
                 
                 var data = sel.getItem(0).getLeaves();                
+                var visCount = 0;
                 if (data.length > 0){
                     var showCol = {};
                     for (var i = 0;i<data[0].length;i++){          
@@ -266,17 +268,16 @@ qx.Class.define("ep.ui.TreeView", {
                     for (var i = 1;i<data[0].length;i++){
                         if (showCol[i] == 'Y'){
                             pattern += 'Y';
+                            visCount ++;
                         }
                         else {
                             pattern += 'N';
                         }
                     }
-                    var visCount = 0;
                     if (pattern != this.__dataPattern){
                         for (var i = 1;i<data[0].length;i++){
                             if (showCol[i] == 'Y'){
                                 tcm.setColumnVisible(i, true);
-                                visCount ++;
                             }
                             else {
                                 tcm.setColumnVisible(i, false);
@@ -288,7 +289,7 @@ qx.Class.define("ep.ui.TreeView", {
                 table.resetSelection();                
                 /* if there is only one match and no visible properties
                    hide the leavetable completely */
-                if (data.length == 1 && visCount == 0){
+                if (data.length <= 1 && visCount == 0){
                     table.exclude();
                 }
                 else {
