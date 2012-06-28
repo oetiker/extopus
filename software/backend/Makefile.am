@@ -25,19 +25,21 @@ BIN = bin/$(MJ_SCRIPT).pl bin/run.sh bin/siamdumper.pl
 
 PM :=  $(shell find lib/ -name "*.pm")
 
+POD :=  $(shell find lib/ -name "*.pod")
+
 RES :=  $(shell test -d public/resource && find public/resource -type f)        
 
 TEMPL := $(shell test -d templates && find templates -type f)
 
 PUB = public/script/$(QX_CLASS).js public/index.html $(RES)
 
-EXTRA_DIST = $(wildcard t/*.t) $(ETC) $(BIN) $(PM) $(PUB) $(TEMPL)
+EXTRA_DIST = $(wildcard t/*.t) $(ETC) $(BIN) $(PM) $(POD) $(PUB) $(TEMPL)
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
 
 datadir = $(prefix)
-nobase_data_DATA = $(PM) $(PUB) $(ETC) $(TEMPL)
+nobase_data_DATA = $(PM) $(POD) $(PUB) $(ETC) $(TEMPL)
 
 dist_bin_SCRIPTS = $(BIN)
 
