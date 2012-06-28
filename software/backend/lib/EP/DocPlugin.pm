@@ -39,8 +39,8 @@ sub register {
       my ($r, $c, $output, $options) = @_;
 
       # Preprocess with ep and then render
+      return unless $r->handlers->{$preprocess}->($r, $c, $output, $options);
       $$output = _pod_to_html($$output)
-        if $r->handlers->{$preprocess}->($r, $c, $output, $options);
     }
   );
 
@@ -129,7 +129,7 @@ sub register {
 
       # Try to find a title
       my $title = 'Perldoc';
-      $dom->find('h1 + p')->until(sub { $title = shift->text });
+      $dom->find('h1 + p')->first(sub { $title = shift->text });
 
       # Combine everything to a proper response
       $self->content_for(perldoc => "$dom");
