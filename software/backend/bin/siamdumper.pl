@@ -19,8 +19,8 @@ my $cfg = EP::Config->new(
 )->parse_config();
 
 my $siam_cfg = $cfg->{(grep { ref $cfg->{$_} eq 'HASH' and exists $cfg->{$_}{siam_cfg} } keys %$cfg)[0]}{siam_cfg};
-my $siam = SIAM->new(YAML::LoadFile($siam_cfg));
-$siam->connect();
+my $siam = SIAM->new(YAML::LoadFile($siam_cfg)) || die "Failed to instanciate SIAM";
+$siam->connect() || die "Failed to connect SIAM";
 
 #$siam->instantiate_object('SIAM::ServiceDataElement', 'SRVC0001.02.u01.d01')
 $Data::Dumper::Sortkeys =1;
