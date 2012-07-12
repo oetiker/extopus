@@ -66,7 +66,7 @@ sub new {
     my $self = shift->SUPER::new(@_);
     my $siamCfg =  YAML::LoadFile($self->cfg->{siam_cfg});
     $siamCfg->{Logger} = $self->app->log;
-    $self->siam(SIAM->new($siamCfg));
+    $self->siam(SIAM->new($siamCfg)) || die mkerror(289484,"Failed to instanciate SIAM");
     $self->siam->set_log_manager($self->app->log);    
     return $self;
 }
@@ -109,7 +109,7 @@ sub getVersion {
     my $self = shift;
     my $user = shift;
     my $siam = $self->siam;
-    $siam->connect;
+    $siam->connect || die mkerror(6234,"Failed to connect SIAM");
     my $contracts = $self->_getContracts($user);
     my $text = '';
     for my $cntr ( @{$contracts} ){
