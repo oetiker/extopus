@@ -152,7 +152,9 @@ qx.Class.define("ep.visualizer.Chart", {
             this.__titleContainer.setEnabled(true);
             c.setBaseUrl(this.__urlArray[d.view]);
             c.setTimeRange(d.timeRange);
-            c.setEndTime(/^\d+$/.test(String(d.endTime)) ? parseInt(d.endTime) : null);
+            /* when someone selects a data, they expect the chart to end at the end of the day and not
+               at the start of the day */
+            c.setEndTime(/^\d+$/.test(String(d.endTime)) ? parseInt(d.endTime)+3600*24 : null);
             c.setMaxInterval(d.maxInterval);            
         },
         /**
@@ -218,7 +220,7 @@ qx.Class.define("ep.visualizer.Chart", {
          *
          * <ul>
          * <li><b>@@SRC@@</b> the src for loading the chart image</li>
-         * <li><b>@@SRC@@</b> the src for loading the chart image</li>
+         * <li><b>@@SRC(800x350)@@</b> the src for loading the chart image with a certain size</li>
          * <li><b>@@START(x)@@</b> start time of the graph with x being an ISO time spec</li>
          * <li><b>@@END(x)@@</b> end time of the graph with x being an ISO time spec</li>
          * </ul>
@@ -231,8 +233,12 @@ qx.Class.define("ep.visualizer.Chart", {
             var start = end - chart.getTimeRange();
             var that = this;
             var map = {
+                'SRC\\((\d+)x(\d+)\\)' : function(str,width,height) {
+                    return chart.getBaseUrl() + '&width=' + width + '&height=' + height + '&start=' + start + '&end=' + end + '&format=.png';
+                },
+
                 'SRC' : function() {
-                    return chart.getBaseUrl() + '&width=800&height=600&start=' + start + '&end=' + end + '&format=.png';
+                    return chart.getBaseUrl() + '&width=800&height=350&start=' + start + '&end=' + end + '&format=.png';
                 },
 
                 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String/replace#Specifying_a_function_as_a_parameter

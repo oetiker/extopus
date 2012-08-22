@@ -64,6 +64,7 @@ L<http://demo.qooxdoo.org/current/apiviewer/#qx.util.format.DateFormat> for
 information on date format strings (according to unicode tr35).
 
  @@SRC@@ the image src  path to the current chart
+ @@SRC(WxH)@@ the image src path to the current chart rendered with W x H
  @@START(format)@@ Start date of the chart
  @@END(format)@@ End date of the chart
  @@VIEW@@ The selected view
