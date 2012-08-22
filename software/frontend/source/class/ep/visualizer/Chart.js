@@ -233,7 +233,7 @@ qx.Class.define("ep.visualizer.Chart", {
             var start = end - chart.getTimeRange();
             var that = this;
             var map = {
-                'SRC\\((\d+)x(\d+)\\)' : function(str,width,height) {
+                'SRC\\((\\d+)x(\\d+)\\)' : function(str,width,height) {
                     return chart.getBaseUrl() + '&width=' + width + '&height=' + height + '&start=' + start + '&end=' + end + '&format=.png';
                 },
 
