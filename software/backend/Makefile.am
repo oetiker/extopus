@@ -21,7 +21,7 @@ MJ_CLASS = EP
 MJ_SCRIPT = ep
 
 ETC = etc/extopus.cfg.dist
-BIN = bin/$(MJ_SCRIPT).pl bin/run.sh bin/siamdumper.pl
+BIN = bin/$(MJ_SCRIPT).pl bin/run.sh
 
 PM :=  $(shell find lib/ -name "*.pm")
 
