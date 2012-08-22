@@ -17,7 +17,7 @@
 #
 
 
-AC_INIT([extopus],[0.2.7],[tobi@oetiker.ch])
+AC_INIT([extopus],[0.2.8],[tobi@oetiker.ch])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(conftools)
 
