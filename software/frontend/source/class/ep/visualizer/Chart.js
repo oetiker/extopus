@@ -180,7 +180,7 @@ qx.Class.define("ep.visualizer.Chart", {
             this.base(arguments, newArgs, oldArgs);
             if (sb.length == 0){
                 this.__titleContainer.setEnabled(false);
-                this.__chart.setViewMode('nodata');
+                this.__chart.setBaseUrl(null);
             }
             else {           
                 this._cfgForm.setData(cfg);
