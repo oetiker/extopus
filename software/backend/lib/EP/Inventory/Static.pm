@@ -70,8 +70,9 @@ sub walkInventory {
     my $storeCallback = shift;
     my $user = shift;
     my $data = $self->cfg->{DATA_PL}{_text}->({user=>$user});
+    my $stableId = $self->cfg->{stableid_pl} or die mkerror(3948,"stableid_pl config is not set");
     for my $rec (@$data){
-        $storeCallback->($self->cfg->{stableid_pl}->($rec),$rec);
+        $storeCallback->($stableid_pl->($rec),$rec);
     }
     return;
 }

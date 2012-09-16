@@ -139,7 +139,7 @@ sub walkInventory {
     my $contracts = $self->_getContracts($user);
     my $count = 0;
     my $skip = $self->cfg->{skipnode_pl};
-    my $stableId = $self->cfg->{stableid_pl};
+    my $stableId = $self->cfg->{stableid_pl} or die mkerror(3948,"stableid_pl config is not set");
 
     for my $cntr ( @{$contracts} ){
         my %cntr = (%{$cntr->attributes});
