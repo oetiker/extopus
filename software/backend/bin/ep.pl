@@ -11,7 +11,10 @@ use EP;
 
 our $VERSION = "0";
 
-local $ENV{MOJO_APP} = EP->new;
+local $ENV{MOJO_APP} = 'EP';
+
+my $cmds = Mojolicious::Commands->new();
+push @{$cmds->namespaces}, 'EP::Command';
 
 # Start commands
-Mojolicious::Commands->start;
+$cmds->start;
