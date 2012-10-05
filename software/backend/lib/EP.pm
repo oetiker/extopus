@@ -35,6 +35,7 @@ use EP::Config;
 use EP::Inventory;
 use EP::Visualizer;
 use EP::DocPlugin;
+use EP::Cache;
 
 use Mojo::Base 'Mojolicious';
 
