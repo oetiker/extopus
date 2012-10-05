@@ -180,29 +180,41 @@ sub new {
     };
     $self->{treeCache} = {};
     my $user = $self->user;
-    if ((not $self->meta->{version}) or ( time - $self->meta->{lastup} > $self->updateInterval )  ){
-        my $oldVersion = $self->meta->{version} || '';
-        my $version = $self->inventory->getVersion($user);
-        $self->log->debug("checking inventory version '$version' vs '$oldVersion'");     
-        if ( $oldVersion  ne  $version){
-            $self->log->info("loading nodes into ".$self->cacheRoot." for $user");
-            $dbc->do("PRAGMA synchronous = 0");
-            $dbc->begin_work;
-            $dbp->begin_work;
-            if ($oldVersion){
-                $self->log->info("dropping old tables");
-                $self->dropTables;
-            }
-            $self->createTables;
-            $self->setMeta('version',$version);
-            $self->inventory->walkInventory($self,$self->user);
-            $self->log->debug("nodes for ".$self->user." loaded");
-            $dbc->commit;
-            $dbp->commit;
-            $dbc->do("VACUUM");
-            $dbc->do("PRAGMA synchronous = 1");
+    if ((not $self->meta->{version}) 
+        or ( time - $self->meta->{lastup} > $self->updateInterval )
+        or $ENV{EXTOPUS_FORCE_REPOPULATION} ){
+        my $populatorPid = $self->meta->{populatorPid};
+        if ($populatorPid and kill 0,$populatorPid){
+            $self->log->info("skipping re-population as pid $populatorPid is already at it");
         }
-        $self->setMeta('lastup',time);
+        else {
+            my $oldVersion = $self->meta->{version} || '';
+            my $version = $self->inventory->getVersion($user);
+            $self->log->info("checking inventory version '$version' vs '$oldVersion'");     
+            if ( $oldVersion  ne  $version){
+                $self->setMeta('populatorPid',$$) if $oldVersion;
+                $self->log->info("loading nodes into ".$self->cacheRoot." for $user");
+                $self->dropTables;
+                $self->createTables;
+                $self->setMeta('populatorPid',$$);
+                $dbc->do("PRAGMA synchronous = 0");
+                $dbc->begin_work;
+                $dbp->begin_work;
+                $self->setMeta('version',$version);
+                $self->setMeta('populatorPid',$$);
+                $self->inventory->walkInventory($self,$self->user);
+                $self->log->debug("nodes for ".$self->user." loaded");
+                $dbc->commit;
+                $dbp->commit;
+                $dbc->do("VACUUM");
+                $dbc->do("PRAGMA synchronous = 1");
+                $self->setMeta('populatorPid','');    
+            } 
+            else {
+                $self->log->info("no re-population required, cache is current");            
+            }
+            $self->setMeta('lastup',time);
+        }
     }
     return $self;
 }

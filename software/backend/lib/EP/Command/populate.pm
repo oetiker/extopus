@@ -21,6 +21,7 @@ sub run {
   my $self = shift;
   local $ENV{MOJO_MODE} = 'development';
   local $ENV{MOJO_LOG_LEVEL} = 'debug';
+  local $ENV{EXTOPUS_FORCE_REPOPULATION} = 1;
   my $ua = Mojo::UserAgent->new->ioloop(Mojo::IOLoop->singleton);
   $ua->app(EP->new);
   my $log = $ua->app->log;
