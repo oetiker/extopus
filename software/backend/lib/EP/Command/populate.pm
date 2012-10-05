@@ -24,13 +24,13 @@ sub run {
   my $ua = Mojo::UserAgent->new->ioloop(Mojo::IOLoop->singleton);
   $ua->app(EP->new);
   my $log = $ua->app->log;
-  my $user = $ua->app->cfg->{GENERAL}{default_user} || $ARGV[1];
-  if (not $user){
+  my $defaultUser = $ua->app->cfg->{GENERAL}{default_user};
+  my $user =  $ARGV[1];
+  if (not $defaultUser and not $user){
     $log->fatal("User name missing");   
     die $self->usage;
   }
-  $log->info("*** (re-)Populating node cache for user $user");
-  $ua->get('/setUser/'.$user);
+  $ua->get('/setUser/'.$user) if not $defaultUser;
   $ua->get('/app');
 }
 
