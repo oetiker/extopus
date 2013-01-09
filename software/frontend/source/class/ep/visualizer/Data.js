@@ -112,7 +112,7 @@ qx.Class.define("ep.visualizer.Data", {
             var end = Math.round(new Date().getTime() / 1000);
 
             if (data.getEndDate()) {
-                end = Math.round(data.getEndDate().getTime() / 1000);
+                end = Math.round(data.getEndDate());
             }
 
             var url = this._csvUrl  + '?format=' + format 
