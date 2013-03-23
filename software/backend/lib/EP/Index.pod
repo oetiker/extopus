@@ -49,7 +49,7 @@ L<Mojolicious::Guides> for details.
 
 =item *
 
-L<EP::MojoApp> - the mojo application starting point
+L<EP> - the mojo application starting point
 
 =item * 
 
