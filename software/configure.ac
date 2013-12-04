@@ -113,7 +113,7 @@ if test "$enable_pkgonly" != yes; then
      DBD::SQLite \
      JSON::XS \
      Mojo::JSON::Any \
-     Excel::Writer::XLSX  \   
+     Excel::Writer::XLSX  \
      Spreadsheet::WriteExcel
    do 
      AC_MSG_CHECKING([checking for perl module '$module'])
