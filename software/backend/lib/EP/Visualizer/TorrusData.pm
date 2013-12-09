@@ -35,7 +35,7 @@ presented in tabular form, as a csv download and as an Excel Worksheet.
 
 This visualizer will match records that have the following attributes:
 
- torrus.url-prefix
+ torrus.tree-url
  torrus.nodeid
 
 The visualizer fetches data from torrus through the AGGREGATE_DS rpc call.
