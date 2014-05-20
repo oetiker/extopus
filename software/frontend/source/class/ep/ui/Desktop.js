@@ -106,7 +106,7 @@ qx.Class.define("ep.ui.Desktop", {
                 });
                 // reserve space for the title
                 title.addListenerOnce('appear',function(){
-                    var el = title.getContainerElement().getDomElement();
+                    var el = title.getContentElement().getDomElement();
                     var width = qx.bom.element.Dimension.getWidth(el);
                     tabView.getChildControl('bar').setMarginRight(width + 20);
                 },this);

@@ -172,7 +172,7 @@ qx.Class.define("ep.ui.View", {
          */
         _onBreakOut : function(e) {
             var page = e.getData();
-            var el = page.getContainerElement().getDomElement();
+            var el = page.getContentElement().getDomElement();
             var width = qx.bom.element.Dimension.getWidth(el);
             var height = qx.bom.element.Dimension.getHeight(el);
             var instance = page.getVisualizer().getInstance();

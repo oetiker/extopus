@@ -117,7 +117,7 @@ qx.Class.define("ep.visualizer.chart.Image", {
             var range = this.getTimeRange();
             var maxInterval = this.getMaxInterval();
             var end = this.getEndTime() || (Math.round(new Date().getTime() / 1000 / 60) * 60);
-            var el = this.getContainerElement().getDomElement();
+            var el = this.getContentElement().getDomElement();
 
             if (range && end && el) {
                 // sync screen before we measure things
