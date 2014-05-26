@@ -82,6 +82,9 @@ Mojolicious calls the startup method at initialization time.
 sub startup {
     my $self = shift;
     my $me = $self;
+
+    @{$self->commands->namespaces} = (__PACKAGE__.'::Command');
+
     my $gcfg = $self->cfg->{GENERAL};
     $self->secret($gcfg->{mojo_secret});
     if ($self->mode ne 'development'){
@@ -184,7 +187,6 @@ sub startup {
             ep => $service
         }
     }); 
-    return 0;
 }
 
 1;

@@ -3,7 +3,7 @@ package EP::Command::populate;
 use Mojo::Base 'Mojolicious::Command';
 use Mojo::IOLoop;
 use Mojo::UserAgent;
-use EP;
+
 
 has description => "(re-)populate the node cache.\n";
 has usage       => <<"EOF";
@@ -17,15 +17,16 @@ EOF
 # "Objection.
 #  In the absence of pants, defense's suspenders serve no purpose.
 #  I'm going to allow them... for now."
+
 sub run {     
   my $self = shift;
   local $ENV{MOJO_MODE} = 'development';
   local $ENV{MOJO_LOG_LEVEL} = 'debug';
   local $ENV{EXTOPUS_FORCE_REPOPULATION} = 1;
   my $ua = Mojo::UserAgent->new->ioloop(Mojo::IOLoop->singleton);
-  $ua->app(EP->new);
-  my $log = $ua->app->log;
-  my $defaultUser = $ua->app->cfg->{GENERAL}{default_user};
+  $ua->app($self->app);
+  my $log = $self->app->log;
+  my $defaultUser = $self->app->cfg->{GENERAL}{default_user};
   my $user =  $ARGV[1];
   if (not $defaultUser and not $user){
     $log->fatal("User name missing");   
@@ -36,6 +37,8 @@ sub run {
 }
 
 1;
+
+__END__
 
 =head1 NAME
 
