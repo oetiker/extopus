@@ -29,7 +29,7 @@ use Exporter 'import';
 use vars qw(@EXPORT_OK);
 @EXPORT_OK = qw(mkerror);
 
-use overload ('""' => 'stringify');
+use overload ('""' => \&stringify);
 
 
 use Mojo::Base -base;
@@ -58,6 +58,11 @@ error stringification handler
 
 sub stringify {
     my $self = shift;
+    if (ref $self->message eq 'ARRAY'){
+        my ($message,@param) = @{$self->message};
+        $message =~ s/%(\d+)/$param[$1-1]/g;
+        return "ERROR ".$self->code().": ".$message;
+    }
     return "ERROR ".$self->code().": ".$self->message();
 }
 
