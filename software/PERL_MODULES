@@ -1,0 +1,8 @@
+Mojolicious@5.32
+Mojolicious::Plugin::Qooxdoo@0.5
+Mojo::Server::FastCGI@0.41
+Config::Grammar@1.10
+SIAM
+DBD::SQLite@1.42
+Excel::Writer::XLSX@0.77
+Spreadsheet::WriteExcel@2.40
