@@ -1,4 +1,4 @@
-#  Copyright (C) 2011  Tobi Oetiker
+#  Copyright (C) 2014  Tobi Oetiker
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,20 +17,18 @@
 #
 
 
-AC_INIT([extopus],[0.2.14],[tobi@oetiker.ch])
+AC_INIT([extopus],m4_esyscmd([tr -d '\n' < VERSION]),[support@oetiker.ch])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(conftools)
 
 
-# AC_CANONICAL_TARGET
-m4_version_prereq(2.60, [AC_USE_SYSTEM_EXTENSIONS], [#])
 # need this to allow long path names
 AM_INIT_AUTOMAKE([1.9 tar-ustar foreign])
 AM_MAINTAINER_MODE
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-AC_PREFIX_DEFAULT(/opt/extopus-$PACKAGE_VERSION)
+AC_PREFIX_DEFAULT(/opt/$PACKAGE_NAME-$PACKAGE_VERSION)
 
 AC_ARG_VAR(PERL,   [Path to local perl binary])
 AC_PATH_PROG(PERL, perl, no)
@@ -49,6 +47,8 @@ if test "x$PERL" != "x"; then
 else
   AC_MSG_ERROR(could not find perl)
 fi
+
+AC_PROG_GREP
 
 AC_ARG_VAR(GMAKE,   [Path to local GNU Make binary])
 AC_PATH_PROGS(GMAKE, [gnumake gmake make])
@@ -104,18 +104,7 @@ AC_SUBST(PERL5LIB)
 
 mod_ok=1
 if test "$enable_pkgonly" != yes; then
-   for module in \
-     Mojolicious \
-     MojoX::Dispatcher::Qooxdoo::Jsonrpc \
-     Mojo::Server::FastCGI \
-     Config::Grammar \
-     SIAM \
-     DBD::SQLite \
-     JSON::XS \
-     Mojo::JSON::Any \
-     Excel::Writer::XLSX  \
-     Spreadsheet::WriteExcel
-   do 
+   for module in m4_esyscmd([cat PERL_MODULES | tr '\n' ' ' | sed 's/\@[^ ]*//g']); do 
      AC_MSG_CHECKING([checking for perl module '$module'])
      if ${PERL} -I$actual_prefix/thirdparty/lib/perl5 -e 'use '$module 2>/dev/null ; then
          AC_MSG_RESULT([Ok])

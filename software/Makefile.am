@@ -18,7 +18,7 @@ AUTOMAKE_OPTIONS =  foreign
 
 SUBDIRS = frontend backend
 
-EXTRA_DIST = COPYRIGHT LICENSE CHANGES AUTHORS setup/build-perl-modules.sh setup/sdbs.inc
+EXTRA_DIST = VERSION PERL_MODULES COPYRIGHT LICENSE CHANGES AUTHORS setup/build-perl-modules.sh setup/sdbs.inc
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
