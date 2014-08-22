@@ -104,6 +104,9 @@ has 'mode' => 'traffic';
 sub new {
     my $self = shift->SUPER::new(@_);
     $self->root('/torrusChart_'.$self->instance);
+    if( defined($self->cfg->{hostauth}) ){
+        $self->hostauth($self->cfg->{hostauth});
+    }
     $self->addProxyRoute();
     if ($self->cfg->{mode}){
         $self->mode($self->cfg->{mode});
@@ -215,6 +218,10 @@ sub getLeaves {
         GET_PARAMS => 'precedence,cbqos-object-descr'.$extraParams,
         %$callParams
     );
+    if (defined($self->hostauth)){
+        $url->query({hostauth=>$self->hostauth});
+    }        
+
     $log->debug("getting ".$url->to_string);
     my $tx = Mojo::UserAgent->new->get($url);
     if (my $res=$tx->success) {
@@ -275,7 +282,7 @@ sub addProxyRoute {
         }
         my $baseUrl = $pxReq->to_string;
         $pxReq->query(nodeid=>$nodeid,view=>$view,Gwidth=>$width,Gheight=>$height,Gstart=>$start,Gend=>$end);
-        if ($self->hostauth){
+        if (defined($self->hostauth)){
             $pxReq->query({hostauth=>$self->hostauth});
         }        
         if ($maxlinestep){
