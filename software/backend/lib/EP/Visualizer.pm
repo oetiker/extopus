@@ -35,7 +35,7 @@ a pointer to the application object
 
 =cut
 
-has 'app';
+has 'app' => sub { shift->controller->app };
 
 =head1 METHODS
 

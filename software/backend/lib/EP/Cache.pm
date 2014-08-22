@@ -38,7 +38,7 @@ information.
 use Mojo::Base -base;
 use Carp;
 use DBI;
-use Mojo::JSON::Any;
+use Mojo::JSON;
 use Encode;
 use EP::Exception qw(mkerror);
 
@@ -48,13 +48,27 @@ The cache objects supports the following attributes
 
 =cut
 
+=head3 controller
+
+the current controller
+
+=cut
+
+has 'controller';
+
+has app => sub { shift->controller->app };
+
+has gcfg => sub { shift->app->cfg->{GENERAL}};
+
 =head3 user
 
 the user name supplied to the inventory plugins
 
 =cut
 
-has user => sub { croak "user is a mandatory argument" };
+has user => sub { 
+    shift->controller->session('epUser') 
+};
 
 =head3 cacheRoot
 
@@ -62,7 +76,9 @@ path to the cache root directory
 
 =cut
 
-has cacheRoot  => '/tmp/';
+has cacheRoot  => sub {
+    shift->gcfg->{cache_dir} || '/tmp/';
+};
 
 =head3 searchCols
 
@@ -70,7 +86,9 @@ array with the attributes to report for search results
 
 =cut
 
-has searchCols  => sub {[]};
+has searchCols  => sub {
+    shift->controller->getTableColumnDef('search')->{ids}
+};
 
 =head3 treeCols
 
@@ -78,7 +96,9 @@ array with the attributes to report for tree leave nodes
 
 =cut
  
-has treeCols    => sub {[]};
+has treeCols    => sub {
+    shift->controller->getTableColumnDef('tree')->{ids}
+};
 
 =head3 inventry
 
@@ -86,7 +106,9 @@ the inventory object
 
 =cut
 
-has 'inventory';
+has inventory => sub {
+    EP::Inventory->new(shift->app);
+};
 
 =head3 updateInterval
 
@@ -94,7 +116,9 @@ how often should we check if the tree needs updating
 
 =cut
 
-has updateInterval => 1e9;
+has updateInterval => sub {
+    shift->gcfg->{update_interval} || 86400;
+};
 
 =head3 log
 
@@ -102,7 +126,7 @@ a pointer to the log object
 
 =cut
 
-has 'log';
+has 'log' => sub { shift->app->log };
 
 =head3 meta
 
@@ -130,7 +154,7 @@ has 'dbhPe';
 
 has encodeUtf8  => sub { find_encoding('utf8') };
 has tree        => sub { [] };
-has json        => sub {Mojo::JSON::Any->new};
+has json        => sub { Mojo::JSON->new };
 
 
 =head2 B<new>(I<config>)

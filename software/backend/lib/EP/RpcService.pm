@@ -1,11 +1,8 @@
 package EP::RpcService;
-use strict;
-use warnings;
+use Mojo::Base qw(Mojolicious::Plugin::Qooxdoo::JsonRpcController);
 
 use EP::Exception qw(mkerror);
 use EP::Cache;
-
-use Mojo::Base -base;
 
 =head1 NAME
 
@@ -41,19 +38,28 @@ our %allow = (
     deleteDash => 1,
 );
 
-has 'controller';
+has 'cfg' => sub { 
+    shift->app->cfg 
+};
 
-has 'cfg';
-has 'visualizer';
-has 'cache';
-has 'log';
+has 'visualizer' => sub { 
+    EP::Visualizer->new(controller=>shift);
+};
+
+has 'cache' => sub {
+    EP::Cache->new(controller => shift);
+};
+
+has 'service' => 'ep';
+
+has 'log' => sub { shift->app->log };
 
 sub allow_rpc_access {
     my $self = shift;
     my $method = shift;
-    my $user = $self->controller->session('epUser');
+    my $user = $self->app->cfg->{GENERAL}{default_user}|| $self->session('epUser');
+
     die mkerror(3993,q{Your session has expired. Please re-connect.}) unless defined $user;
-    $self->cache($self->controller->stash('epCache'));
     return $allow{$method}; 
 }
    
@@ -141,7 +147,6 @@ sub getVisualizers {
     my $type = shift;
     my $recId = shift;
     my $record = $self->cache->getNode($recId);
-    $self->visualizer->controller($self->controller);
     return $self->visualizer->getVisualizers($type,$record);
 }
 
@@ -154,7 +159,6 @@ generic rpc call to be forwarere to the rpcService method of the visualizer inst
 sub visualize {   ## no critic (RequireArgUnpacking)
     my $self = shift;
     my $instance = shift;
-    $self->visualizer->controller($self->controller);
     return $self->visualizer->visualize($instance,@_);
 }
 

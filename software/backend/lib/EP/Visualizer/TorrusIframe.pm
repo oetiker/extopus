@@ -34,7 +34,6 @@ use warnings;
 use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(hmac_md5_sum url_unescape);
 use Mojo::URL;
-use Mojo::JSON::Any;
 use Mojo::UserAgent;
 use EP::Exception qw(mkerror);
 
@@ -42,7 +41,7 @@ use EP::Exception qw(mkerror);
 has 'hostauth';
 #has 'view' => 'expanded-dir-html';
 has view    => 'iframe-rrd';
-has json    => sub {Mojo::JSON::Any->new};
+has json    => sub {Mojo::JSON->new};
 has 'root';
 
 sub new {

@@ -54,7 +54,7 @@ use warnings;
 use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(url_unescape);
 use Mojo::URL;
-use Mojo::JSON::Any;
+use Mojo::JSON;
 use Mojo::UserAgent;
 use Mojo::Template;
 
@@ -70,7 +70,7 @@ has 'hostauth';
 has 'root';
 
 has view => 'embedded';
-has json => sub {Mojo::JSON::Any->new};
+has json => sub { Mojo::JSON->new};
 
 sub new {
     my $self = shift->SUPER::new(@_);

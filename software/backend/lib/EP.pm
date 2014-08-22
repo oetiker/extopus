@@ -25,8 +25,7 @@ use strict;
 use warnings;
 
 # load the two modules to have perl check them
-use MojoX::Dispatcher::Qooxdoo::Jsonrpc;
-use Mojolicious::Plugin::QooxdooJsonrpc;
+use Mojolicious::Plugin::Qooxdoo;
 use Mojo::URL;
 use Mojo::Util qw(hmac_sha1_sum slurp);
 
@@ -80,21 +79,20 @@ Mojolicious calls the startup method at initialization time.
 =cut
 
 sub startup {
-    my $self = shift;
-    my $me = $self;
+    my $app = shift;
 
-    @{$self->commands->namespaces} = (__PACKAGE__.'::Command');
+    @{$app->commands->namespaces} = (__PACKAGE__.'::Command');
 
-    my $gcfg = $self->cfg->{GENERAL};
-    $self->secret($gcfg->{mojo_secret});
-    if ($self->mode ne 'development'){
-        $self->log->path($gcfg->{log_file});
+    my $gcfg = $app->cfg->{GENERAL};
+    $app->secrets([$gcfg->{mojo_secret}]);
+    if ($app->mode ne 'development'){
+        $app->log->path($gcfg->{log_file});
         if ($gcfg->{log_level}){    
-            $self->log->level($gcfg->{log_level});
+            $app->log->level($gcfg->{log_level});
         }
     }
     
-    $self->hook( before_dispatch => sub {
+    $app->hook( before_dispatch => sub {
         my $self = shift;
         my $uri = $self->req->env->{SCRIPT_URI} || $self->req->env->{REQUEST_URI};
         my $path_info = $self->req->env->{PATH_INFO};
@@ -103,57 +101,33 @@ sub startup {
     });
     
     my $inventory = EP::Inventory->new(
-        app => $self
+        app => $app
     );
 
     my $visualizer = EP::Visualizer->new(
-        app=>$self
+        app=>$app
     );
 
-    my $service = EP::RpcService->new(
-        cfg => $self->cfg,
-        log => $self->log,
-        visualizer => $visualizer,
-    );
 
     # session is valid for 1 day
-    $self->sessions->default_expiration(1*24*3600);
+    $app->sessions->default_expiration(1*24*3600);
     # prevent our cookie from colliding
-    $self->sessions->cookie_name('EP_'.hmac_sha1_sum(slurp($self->cfg_file)));
+    $app->sessions->cookie_name('EP_'.hmac_sha1_sum(slurp($app->cfg_file)));
     # run /setUser/oetiker to launch the application for a particular user
-    my $app = $self;
-    $self->hook(before_dispatch => sub {
-        my $self = shift;
-        if ($gcfg->{default_user}){
-            $self->session(epUser =>  $gcfg->{default_user});
-        }
-        
-        my $user = $self->session('epUser');
-        if ($user){
-	    my $cache = EP::Cache->new(
-                cacheRoot => $gcfg->{cache_dir},
-                user => $user,
-                inventory => $inventory,
-                treeCols => $service->getTableColumnDef('tree')->{ids},
-                searchCols => $service->getTableColumnDef('search')->{ids},
-                updateInterval => $gcfg->{update_interval} || 86400,
-                log => $app->log,
-             );
-             $self->stash('epCache' => $cache);
-	}
-    });
 
-    my $routes = $self->routes;
+    my $service = EP::RpcService->new(app=>$app);
+
+    my $routes = $app->routes;
 
     if (not $gcfg->{default_user}){
         $routes->get('/setUser/(:user)' => sub {
             my $self = shift;
             $self->session(epUser =>  $self->param('user'));
-            $self->redirect_to($me->prefix.'/');
+            $self->redirect_to($app->prefix.'/');
         });
     }
 
-    my $apiDocRoot = $self->home->rel_dir('apidoc');
+    my $apiDocRoot = $app->home->rel_dir('apidoc');
     if (-d $apiDocRoot){
         my $apiDoc = Mojolicious::Static->new();
         $apiDoc->paths([$apiDocRoot]);
@@ -170,22 +144,20 @@ sub startup {
         });
     }
 
-    $routes->get('/' => sub { shift->redirect_to($me->prefix.'/')});
+    $routes->get('/' => sub { shift->redirect_to($app->prefix.'/')});
 
-    $self->plugin('EP::DocPlugin', {
+    $app->plugin('EP::DocPlugin', {
         root => '/doc',
         index => 'EP::Index',
-        localguide => $self->cfg->{GENERAL}{localguide},
+        localguide => $app->cfg->{GENERAL}{localguide},
         template => Mojo::Asset::File->new(
-            path=>$self->home->rel_file('templates/doc.html.ep')
+            path=>$app->home->rel_file('templates/doc.html.ep')
         )->slurp,
     }); 
 
-    $self->plugin('qooxdoo_jsonrpc',{
-        prefix => $self->prefix,
-        services => {
-            ep => $service
-        }
+    $app->plugin('qooxdoo',{
+        prefix => $app->prefix,
+        controller => 'RpcService'
     }); 
 }
 
