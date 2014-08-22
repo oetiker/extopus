@@ -168,8 +168,8 @@ sub walkInventory {
             for my $unit ( @unit ){
                 my %unit = (%{$unit->attributes});
                 next unless $unit{'siam.object.complete'};
-                my @data = @{$unit->get_data_elements};
-                if (not @data){   
+                my @srvcmpt = @{$unit->get_components};
+                if (not @srvcmpt){   
                     my $raw_rec = {%cntr, %srv, %unit};
                     next if defined $skip and $skip->($raw_rec);
                     my $rec = $self->buildRecord($raw_rec);
@@ -177,23 +177,28 @@ sub walkInventory {
                     $count++;
                     next;
                 }
-                for my $data ( @data ){
-                    my %data = (%{$data->attributes});
-                    next unless $data{'siam.object.complete'};
+                for my $srvcmpt ( @srvcmpt ){
+                    my %srvcmpt = (%{$srvcmpt->attributes});
+                    next unless $srvcmpt{'siam.object.complete'};
                     my $raw_rec = {
-                        %user,%cntr,%srv, %unit, %data 
+                        %user,%cntr,%srv, %unit, %srvcmpt 
                     };
                     
-                    my $device = $data->get_device();
-                    my %device = (%{$device->attributes});
-                    if ( $device{'siam.object.complete'} ){
-                        $raw_rec = { %$raw_rec, %device };
-                    }                    
-
-                    next if defined $skip and $skip->($raw_rec);
-                    my $rec = $self->buildRecord($raw_rec);
-                    $storeCallback->($stableId->($raw_rec),$rec);
-                    $count++;
+                    my $devc = $srvcmpt->get_device_component();
+                    if( $devc ) {
+                        my %devc = (%{$devc->attributes});
+                        my $device = $devc->contained_in();
+                        my $torrus_url = $device->attr('torrus.tree-url');
+                        
+                        if ( $devc{'siam.object.complete'} ){
+                            $raw_rec = { %$raw_rec, %devc, 'torrus.tree-url' => $torrus_url };
+                        }
+                        
+                        next if defined $skip and $skip->($raw_rec);
+                        my $rec = $self->buildRecord($raw_rec);
+                        $storeCallback->($stableId->($raw_rec),$rec);
+                        $count++;
+                    }
                 }
             }
         }

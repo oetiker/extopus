@@ -35,7 +35,7 @@ presented in tabular form, as a csv download and as an Excel Worksheet.
 
 This visualizer will match records that have the following attributes:
 
- torrus.url-prefix
+ torrus.tree-url
  torrus.nodeid
 
 The visualizer fetches data from torrus through the AGGREGATE_DS rpc call.
@@ -75,6 +75,9 @@ has json => sub {Mojo::JSON::Any->new};
 sub new {
     my $self = shift->SUPER::new(@_);
     $self->root('/torrusCSV_'.$self->instance);
+    if( defined($self->cfg->{hostauth}) ){
+        $self->hostauth($self->cfg->{hostauth});
+    }
     # parse some config data
     my @split_nodes = qw(col_names col_units col_widths sub_nodes);
     for my $prop (qw(selector type col_data), @split_nodes){
@@ -270,6 +273,10 @@ sub getData {
                 Gend => $stepEnd,
                 nodeid=>"$nodeId//$subNode"
             );
+            if (defined($self->hostauth)){
+                $url->query({hostauth=>$self->hostauth});
+            }        
+            
             $self->app->log->debug("getting ".$url->to_string);
             my $tx = Mojo::UserAgent->new->get($url);
             my $data;
