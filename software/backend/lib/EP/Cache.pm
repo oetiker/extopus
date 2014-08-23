@@ -107,7 +107,7 @@ the inventory object
 =cut
 
 has inventory => sub {
-    EP::Inventory->new(shift->app);
+    EP::Inventory->new(app=>shift->app);
 };
 
 =head3 updateInterval
