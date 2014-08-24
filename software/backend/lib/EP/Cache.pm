@@ -67,7 +67,7 @@ the user name supplied to the inventory plugins
 =cut
 
 has user => sub { 
-    shift->controller->session('epUser') 
+    shift->controller->user;
 };
 
 =head3 cacheRoot

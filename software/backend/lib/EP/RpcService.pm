@@ -52,14 +52,18 @@ has 'cache' => sub {
 
 has 'service' => 'ep';
 
+has user => sub {
+    my $self = shift;
+    $self->cfg->{GENERAL}{default_user}|| $self->session('epUser');
+};
+
 has 'log' => sub { shift->app->log };
 
 sub allow_rpc_access {
     my $self = shift;
     my $method = shift;
-    my $user = $self->app->cfg->{GENERAL}{default_user}|| $self->session('epUser');
 
-    die mkerror(3993,q{Your session has expired. Please re-connect.}) unless defined $user;
+    die mkerror(3993,q{Your session has expired. Please re-connect.}) unless defined $self->user;
     return $allow{$method}; 
 }
    
