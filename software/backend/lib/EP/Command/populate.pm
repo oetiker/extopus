@@ -24,7 +24,7 @@ sub run {
   local $ENV{MOJO_LOG_LEVEL} = 'debug';
   local $ENV{EXTOPUS_FORCE_REPOPULATION} = 1;
   my $ua = Mojo::UserAgent->new->ioloop(Mojo::IOLoop->singleton);
-  $ua->app($self->app);
+  $ua->server->app($self->app);
   my $log = $self->app->log;
   my $defaultUser = $self->app->cfg->{GENERAL}{default_user};
   my $user =  $ARGV[1];
