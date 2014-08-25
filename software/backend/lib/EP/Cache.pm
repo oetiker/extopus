@@ -206,7 +206,7 @@ sub new {
     $self->{treeCache} = {};
     my $user = $self->user;
     if ((not $self->meta->{version}) 
-        or ( time - $self->meta->{lastup} > $self->updateInterval )
+        or ( time - ($self->meta->{lastup}||0) > $self->updateInterval )
         or $ENV{EXTOPUS_FORCE_REPOPULATION} ){
         my $populatorPid = $self->meta->{populatorPid};
         if ($populatorPid and kill 0,$populatorPid){
