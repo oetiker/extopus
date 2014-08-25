@@ -188,10 +188,8 @@ sub walkInventory {
                     if( $devc ) {
                         my %devc = (%{$devc->attributes});
                         $raw_rec = { %$raw_rec, %devc };
-                        my $device = $devc->contained_in();
-                        if ($device){
-                            $raw_rec->{'torrus.tree-url'} = $device->attr('torrus.tree-url');
-                        }                        
+                        my $device = $devc->contained_in() or next;
+                        $raw_rec->{'torrus.tree-url'} = $device->attr('torrus.tree-url') or next;
                         next if defined $skip and $skip->($raw_rec);
                         my $rec = $self->buildRecord($raw_rec);
                         $storeCallback->($stableId->($raw_rec),$rec);
