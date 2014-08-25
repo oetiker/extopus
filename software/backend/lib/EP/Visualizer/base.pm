@@ -19,7 +19,7 @@ The base class for extopus visualizers
 =cut
 
 use Mojo::Base -base;
-use Mojo::Util qw(hmac_sha1_sum);
+use Mojo::Util qw(hmac_sha1_sum url_unescape);
 
 =head2 cfg
 
@@ -52,6 +52,13 @@ The current controller. (Gets set before the visualizer is sent into action).
 =cut
 
 has 'controller';
+
+=head2 root
+
+The root directory for proxy functions
+=cut
+
+has 'root';
 
 =head1 METHODS
 
@@ -157,6 +164,21 @@ sub calcHash {   ## no critic (RequireArgUnpacking)
     # $self->log->debug('HASH '.join(',',@_));    
     my $hash = hmac_sha1_sum(join('::',@_),$self->app->secret);
     return $hash;
+}
+
+=head2 toRel(Mojo::URL)
+
+retun a relative URL
+
+=cut
+
+sub toRel {
+    my $self = shift;
+    my $url = shift;
+    my $root = $self->root;
+    my $plain_src = $url->to_string;
+    $plain_src =~ s/^$root//;
+    return url_unescape $plain_src;
 }
 
 1;

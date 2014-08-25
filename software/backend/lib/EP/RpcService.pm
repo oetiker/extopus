@@ -3,6 +3,7 @@ use Mojo::Base qw(Mojolicious::Plugin::Qooxdoo::JsonRpcController);
 
 use EP::Exception qw(mkerror);
 use EP::Cache;
+use EP::Visualizer;
 
 =head1 NAME
 

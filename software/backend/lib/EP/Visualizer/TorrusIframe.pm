@@ -42,7 +42,7 @@ has 'hostauth';
 #has 'view' => 'expanded-dir-html';
 has view    => 'iframe-rrd';
 has json    => sub {Mojo::JSON->new};
-has 'root';
+
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -77,16 +77,14 @@ sub matchRecord {
             view => $view,
             url => $url
         );
-        $src->base->path($self->root);
-        my $plain_src = $src->to_rel;
-        url_unescape $plain_src;
+        
         push @views, {
             visualizer =>  'iframe',
             instance => $self->instance,   
             title => $self->cfg->{title},
             caption => $self->caption($rec),
             arguments => {
-                src => $plain_src,
+                src => $self->toRel($src),
                 title => $leaf->{comment},
             }
         }

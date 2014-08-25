@@ -177,9 +177,7 @@ sub matchRecord {
 
     my $src = Mojo::URL->new();
     $src->path($self->root);    
-    $src->base->path($self->root);
-    my $plain_src = $src->to_rel;
-    url_unescape $plain_src;
+    
     return {
         %$baseProps,
         arguments => {
@@ -193,7 +191,7 @@ sub matchRecord {
                 { key => 'year', name => 'Yearly' },
             ],            
             recId => $rec->{__nodeId},
-            csvUrl => $plain_src
+            csvUrl => $self->toRel($src),
         }
     };
 }

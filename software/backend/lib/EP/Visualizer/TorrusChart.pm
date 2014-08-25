@@ -130,6 +130,7 @@ can we handle this type of record
 
 =cut
 
+
 sub matchRecord {
     my $self = shift;
     my $type = shift;
@@ -169,12 +170,9 @@ sub matchRecord {
             url => $url,
             recid => $rec->{__nodeId},
         );
-        $src->base->path($self->root);
-        my $plain_src = $src->to_rel;
-        url_unescape $plain_src;
-                
+
         push @nodes, {
-            src => $plain_src,
+            src => $self->toRel($src),
             title => $title
         },
     };
