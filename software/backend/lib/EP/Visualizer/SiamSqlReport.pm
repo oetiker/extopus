@@ -189,7 +189,7 @@ sub rpcService {
     my $self = shift;
     my $args = shift;
     my $form = $args->{form};
-    my $rec =  $self->controller->stash('epCache')->getNode($args->{recId});
+    my $rec =  $self->controller->cache->getNode($args->{recId});
     my $cfg = $self->cfg;
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($self->sql);

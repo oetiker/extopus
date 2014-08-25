@@ -302,7 +302,7 @@ sub addProxyRoute {
            # this should make the client comfortable caching this for a bit
            $rp->headers->last_modified(Mojo::Date->new(time-24*3600));
            if (lc $type eq 'application/pdf'){
-               my $cache = $ctrl->stash('epCache');
+               my $cache = $ctrl->cache;
                my $rec = $cache->getNode($recId);
                my $name = $self->cfg->{savename_pl} ? $self->cfg->{savename_pl}($rec) : $nodeid;
                $name .= '-'.strftime('%Y-%m-%d',localtime($start)).'_'.strftime('%Y-%m-%d',localtime($end));               

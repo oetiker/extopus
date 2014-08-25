@@ -31,10 +31,7 @@ use Mojo::Util qw(hmac_sha1_sum slurp);
 
 use EP::RpcService;
 use EP::Config;
-use EP::Inventory;
-use EP::Visualizer;
 use EP::DocPlugin;
-use EP::Cache;
 
 use Mojo::Base 'Mojolicious';
 
@@ -100,14 +97,6 @@ sub startup {
         $self->req->url->base(Mojo::URL->new($uri)) if $uri;
     });
     
-    my $inventory = EP::Inventory->new(
-        app => $app
-    );
-
-    my $visualizer = EP::Visualizer->new(
-        app=>$app
-    );
-
 
     # session is valid for 1 day
     $app->sessions->default_expiration(1*24*3600);

@@ -105,7 +105,7 @@ sub getData {
     }
     my @ret;
     my $stamp;
-    my $cache = $self->controller->stash('epCache');
+    my $cache = $self->controller->cache;
     for my $recId (@$recIds){
         my $data =  $self->SUPER::getData($recId,$end,$interval,1);
         if ($data->{status}){       
