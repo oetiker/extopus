@@ -69,8 +69,7 @@ sub matchRecord {
         my $nodeid = $leaf->{nodeid} or next; # skip leaves without nodeid
         my $hash = $self->calcHash($url,$nodeid,$view);
         $self->app->log->debug('adding '.$leaf->{comment},$leaf->{nodeid});
-        my $src = Mojo::URL->new();
-        $src->path($self->root);
+        my $src = Mojo::URL->new($self->root);
         $src->query(
             hash => $hash,
             nodeid => $nodeid,
@@ -84,7 +83,7 @@ sub matchRecord {
             title => $self->cfg->{title},
             caption => $self->caption($rec),
             arguments => {
-                src => $self->toRel($src),
+                src => $src->to_string,
                 title => $leaf->{comment},
             }
         }

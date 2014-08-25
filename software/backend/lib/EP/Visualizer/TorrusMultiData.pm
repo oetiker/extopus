@@ -97,6 +97,7 @@ run get data for multiple records
 
 sub getData {
     my $self = shift;
+    my $controller = shift;
     my $recIds = shift;
     my $end = shift;
     my $interval = shift;
@@ -105,7 +106,7 @@ sub getData {
     }
     my @ret;
     my $stamp;
-    my $cache = $self->controller->cache;
+    my $cache = EP::Cache->new(controller=>$controller,user=>($controller->app->cfg->{GENERAL}{default_user}|| $controller->session('epUser')));
     for my $recId (@$recIds){
         my $data =  $self->SUPER::getData($recId,$end,$interval,1);
         if ($data->{status}){       
@@ -131,8 +132,9 @@ provide rpc data access
 
 sub rpcService {
     my $self = shift;
+    my $controller = shift;
     my $arg = shift;
-    return $self->getData($arg->{recList},$arg->{endDate},$arg->{interval});
+    return $self->getData($controller,$arg->{recList},$arg->{endDate},$arg->{interval});
 }
 
 1;

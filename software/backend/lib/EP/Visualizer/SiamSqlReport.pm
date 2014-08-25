@@ -89,6 +89,7 @@ use warnings;
 
 use Mojo::Base 'EP::Visualizer::base';
 use SIAM;
+use YAML;
 
 use EP::Exception qw(mkerror);
 use POSIX qw(strftime);
@@ -187,9 +188,10 @@ provide rpc data access
 
 sub rpcService {
     my $self = shift;
+    my $controller = shift;
     my $args = shift;
     my $form = $args->{form};
-    my $rec =  $self->controller->cache->getNode($args->{recId});
+    my $rec =  $controller->cache->getNode($args->{recId});
     my $cfg = $self->cfg;
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($self->sql);

@@ -32,7 +32,7 @@ use Mojo::Util qw(hmac_sha1_sum slurp);
 use EP::RpcService;
 use EP::Config;
 use EP::DocPlugin;
-
+use EP::Visualizer;
 use Mojo::Base 'Mojolicious';
 
 =head2 cfg
@@ -55,13 +55,15 @@ has 'cfg' => sub {
     return $conf->parse_config();
 };
 
+has 'visualizer';
+
 =head2 prefix
 
 location of the extopus application. This is set to '/app' by default.
 
 =cut
 
-has 'prefix' => '/app';
+has 'prefix' => 'app/';
 
 =head1 METHODS
 
@@ -89,6 +91,12 @@ sub startup {
         }
     }
     
+    # instanciate the visualizers on startup, so that they
+    # can register their proxies (maybe this should be done differently
+    # by providning a path to each instance statically ... but this
+    # is for later )
+    $app->visualizer(EP::Visualizer->new(app=>$app));
+
     $app->hook( before_dispatch => sub {
         my $self = shift;
         my $uri = $self->req->env->{SCRIPT_URI} || $self->req->env->{REQUEST_URI};

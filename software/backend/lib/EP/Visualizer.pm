@@ -25,7 +25,6 @@ use Mojo::Base -base;
 
 has 'visualizers' => sub { [] };
 has 'vismap' => sub { {} };
-has 'controller';
 
 =head1 ATTRIBUTES
 
@@ -35,7 +34,7 @@ a pointer to the application object
 
 =cut
 
-has 'app' => sub { shift->controller->app };
+has 'app';
 
 =head1 METHODS
 
@@ -116,7 +115,6 @@ sub visualize {  ## no critic (RequireArgUnpacking)
     my $self = shift;
     my $instance = shift;
     my $obj = $self->vismap->{$instance};
-    $obj->controller($self->controller);
     return $obj->rpcService(@_);
 }
 

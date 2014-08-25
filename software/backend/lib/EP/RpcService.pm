@@ -44,7 +44,7 @@ has 'cfg' => sub {
 };
 
 has 'visualizer' => sub { 
-    EP::Visualizer->new(controller=>shift);
+    shift->app->visualizer;
 };
 
 has 'cache' => sub {
@@ -164,7 +164,7 @@ generic rpc call to be forwarere to the rpcService method of the visualizer inst
 sub visualize {   ## no critic (RequireArgUnpacking)
     my $self = shift;
     my $instance = shift;
-    return $self->visualizer->visualize($instance,@_);
+    return $self->visualizer->visualize($instance,$self,@_);
 }
 
 =head2 saveDash(config,label,id,update)

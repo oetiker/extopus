@@ -67,14 +67,15 @@ use EP::Exception qw(mkerror);
 use POSIX qw(strftime);
 
 has 'hostauth';
-has 'root';
+
+has root => sub {'torrusCSV_'.shift->instance };
 
 has view => 'embedded';
 has json => sub { Mojo::JSON->new};
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    $self->root('/torrusCSV_'.$self->instance);
+
     if( defined($self->cfg->{hostauth}) ){
         $self->hostauth($self->cfg->{hostauth});
     }
@@ -204,12 +205,13 @@ use the AGGREGATE_DS rpc call to pull some statistics from the server.
 
 sub getData {
     my $self = shift;
+    my $controller  =shift;
     my $recId = shift;
     my $end = shift;
     my $interval = shift;
     my $count = shift;
     my @return;
-    my $cache = $self->controller->cache;
+    my $cache = EP::Cache->new(controller=>$controller,user=>($controller->app->cfg->{GENERAL}{default_user}|| $controller->session('epUser')));
     my $rec = $cache->getNode($recId);    
     my $treeUrl = $rec->{'torrus.tree-url'};
     my $nodeId = $rec->{'torrus.nodeid'};
@@ -331,8 +333,9 @@ provide rpc data access
 
 sub rpcService {
     my $self = shift;
+    my $controller = shift;
     my $arg = shift;
-    return $self->getData($arg->{recId},$arg->{endDate},$arg->{interval},$arg->{count});
+    return $self->getData($controller,$arg->{recId},$arg->{endDate},$arg->{interval},$arg->{count});
 }
 
 =head2 getWbName 

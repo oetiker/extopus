@@ -45,20 +45,6 @@ the name of the instance
 
 has 'instance';
 
-=head2 controller
-
-The current controller. (Gets set before the visualizer is sent into action).
-
-=cut
-
-has 'controller';
-
-=head2 root
-
-The root directory for proxy functions
-=cut
-
-has 'root';
 
 =head1 METHODS
 
@@ -141,7 +127,7 @@ sub caption_live {
 }
 
 
-=head2 rpcService
+=head2 rpcService($ctrl,@)
 
 custom rpc service of this visualizer. accessible via the C<visualize(visualizerInstance,args)> rpc call
 
@@ -149,6 +135,8 @@ custom rpc service of this visualizer. accessible via the C<visualize(visualizer
 
 sub rpcService {  ## no critic (RequireArgUnpacking)
     my $self = shift;
+    my $instance = shift;
+    my $controller = shift;
     my @args = @_;
     die "sorry, no rpc service support";   
 }
@@ -164,21 +152,6 @@ sub calcHash {   ## no critic (RequireArgUnpacking)
     # $self->log->debug('HASH '.join(',',@_));    
     my $hash = hmac_sha1_sum(join('::',@_),$self->app->secrets->[0]);
     return $hash;
-}
-
-=head2 toRel(Mojo::URL)
-
-retun a relative URL
-
-=cut
-
-sub toRel {
-    my $self = shift;
-    my $url = shift;
-    my $root = $self->root;
-    my $plain_src = $url->to_string;
-    $plain_src =~ s/^$root//;
-    return url_unescape $plain_src;
 }
 
 1;

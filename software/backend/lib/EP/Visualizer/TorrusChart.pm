@@ -98,12 +98,11 @@ has 'hostauth';
 has view => 'embedded';
 has json => sub {Mojo::JSON->new};
 has 'printtemplate';
-has 'root';
 has 'mode' => 'traffic';
+has root => sub {'torrusChart_'.shift->instance};
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    $self->root('/torrusChart_'.$self->instance);
     if( defined($self->cfg->{hostauth}) ){
         $self->hostauth($self->cfg->{hostauth});
     }
@@ -162,8 +161,7 @@ sub matchRecord {
 
         my $hash = $self->calcHash($url,$nodeid);
         $self->app->log->debug('adding '.$title.' - '.$leaf->{nodeid});
-        my $src = Mojo::URL->new();
-        $src->path($self->root);
+        my $src = Mojo::URL->new($self->root);
         $src->query(
             hash => $hash,
             nodeid => $nodeid,
@@ -172,7 +170,7 @@ sub matchRecord {
         );
 
         push @nodes, {
-            src => $self->toRel($src),
+            src => $src->to_string,
             title => $title
         },
     };
@@ -278,7 +276,6 @@ sub addProxyRoute {
             $self->app->log->warn("Request for $url?nodeid=$nodeid;view=$view denied ($hash ne $newHash)");
             return;
         }
-        my $baseUrl = $pxReq->to_string;
         $pxReq->query(nodeid=>$nodeid,view=>$view,Gwidth=>$width,Gheight=>$height,Gstart=>$start,Gend=>$end);
         if (defined($self->hostauth)){
             $pxReq->query({hostauth=>$self->hostauth});
@@ -300,7 +297,7 @@ sub addProxyRoute {
            # this should make the client comfortable caching this for a bit
            $rp->headers->last_modified(Mojo::Date->new(time-24*3600));
            if (lc $type eq 'application/pdf'){
-               my $cache = $ctrl->cache;
+               my $cache = EP::Cache->new(controller=>$ctrl,user=>($ctrl->app->cfg->{GENERAL}{default_user}|| $ctrl->session('epUser')));
                my $rec = $cache->getNode($recId);
                my $name = $self->cfg->{savename_pl} ? $self->cfg->{savename_pl}($rec) : $nodeid;
                $name .= '-'.strftime('%Y-%m-%d',localtime($start)).'_'.strftime('%Y-%m-%d',localtime($end));               
