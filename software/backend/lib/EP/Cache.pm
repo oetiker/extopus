@@ -2,6 +2,7 @@ package EP::Cache;
 use strict;
 use warnings;
 use Data::Dumper;
+use EP::Inventory;
 
 =head1 NAME
 
