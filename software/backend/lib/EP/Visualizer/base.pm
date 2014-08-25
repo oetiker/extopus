@@ -162,7 +162,7 @@ Returns a hash for authenticating access to the ref
 sub calcHash {   ## no critic (RequireArgUnpacking)
     my $self = shift;
     # $self->log->debug('HASH '.join(',',@_));    
-    my $hash = hmac_sha1_sum(join('::',@_),$self->app->secret);
+    my $hash = hmac_sha1_sum(join('::',@_),$self->app->secrets->[0]);
     return $hash;
 }
 
