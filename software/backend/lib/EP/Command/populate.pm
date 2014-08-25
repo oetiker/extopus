@@ -19,21 +19,18 @@ EOF
 #  I'm going to allow them... for now."
 
 sub run {     
-  my $self = shift;
-  local $ENV{MOJO_MODE} = 'development';
-  local $ENV{MOJO_LOG_LEVEL} = 'debug';
-  local $ENV{EXTOPUS_FORCE_REPOPULATION} = 1;
-  my $ua = Mojo::UserAgent->new->ioloop(Mojo::IOLoop->singleton);
-  $ua->server->app($self->app);
-  my $log = $self->app->log;
-  my $defaultUser = $self->app->cfg->{GENERAL}{default_user};
-  my $user =  $ARGV[1];
-  if (not $defaultUser and not $user){
-    $log->fatal("User name missing");   
-    die $self->usage;
-  }
-  $ua->get('/setUser/'.$user) if not $defaultUser;
-  $ua->get('/app');
+    my $self = shift;
+    local $ENV{MOJO_MODE} = 'development';
+    local $ENV{MOJO_LOG_LEVEL} = 'debug';
+    local $ENV{EXTOPUS_FORCE_REPOPULATION} = 1;
+    my $log = $self->app->log;
+    my $defaultUser = $self->app->cfg->{GENERAL}{default_user};
+    my $user =  $ARGV[1];
+    if (not $defaultUser and not $user){
+      $log->fatal("User name missing");   
+      die $self->usage;
+    }
+    EP::Cache->new(controller=>$self,user=>($user || $defaultUser));
 }
 
 1;
