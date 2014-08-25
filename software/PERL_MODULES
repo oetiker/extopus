@@ -1,5 +1,5 @@
 Mojolicious@5.32
-Mojolicious::Plugin::Qooxdoo@0.8
+Mojolicious::Plugin::Qooxdoo@0.9
 Mojo::Server::FastCGI@0.41
 Config::Grammar@1.10
 SIAM@1.01
