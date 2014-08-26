@@ -185,16 +185,22 @@ sub walkInventory {
                     };
                     
                     my $devc = $srvcmpt->get_device_component();
-                    if( $devc ) {
+                    if( ref $devc ) {
                         my %devc = (%{$devc->attributes});
-                        $raw_rec = { %$raw_rec, %devc };
-                        my $device = $devc->contained_in() or next;
-                        $raw_rec->{'torrus.tree-url'} = $device->attr('torrus.tree-url') or next;
-                        next if defined $skip and $skip->($raw_rec);
-                        my $rec = $self->buildRecord($raw_rec);
-                        $storeCallback->($stableId->($raw_rec),$rec);
-                        $count++;
-                    }
+                        if ($devc{'siam.object.complete'}){
+                            $raw_rec = { %$raw_rec, %devc };
+                            my $device = $devc->contained_in();
+                            if (ref $device){
+                                my %device = (%{$device->attributes});
+                                if ($device{'siam.object.complete'}){
+                                    $raw_rec = { %$raw_rec, %device };
+                                }
+                            }
+                        }
+                    }                                
+                    my $rec = $self->buildRecord($raw_rec);
+                    $storeCallback->($stableId->($raw_rec),$rec);
+                    $count++;
                 }
             }
         }
