@@ -197,7 +197,8 @@ sub walkInventory {
                                 }
                             }
                         }
-                    }                                
+                    }           
+                    next if defined $skip and $skip->($raw_rec);                   
                     my $rec = $self->buildRecord($raw_rec);
                     $storeCallback->($stableId->($raw_rec),$rec);
                     $count++;
