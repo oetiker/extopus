@@ -192,7 +192,7 @@ sub matchRecord {
                 { key => 'year', name => 'Yearly' },
             ],            
             recId => $rec->{__nodeId},
-            csvUrl => $self->toRel($src),
+            csvUrl => $src->to_string,
         }
     };
 }
