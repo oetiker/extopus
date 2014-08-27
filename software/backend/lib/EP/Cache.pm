@@ -353,7 +353,7 @@ sub addTreeNode {
     LEAF:
     for my $subTree (@{$treeData}){                  
         my $parent = 0;
-        # make sure the hole branche is populated
+        # make sure the whole branche is populated
         for my $value (@{$subTree}){
             next LEAF unless $value;            
         }
