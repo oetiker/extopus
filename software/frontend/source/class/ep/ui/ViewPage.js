@@ -44,13 +44,13 @@ qx.Class.define("ep.ui.ViewPage", {
             column : 6
         });
 
-        menuButton.addListener('click',function(){
+        menuButton.addListener('tap',function(){
             ep.ui.ViewMenu.getInstance().showMenu(menuButton, this);
         },this);
 
         button.addListener('syncAppearance', this._updateButton, this);
         this._viewProps = {};
-        button.addListener('click',function(){
+        button.addListener('tap',function(){
         },this);
     },
 

@@ -124,9 +124,10 @@ qx.Class.define("ep.ui.TreeView", {
             var that = this;
 
             var control = new qx.ui.tree.VirtualTree(root, 'name', 'kids').set({
-                openMode : 'click',
+                openMode : 'tap',
                 hideRoot : true,
                 iconPath : 'icon',
+                // showTopLevelOpenCloseIcons: true,
 
                 iconOptions : {
                     converter : function(value, model) {

@@ -244,7 +244,7 @@ qx.Class.define("ep.ui.DashConfig", {
                 }
             }
             if (collision){
-                ep.ui.ShortNote.getInstance().setNote(this.tr("Select a location by dragging the mouse. Enlarge the grid by clicking the [+] buttons."));
+                ep.ui.ShortNote.getInstance().setNote(this.tr("Select a location by dragging the mouse. Enlarge the grid by taping the [+] buttons."));
             }
             for (var x = 0;x < this._width;x++){ 
                 for (var y = 0;y < this._height;y++){                     
@@ -282,11 +282,11 @@ qx.Class.define("ep.ui.DashConfig", {
             var right = this._ghRight = this._makeGrowHandle("icon/32/actions/list-add.png");
             var bottom = this._ghBottom = this._makeGrowHandle("icon/32/actions/list-add.png");
             var that = this;
-            right.addListener('click',function(e){
+            right.addListener('tap',function(e){
                 that.setMaxX(that.getMaxX()+1);
                 that._addCol();
             });
-            bottom.addListener('click',function(e){
+            bottom.addListener('tap',function(e){
                 that.setMaxY(that.getMaxY()+1);
                 that._addRow();
             });

@@ -111,7 +111,7 @@ qx.Class.define("ep.ui.DashBoard", {
                 edit.selectAllText();
             },this);
 
-            this.getChildControl('button').addListener('dblclick',function(e){
+            this.getChildControl('button').addListener('dbltap',function(e){
                 this.editLabel();
             },this);
 
@@ -261,7 +261,7 @@ qx.Class.define("ep.ui.DashBoard", {
                 }
             },this);
 
-            menuButton.addListener('click',function(){
+            menuButton.addListener('tap',function(){
                 ep.ui.DashMenu.getInstance().showMenu(menuButton, this);
             },this);
         },
@@ -285,7 +285,7 @@ qx.Class.define("ep.ui.DashBoard", {
             });            
             editBox.add(moveBtn);
             editBox.add(removeBtn);
-            editBox.addListener('click',function(){
+            editBox.addListener('tap',function(){
                 this.fireEvent('endEditMode');
             },this);
             editBox.addListener('disappear',function(){
@@ -300,7 +300,7 @@ qx.Class.define("ep.ui.DashBoard", {
                 editBox.hide();
             });
 
-            removeBtn.addListenerOnce('click',function(){
+            removeBtn.addListenerOnce('tap',function(){
                 this._boardView._remove(box);
                 this.removeListenerById(startLst);
                 this.removeListenerById(endLst);                    
@@ -317,7 +317,7 @@ qx.Class.define("ep.ui.DashBoard", {
                 box.dispose();
             },this);
 
-            moveBtn.addListener('click',function(){
+            moveBtn.addListener('tap',function(){
                 var cfgView = this._cfgView;
                 var boardView = this._boardView;
                 cfgView.freePosition(box.getLayoutProperties());

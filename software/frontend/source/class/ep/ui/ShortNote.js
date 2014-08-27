@@ -38,7 +38,7 @@ qx.Class.define("ep.ui.ShortNote", {
         });
 
         this.add(note);
-        this.addListener('click',function(){
+        this.addListener('tap',function(){
             this.hide();
         },this);
         this.getApplicationRoot().add(this,{top:0,left:0,right:0});

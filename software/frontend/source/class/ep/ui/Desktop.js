@@ -136,7 +136,7 @@ qx.Class.define("ep.ui.Desktop", {
                 toolTipText   : 'www.extopus.org'
             });
 
-            about.addListener('click', function() {
+            about.addListener('tap', function() {
                 qx.bom.Window.open('http://extopus.org/', '_blank');
             });
             this._add(about);
