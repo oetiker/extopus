@@ -422,7 +422,7 @@ sub getNodes {
     while (my $row = $sth->fetchrow_hashref){
         my $data = $json->decode($row->{data});
         my $entry = { map { $_ => $data->{$_} } @{$self->searchCols} };
-        $entry->{__nodeId} = $row->{docid};
+        $entry->{__epId} = $row->{docid};
         push @return, $entry;
     }
     return \@return;
@@ -430,7 +430,7 @@ sub getNodes {
 
 =head2 getNode($nodeId)
 
-Return node matching the given nodeId. Including the __nodeId attribute.
+Return node matching the given nodeId. Including the __epId attribute.
 
 =cut
 
@@ -441,7 +441,7 @@ sub getNode {
     my @row = $dbh->selectrow_array("SELECT data FROM node WHERE docid = ?",{},$nodeId);
     my $json = $self->json;
     my $ret = $json->decode($row[0]);
-    $ret->{__nodeId} = $nodeId;
+    $ret->{__epId} = $nodeId;
     return $ret;
 }
 
@@ -476,7 +476,7 @@ sub getBranch {
         my @leaves;
         while (my ($docid,$row) = $sth->fetchrow_array()){  
             my $data = $self->json->decode($row);    
-            $data->{__nodeId} = $docid;
+            $data->{__epId} = $docid;
             push @leaves, [ map { $data->{$_} } @{$self->treeCols} ];
         }
         push @$branch, \@leaves;        

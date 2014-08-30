@@ -166,7 +166,7 @@ sub matchRecord {
             hash => $hash,
             nodeid => $nodeid,
             url => $url,
-            recid => $rec->{__nodeId},
+            recid => $rec->{__epId},
         );
 
         push @nodes, {

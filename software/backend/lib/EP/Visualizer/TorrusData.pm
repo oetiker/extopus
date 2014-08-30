@@ -191,7 +191,7 @@ sub matchRecord {
                 { key => 'month', name => 'Monthly' },
                 { key => 'year', name => 'Yearly' },
             ],            
-            recId => $rec->{__nodeId},
+            recId => $rec->{__epId},
             csvUrl => $src->to_string,
         }
     };

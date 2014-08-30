@@ -109,8 +109,8 @@ sub getTableColumnDef {
     die mkerror(34884,"Table type '$table' is not known!") unless defined $cols;
     my $attr = $self->cfg->{ATTRIBUTES};
     return {
-        ids => ['__nodeId', @$cols],
-        names => [ 'NodeId', map { $attr->{$_} } @$cols ],
+        ids => ['__epId', @$cols],
+        names => [ 'EpId', map { $attr->{$_} } @$cols ],
         ref $cfg->{"${table}_width"} ? (
             widths  => [1,@{$cfg->{${table}."_width"}}]
         ) : (),
