@@ -58,6 +58,13 @@ has user => sub {
     $self->cfg->{GENERAL}{default_user}|| $self->session('epUser');
 };
 
+has login => sub {
+    my $self = shift;
+    $self->session('epLogin') || 'base';
+};
+
+
+
 has 'log' => sub { shift->app->log };
 
 sub allow_rpc_access {

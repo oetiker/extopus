@@ -71,6 +71,10 @@ has user => sub {
     shift->controller->user;
 };
 
+has login => sub {
+    shift->controller->login;
+};
+
 =head3 cacheRoot
 
 path to the cache root directory
@@ -265,7 +269,13 @@ sub createTables {
     # persistance tables
     $dbp->do("CREATE TABLE IF NOT EXISTS stable (numid INTEGER PRIMARY KEY, textkey TEXT)");
     $dbp->do("CREATE UNIQUE INDEX IF NOT EXISTS stable_idx ON stable(textkey)");
+
     $dbp->do("CREATE TABLE IF NOT EXISTS dash (numid INTEGER PRIMARY KEY, lastupdate INTEGER, label TEXT, config TEXT)");
+    my $fields = $dbp->selectall_hashref(q{PRAGMA table_info('hash')},'name');
+    if (not $fields->{login}){
+        $dbp->do("ALTER TABLE dash ADD COLUMN login TEXT default 'base' NOT NULL");
+        $dbp->do("ALTER TABLE dash ADD COLUMN private INTEGER default 0");
+    }
     $dbp->do("CREATE INDEX IF NOT EXISTS dash_idx ON dash(lastupdate)");    
     return;
 }
@@ -502,7 +512,7 @@ sub getDashList {
     my $self = shift;
     my $lastUp = shift // 0;
     my $dbh = $self->dbhPe;
-    my @data = @{$dbh->selectall_arrayref("SELECT numid, lastupdate, label, CASE WHEN lastupdate > ? THEN config ELSE 0 END AS cf FROM dash ORDER by label",{},$lastUp)};
+    my @data = @{$dbh->selectall_arrayref("SELECT numid, lastupdate, label, CASE WHEN lastupdate > ? THEN config ELSE 0 END AS cf FROM dash where login = ? ORDER by label",{},$lastUp,$self->login)};
     my @ret;
     for (@data){
         my %r;
@@ -539,13 +549,13 @@ sub saveDash  {
     my $dbh = $self->dbhPe;
     my $now = time;
     if ($id){
-        my $rows = $dbh->do("UPDATE dash SET lastupdate = ?, label = ?, config = ? WHERE numid = ? and lastupdate = ?",{},
-            $now,$label,$cfg,$id,$updateTime);
+        my $rows = $dbh->do("UPDATE dash SET lastupdate = ?, label = ?, config = ? WHERE numid = ? and lastupdate = ? and login = ?",{},
+            $now,$label,$cfg,$id,$updateTime,$self->login);
         if ($rows == 1){
             return { id => $id, up => $now }
         }
     }
-    $dbh->do("INSERT INTO dash (lastupdate,label,config) VALUES (?,?,?)",{},$now,$label,$cfg);
+    $dbh->do("INSERT INTO dash (lastupdate,label,config,login) VALUES (?,?,?,?)",{},$now,$label,$cfg,$self->login);
     my $newId = $dbh->last_insert_id("","","","");
     return { id => $newId,  up => $now };
 }
@@ -562,7 +572,7 @@ sub deleteDash {
     my $self = shift;
     my $id = shift;
     my $updateTime = shift;
-    my $rows = $self->dbhPe->do("DELETE FROM dash WHERE numid = ? and lastupdate = ?",{},$id,$updateTime);
+    my $rows = $self->dbhPe->do("DELETE FROM dash WHERE numid = ? and lastupdate = ? and login = ?",{},$id,$updateTime,$self->login);
     return $rows == 1;
 }
 

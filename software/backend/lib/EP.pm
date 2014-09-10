@@ -93,7 +93,7 @@ sub startup {
     
     # instanciate the visualizers on startup, so that they
     # can register their proxies (maybe this should be done differently
-    # by providning a path to each instance statically ... but this
+    # by providing a path to each instance statically ... but this
     # is for later )
     $app->visualizer(EP::Visualizer->new(app=>$app));
 
@@ -110,16 +110,27 @@ sub startup {
     $app->sessions->default_expiration(1*24*3600);
     # prevent our cookie from colliding
     $app->sessions->cookie_name('EP_'.hmac_sha1_sum(slurp($app->cfg_file)));
-    # run /setUser/oetiker to launch the application for a particular user
-
-    my $service = EP::RpcService->new(app=>$app);
 
     my $routes = $app->routes;
 
     if (not $gcfg->{default_user}){
+        # run /setUser/x8883:oetiker to launch the application for account
+        # with login oetiker. The login name will afect the
+        # dashboards displayed
         $routes->get('/setUser/(:user)' => sub {
             my $self = shift;
-            $self->session(epUser =>  $self->param('user'));
+            my ($user,$login) = split /:/, $self->param('user');
+            $self->session->{epUser} = $user;
+            $self->session->{epLogin} =$login;
+            $self->redirect_to($app->prefix.'/');
+        });
+    }
+    else {
+        # since the user is fix, just set the login for the dashboards
+        # if no login is given, the word 'base' is assumed;
+        $routes->get('/setLogin/(:login)' => sub {
+            my $self = shift;
+            $self->session->{epLogin}  = $self->param('login');
             $self->redirect_to($app->prefix.'/');
         });
     }
