@@ -303,11 +303,11 @@ sub getData {
                 }
             }
             else {
-                my ($msg,$error) = $tx->error;
-                $self->app->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
+                my $error = $tx->error;
+                $self->app->log->error("Fetching ".$url->to_string." returns $error->{message}");
                 return {    
                     status => 0,    
-                    error => "fetching data for $nodeId from torrus server: $msg ".($error ||'')
+                    error => "fetching data for $nodeId from torrus server: $error->{message}"
                 };
             }
         };

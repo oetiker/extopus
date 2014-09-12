@@ -29,7 +29,7 @@ qx.Class.define("ep.ui.DashServerMenu", {
             show: 'icon' 
         });
         this._menuCache = {};
-        this._menuBusy = new qx.ui.menu.Button("Loading Dashlist","ep/loading16.gif").set({
+        this._menuBusy = new qx.ui.menu.Button("Updating Dashlist","ep/loading16.gif").set({
             enabled: false
         });
         
@@ -41,11 +41,14 @@ qx.Class.define("ep.ui.DashServerMenu", {
         },this);
         /* make sure the view menu is initialized and can track dashboards as they are added */ 
         ep.ui.ViewMenu.getInstance();
+        this._menuItemCache = {};
+        
     },
     members: {
         _lastUpdate: null,
-        _menuCache: null,
+        _menuItemCache: null,
         _updateing: false,
+        _menuBusy: null,
         _updateMenu: function(){
             var rpc = ep.data.Server.getInstance();        
             var menu = this;
@@ -54,45 +57,92 @@ qx.Class.define("ep.ui.DashServerMenu", {
                 return;
             }
             this._updateing = true;
-            menu.removeAll();
+            var savedKids = menu.removeAll();
             menu.add(this._menuBusy);
-            var dashMgr = ep.ui.DashManager.getInstance();
+            
             rpc.callAsyncSmart(function(ret){
-                menu.removeAll();
-                ret.forEach(function(item){
-                    if (item.up){
-                        var button = cache[item.id];
-                        if (!button){
-                            button = new qx.ui.menu.Button(item.lb);
-                            button.addListener('execute',menu._onOpen,this);
-                            cache[item.id] = button;
-                        } else {
-                            button.setLabel(item.lb);
-                        }
-                        if (item.up > menu._lastUpdate){
-                            menu._lastUpdate = item.up
-                        }
-                        button.setUserData('item',item);
-                    }
-                    cache[item.id].setEnabled(!dashMgr.isBoardOpen(item.id));
-                    menu.add(cache[item.id]);
-                    
-                });
+                var libMenu;
+                var libMenuButton;
+                var loginMenus = {};
+                var updateMenu = false;
+                var itemIdCheck = {};
                 menu._updateing = false;
+                ret.forEach(function(item){
+                    itemIdCheck[item.id] = true;
+                    if (item.up){
+                        updateMenu = true;
+                        menu._menuItemCache[item.id] = item;
+                    }
+                });
+                // remove delted items
+                for (var key in menu._menuItemCache){
+                    var item = menu._menuItemCache[key];
+                    if (!itemIdCheck[key]){
+                        delete menu._menuItemCache[key];
+                        updateMenu = true;
+                    }
+                }
+                menu.removeAll();
+                if (! updateMenu ){
+                    savedKids.forEach(function(kid){
+                        menu.add(kid);
+                    });
+                    return;
+                }
+                for (var key in menu._menuItemCache){
+                    var item = menu._menuItemCache[key];
+                    var button = menu._makeButton(menu,item);
+                    if (item.mine){
+                        menu.add(button);
+                        continue;
+                    }
+                    if (!libMenu ){
+                        libMenu = new qx.ui.menu.Menu;
+                        libMenuButton = new qx.ui.menu.Button(menu.tr("Library"),null,null,libMenu);
+                    }
+                    if (!loginMenus[item.login]){
+                        loginMenus[item.login] = new qx.ui.menu.Menu;
+                        libMenu.add(
+                            new qx.ui.menu.Button(
+                                item.login,null, null,loginMenus[item.login]
+                            )
+                        );
+                    }
+                    // adding the same item twice removes it from the menu
+                    loginMenus[item.login].add(button);
+                }
+                if (libMenu){
+                    menu.add(libMenuButton);
+                }
             },'getDashList',this._lastUpdate);
         },
         _onOpen: function(e){
             var button = e.getTarget();
             var item = button.getUserData('item');
-            var board = ep.ui.DashManager.getInstance().newBoard(item.lb);
+            var dashMgr = ep.ui.DashManager.getInstance();
+            var board = dashMgr.newBoard(item.mine ? item.lb : item.lb + ' ('+item.login+')');
             var cache = this._menuCache;
             board.set({
                 dashId: item.id,
-                updateTime: item.up
+                updateTime: item.up,
+                readOnly: item.mine ? false : true
             });
             item.cfg.forEach(function(viz){
                 board.addVisualizer(viz.cfg,viz.position);
             },this);            
+        },
+        _makeButton: function(menu,item){
+            var dashMgr = ep.ui.DashManager.getInstance();
+            var button = new qx.ui.menu.Button(item.lb).set({
+                label: item.lb,
+                enabled: !dashMgr.isBoardOpen(item.id) 
+            });
+            button.addListener('execute',menu._onOpen,menu);
+            if (item.up > menu._lastUpdate){
+                menu._lastUpdate = item.up
+            }
+            button.setUserData('item',item);
+            return button;
         }
     }
 });

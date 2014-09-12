@@ -122,7 +122,7 @@ how often should we check if the tree needs updating
 =cut
 
 has updateInterval => sub {
-    shift->gcfg->{update_interval} || 86400;
+    shift->gcfg->{update_interval} // 86400;
 };
 
 =head3 log
@@ -198,6 +198,7 @@ sub _connect {
     });
     return $dbh;
 }
+
 sub new {
     my $self =  shift->SUPER::new(@_);
     $self->dbhCa(my $dbc = $self->_connect('cache'));
@@ -209,9 +210,13 @@ sub new {
     };
     $self->{treeCache} = {};
     my $user = $self->user;
-    if ((not $self->meta->{version}) 
-        or ( time - ($self->meta->{lastup}||0) > $self->updateInterval )
-        or $ENV{EXTOPUS_FORCE_REPOPULATION} ){
+    if (not $self->meta->{created}){
+        $self->createTables;
+        $self->setMeta('created',time);
+    }
+    if ($self->updateInterval > 0  
+        and time - ($self->meta->{lastup}||0) > $self->updateInterval ){
+        my $now = time;
         my $populatorPid = $self->meta->{populatorPid};
         if ($populatorPid and kill 0,$populatorPid){
             $self->log->info("skipping re-population as pid $populatorPid is already at it");
@@ -221,22 +226,23 @@ sub new {
             my $version = $self->inventory->getVersion($user);
             $self->log->info("checking inventory version '$version' vs '$oldVersion'");     
             if ( $oldVersion  ne  $version){
-                $self->setMeta('populatorPid',$$) if $oldVersion;
                 $self->log->info("loading nodes into ".$self->cacheRoot." for $user");
+                $self->setMeta('populatorPid',$$);
+                for my $dbh ($dbc,$dbp){
+                    $dbh->do("PRAGMA synchronous = 0");
+                    $dbh->do("PRAGMA cache_size = 800000"); # let's do the updates in memory
+                    $dbh->begin_work;
+                }
                 $self->dropTables;
                 $self->createTables;
-                $self->setMeta('populatorPid',$$);
-                $dbc->do("PRAGMA synchronous = 0");
-                $dbc->begin_work;
-                $dbp->begin_work;
                 $self->setMeta('version',$version);
-                $self->setMeta('populatorPid',$$);
                 $self->inventory->walkInventory($self,$self->user);
                 $self->log->debug("nodes for ".$self->user." loaded");
-                $dbc->commit;
-                $dbp->commit;
-                $dbc->do("VACUUM");
-                $dbc->do("PRAGMA synchronous = 1");
+                for my $dbh ($dbc,$dbp){
+                    $dbh->commit;
+                    $dbh->do("VACUUM");
+                    $dbh->do("PRAGMA synchronous = 1");
+                }
                 $self->setMeta('populatorPid','');    
             } 
             else {
@@ -259,11 +265,11 @@ sub createTables {
     my $dbc = $self->dbhCa;
     my $dbp = $self->dbhPe;
     # cache tables
-    $dbc->do("CREATE TABLE branch ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
-    $dbc->do("CREATE INDEX branch_idx ON branch ( parent,name )");
-    $dbc->do("CREATE TABLE leaf ( parent INTEGER, node INTEGER)");
-    $dbc->do("CREATE INDEX leaf_idx ON leaf (parent )");
-    $dbc->do("CREATE VIRTUAL TABLE node USING fts3(data TEXT)");
+    $dbc->do("CREATE TABLE IF NOT EXISTS branch ( id INTEGER PRIMARY KEY, name TEXT, parent INTEGER )");
+    $dbc->do("CREATE INDEX IF NOT EXISTS branch_idx ON branch ( parent,name )");
+    $dbc->do("CREATE TABLE IF NOT EXISTS leaf ( parent INTEGER, node INTEGER)");
+    $dbc->do("CREATE INDEX IF NOT EXISTS leaf_idx ON leaf (parent )");
+    $dbc->do("CREATE VIRTUAL TABLE IF NOT EXISTS node USING fts3(data TEXT)");
     $dbc->do("CREATE TABLE IF NOT EXISTS meta ( key TEXT PRIMARY KEY, value TEXT)");
 
     # persistance tables
@@ -271,7 +277,7 @@ sub createTables {
     $dbp->do("CREATE UNIQUE INDEX IF NOT EXISTS stable_idx ON stable(textkey)");
 
     $dbp->do("CREATE TABLE IF NOT EXISTS dash (numid INTEGER PRIMARY KEY, lastupdate INTEGER, label TEXT, config TEXT)");
-    my $fields = $dbp->selectall_hashref(q{PRAGMA table_info('hash')},'name');
+    my $fields = $dbp->selectall_hashref(q{PRAGMA table_info('dash')},'name');
     if (not $fields->{login}){
         $dbp->do("ALTER TABLE dash ADD COLUMN login TEXT default 'base' NOT NULL");
         $dbp->do("ALTER TABLE dash ADD COLUMN private INTEGER default 0");
@@ -512,22 +518,42 @@ sub getDashList {
     my $self = shift;
     my $lastUp = shift // 0;
     my $dbh = $self->dbhPe;
-    my @data = @{$dbh->selectall_arrayref("SELECT numid, lastupdate, label, CASE WHEN lastupdate > ? THEN config ELSE 0 END AS cf FROM dash where login = ? ORDER by label",{},$lastUp,$self->login)};
+    my @data = @{$dbh->selectall_arrayref(<<"SQL_END",{Slice => {}},$lastUp,$self->login,$self->login)};
+        SELECT
+            numid, 
+            lastupdate, 
+            label,
+            login,
+            private,
+            CASE WHEN lastupdate > ? THEN config ELSE 0 END AS cf,
+            CASE WHEN login == ? THEN 1 ELSE 0 END AS mine
+        FROM dash 
+        WHERE login == ? OR private == 0
+        ORDER by label
+SQL_END
     my @ret;
-    for (@data){
-        my %r;
-        $r{id} = $_->[0];
-        if ($_->[3]){
-           $r{up} = $_->[1];
-           $r{lb} = $_->[2];
-           $r{cfg} = $self->json->decode($_->[3]);
+    for my $row (@data){
+        my $r;
+        if ($row->{cf}){
+            $r = {
+                id => $row->{numid},
+                up => $row->{lastupdate}, # last updates
+                lb => $row->{label}, # label
+                login => $row->{login}, # owner - login
+                private => $row->{private}, # private
+                cfg => $self->json->decode($row->{cf}), #cfg
+                mine => $row->{mine},
+            };
         }
-        push @ret, \%r;
+        else {
+            $r = { id => $row->{numid} };
+        }
+        push @ret, $r;
     }
     return \@ret;
 }
 
-=head2 saveDash(config,label,id,updateTime)
+=head2 saveDash(config,label,id,updateTime,privte)
 
 Save the given dashboard properties. Returns the id associated. If the id is
 'null' a new id will be created. If the id is given, but the update time is
@@ -546,16 +572,17 @@ sub saveDash  {
     my $label = shift;
     my $id = shift;
     my $updateTime = shift;
+    my $private = shift;
     my $dbh = $self->dbhPe;
     my $now = time;
     if ($id){
-        my $rows = $dbh->do("UPDATE dash SET lastupdate = ?, label = ?, config = ? WHERE numid = ? and lastupdate = ? and login = ?",{},
-            $now,$label,$cfg,$id,$updateTime,$self->login);
+        my $rows = $dbh->do("UPDATE dash SET lastupdate = ?, label = ?, config = ?, private = ? WHERE numid = ? and lastupdate = ? and login = ?",{},
+            $now,$label,$cfg,$private,$id,$updateTime,$self->login);
         if ($rows == 1){
             return { id => $id, up => $now }
         }
     }
-    $dbh->do("INSERT INTO dash (lastupdate,label,config,login) VALUES (?,?,?,?)",{},$now,$label,$cfg,$self->login);
+    $dbh->do("INSERT INTO dash (lastupdate,label,config,login,private) VALUES (?,?,?,?,?)",{},$now,$label,$cfg,$self->login,$private);
     my $newId = $dbh->last_insert_id("","","","");
     return { id => $newId,  up => $now };
 }

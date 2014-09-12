@@ -7,7 +7,6 @@
 
 /* ************************************************************************
 
-#asset(qx/icon/${qx.icontheme}/22/places/folder.png)
 #asset(qx/icon/${qx.icontheme}/22/mimetypes/office-spreadsheet.png)
 #asset(ep/loading22.gif)
 
@@ -132,9 +131,7 @@ qx.Class.define("ep.ui.TreeView", {
                 iconOptions : {
                     converter : function(value, model) {
                         if (value == "default") {
-                            if (model.getKids) {
-                                return "icon/22/places/folder.png";
-                            } else {
+                            if (! model.getKids) {
                                 return "icon/22/mimetypes/office-spreadsheet.png";
                             }
                         }

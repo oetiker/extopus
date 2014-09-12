@@ -52,6 +52,12 @@ qx.Class.define("ep.ui.DashBoard", {
          */
         updateTime: {
             nullable: true
+        },
+        /**
+         * can this board be changed ?
+         */
+        readOnly: {
+            nullable: true
         }
     },
     events: {
@@ -69,11 +75,16 @@ qx.Class.define("ep.ui.DashBoard", {
         save: function(){
             var rpc = ep.data.Server.getInstance();
             var that = this;
+            if (that.getReadOnly()){
+                ep.ui.MsgBox.getInstance().info(
+                    this.tr("Copy DashBoard"),this.tr("This is not your Dashboard. I have created a Copy for you"))
+                that.setReadOnly(false);
+                that.setDashId(null);
+            }
             rpc.callAsyncSmart(function(ret){
                 that.setDashId(ret.id);
                 that.setUpdateTime(ret.up);
-            },'saveDash',this.getConfig(),this.getLabel(),this.getDashId(),this.getUpdateTime());        
-
+            },'saveDash',this.getConfig(),this.getLabel(),this.getDashId(),this.getUpdateTime());
         },
         /**
          * create the label editor

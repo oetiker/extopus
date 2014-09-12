@@ -30,7 +30,7 @@ sub run {
       $log->fatal("User name missing");   
       die $self->usage;
     }
-    EP::Cache->new(controller=>$self,user=>($user || $defaultUser));
+    EP::Cache->new(controller=>$self,user=>($user || $defaultUser),login=>'default',updateInterval=>1);
 }
 
 1;

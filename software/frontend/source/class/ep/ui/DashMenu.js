@@ -18,6 +18,7 @@ qx.Class.define("ep.ui.DashMenu", {
 
     construct : function() {
         this.base(arguments);
+        this._btns = {};
         var btn = [
             [ 'ren',this.tr("Rename"),   null, function(e){ this._board.editLabel(); }],
             [ 'edt',this.tr("Edit"),   null, function(e){ this._board.fireEvent.call(this._board,'startEditMode'); }],
@@ -25,7 +26,7 @@ qx.Class.define("ep.ui.DashMenu", {
             [ 'srm',this.tr("Delete"),  null, this._deleteBoard]
         ];
         btn.forEach(function(item){
-            var bt = new qx.ui.menu.Button(item[1],item[2]);
+            var bt = this._btns[item[0]] = new qx.ui.menu.Button(item[1],item[2]);
             if (item[3]){
                 bt.addListener('execute',item[3],this);
             }
@@ -34,6 +35,7 @@ qx.Class.define("ep.ui.DashMenu", {
     },
     members: {
         _board: null,
+        _btns:  null,
         _deleteBoard: function(e){
             var board = this._board;
             ep.ui.MsgBox.getInstance().warn(this.tr("Delete Dashboard"),this.tr("Permanantly delete this dashboard from the server."),
@@ -56,6 +58,7 @@ qx.Class.define("ep.ui.DashMenu", {
         showMenu: function(button,board){
             this._board = board;
             this.setOpener(button);
+            this._btns.srm.setEnabled(!board.getReadOnly());
             qx.ui.menu.Manager.getInstance().hideAll();
             this.open();
         }

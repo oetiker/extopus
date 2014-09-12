@@ -104,7 +104,8 @@ AC_SUBST(PERL5LIB)
 
 mod_ok=1
 if test "$enable_pkgonly" != yes; then
-   for module in m4_esyscmd([cat PERL_MODULES | tr '\n' ' ' | sed 's/\@[^ ]*//g']); do 
+   MODULES=`dirname $0`/PERL_MODULES
+   for module in `sed -e 's/\@.*//' $MODULES`; do 
      AC_MSG_CHECKING([checking for perl module '$module'])
      if ${PERL} -I$actual_prefix/thirdparty/lib/perl5 -e 'use '$module 2>/dev/null ; then
          AC_MSG_RESULT([Ok])

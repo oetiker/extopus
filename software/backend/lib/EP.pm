@@ -113,7 +113,16 @@ sub startup {
 
     my $routes = $app->routes;
 
-    if (not $gcfg->{default_user}){
+    if ($gcfg->{default_user}){
+        # since the user is fix, just set the login for the dashboards
+        # if no login is given, the word 'base' is assumed;
+        $routes->get('/setLogin/(:login)' => sub {
+            my $self = shift;
+            $self->session->{epLogin}  = $self->param('login');
+            $self->redirect_to('/'.$app->prefix);
+        });
+    }
+    else {
         # run /setUser/x8883:oetiker to launch the application for account
         # with login oetiker. The login name will afect the
         # dashboards displayed
@@ -122,16 +131,7 @@ sub startup {
             my ($user,$login) = split /:/, $self->param('user');
             $self->session->{epUser} = $user;
             $self->session->{epLogin} =$login;
-            $self->redirect_to($app->prefix.'/');
-        });
-    }
-    else {
-        # since the user is fix, just set the login for the dashboards
-        # if no login is given, the word 'base' is assumed;
-        $routes->get('/setLogin/(:login)' => sub {
-            my $self = shift;
-            $self->session->{epLogin}  = $self->param('login');
-            $self->redirect_to($app->prefix.'/');
+            $self->redirect_to('/'.$app->prefix);
         });
     }
 
@@ -152,7 +152,7 @@ sub startup {
         });
     }
 
-    $routes->get('/' => sub { shift->redirect_to($app->prefix.'/')});
+    $routes->get('/' => sub { shift->redirect_to('/'.$app->prefix)});
 
     $app->plugin('EP::DocPlugin', {
         root => '/doc',

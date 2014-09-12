@@ -236,8 +236,8 @@ sub getLeaves {
         }
     }
     else {
-        my ($msg,$error) = $tx->error;
-        $log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
+        my $error = $tx->error;
+        $log->error("Fetching ".$url->to_string." returns $error->{message}");
         return {};
     }
 }
@@ -308,11 +308,10 @@ sub addProxyRoute {
            $ctrl->rendered;
         }
         else {     
-            my ($msg,$error) = $tx->error;
-            $ctrl->tx->res->headers->add('X-Remote-Status',($error||'???').': '.$msg);
+            my $error = $tx->error;
             $ctrl->render(
-                status => 500,
-                text => 'Failed to fetch data from backend'
+                status => $error->{code},
+                text => $error->{message}
             );
         }
     });

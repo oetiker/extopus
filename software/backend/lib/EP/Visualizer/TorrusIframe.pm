@@ -125,9 +125,9 @@ sub getLeaves {
         }
     }
     else {
-        my ($msg,$error) = $tx->error;
-        $self->app->log->error("Fetching ".$url->to_string." returns $msg ".($error ||''));
-        die mkerror(48877,"fetching Leaves for $nodeid from torrus server: $msg ".($error ||''));        
+        my $error = $tx->error;
+        $self->app->log->error("Fetching ".$url->to_string." returns $error->{message}");
+        die mkerror(48877,"fetching Leaves for $nodeid from torrus server: $error->{message}");        
     }
 }
 
@@ -184,11 +184,10 @@ sub addProxyRoute {
            $ctrl->rendered;
         }
         else {     
-            my ($msg,$error) = $tx->error;
-            $ctrl->tx->res->headers->add('X-Remote-Status',($error||'???').': '.$msg);
+            my $error = $tx->error;
             $ctrl->render(
-                status => 500,
-                text => 'Failed to fetch data from backend'
+                status => $error->{code},
+                text => $error->{message}
             );
         }
     });

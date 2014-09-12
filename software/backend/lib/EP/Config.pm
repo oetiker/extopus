@@ -241,7 +241,7 @@ sub _make_parser {
         _mandatory => [qw(GENERAL FRONTEND ATTRIBUTES TABLES)],
         GENERAL => {
             _doc => 'Global configuration settings for Extopus',
-            _vars => [ qw(cache_dir mojo_secret log_file log_level default_user update_interval localguide) ],
+            _vars => [ qw(cache_dir mojo_secret log_file log_level default_user update_interval localguide auto_update) ],
             _mandatory => [ qw(cache_dir mojo_secret log_file) ],
             cache_dir => { _doc => 'directory to cache information gathered via the inventory plugins',
                 _sub => sub {
@@ -256,7 +256,10 @@ sub _make_parser {
             mojo_secret => { _doc => 'secret for signing mojo cookies' },
             log_file => { _doc => 'write a log file to this location (unless in development mode)'},
             log_level => { _doc => 'what to write to the logfile'},
-            update_interval => { _doc => 'check for updates every x seconds. 1 day by default'},
+            update_interval => { 
+                _doc => 'check for updates every x seconds. 1 day by default. Set the update_interval to 0 to disable automatic updateing and relie on the populate command.',
+                _default => 24*3600,
+            },
         },
         FRONTEND => {
             _doc => 'Frontend tuneing parameters',
