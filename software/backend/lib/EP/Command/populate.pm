@@ -1,9 +1,6 @@
 package EP::Command::populate;
 
 use Mojo::Base 'Mojolicious::Command';
-use Mojo::IOLoop;
-use Mojo::UserAgent;
-
 
 has description => "(re-)populate the node cache.\n";
 has usage       => <<"EOF";
