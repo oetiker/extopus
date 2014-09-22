@@ -247,16 +247,15 @@ qx.Class.define("ep.ui.TreeView", {
                 if (data.length > 0){
                     var showCol = {};
                     for (var i = 0;i<data[0].length;i++){          
-                        if (colProps[i] == 'A'){
-                            showCol[i] = 'N';
-                        };
+                        showCol[i] = colProps[i] == 'S' ? 'Y' : 'N';
                     }
                     var whiteRx = /^\s*$/;
                     for (var i = 0;i<data.length;i++){
                         for (var ii = 0;ii<data[i].length;ii++){
                             var item = data[i][ii];
                             if (colProps[ii] == 'A'
-                                && item && ! whiteRx.test(item)){
+                                && item 
+                                && ! whiteRx.test(item)){
                                 showCol[ii] = 'Y';
                             }
                         }
