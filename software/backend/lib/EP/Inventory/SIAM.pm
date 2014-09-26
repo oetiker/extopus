@@ -138,8 +138,8 @@ sub walkInventory {
 #   $ENV{DBI_PROFILE}=2;
     my $self = shift;
     my $mode = { map { $_ => 1 } split /\s*,\s*/, ($self->cfg->{load_all}//'contracts') };
-    $self->walkDevices(@_) if $mode->{devices};
     $self->walkContracts(@_) if $mode->{contracts} or $mode->{true};
+    $self->walkDevices(@_) if $mode->{devices};
 }
 
 sub walkDevices {    
