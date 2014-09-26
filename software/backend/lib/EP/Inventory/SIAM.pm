@@ -24,7 +24,7 @@ configuration information from the main config file.
  skipnode_pl = $R{'cablecom.port.display'} eq 'skip'
 
  # load all data regardles of user
- load_all = devices|contracts
+ load_all = devices,contracts
 
  +TREE
  'Location',$R{country}, $R{city}, $R{street}.' '.($R{number}||'')
@@ -83,7 +83,7 @@ sub _getContracts {
     my $username = shift;
     my %user = ();
     my $contracts;
-    if ($self->cfg->{load_all}//'' eq 'contracts'){
+    if ($self->cfg->{load_all}//'' =~ /(true|contracts)/){
         $self->app->log->debug('opening ALL contracts');
         $contracts = $siam->get_all_contracts();
     }
@@ -110,7 +110,7 @@ sub getVersion {
     my $user = shift;
     # in device mode we always want to reload
     # is there a better way ?
-    if ($self->cfg->{load_all}//'' eq 'devices'){
+    if ($self->cfg->{load_all}//'' =~ /devices/){
         return time;
     }
 
@@ -137,14 +137,9 @@ sub walkInventory {
 #   DB::enable_profile();
 #   $ENV{DBI_PROFILE}=2;
     my $self = shift;
-    my $mode = $self->cfg->{load_all}//'';
-    for ($mode){
-        /^devices$/ && do {
-            return $self->walkDevices(@_);
-        };
-    }
-    # by default just walk the contracts
-    return $self->walkContracts(@_);    
+    my $mode = { map { $_ => 1 } split /\s*,\s*/, ($self->cfg->{load_all}//'contracts') };
+    $self->walkDevices(@_) if $mode->{devices};
+    $self->walkContracts(@_) if $mode->{contracts} or $mode->{true};
 }
 
 sub walkDevices {    
