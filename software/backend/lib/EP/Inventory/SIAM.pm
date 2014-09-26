@@ -153,6 +153,7 @@ sub walkDevices {
     my $user = shift;
     my $siam = $self->siam;    
     my $count = 0; 
+    my $stableId = $self->cfg->{stableid_pl} or die mkerror(3948,"stableid_pl config is not set");
     $siam->connect;        
     my $devices = $siam->get_all_devices();
     for my $device ( @{$devices} ){
