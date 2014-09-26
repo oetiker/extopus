@@ -62,7 +62,12 @@ qx.Class.define("ep.visualizer.Properties", {
             var data = '<table>';
 
             newArgs.forEach(function(row) {
-                data += '<tr><td>' + qx.bom.String.escape(row[0]) + ':&nbsp;</td><td>' + qx.bom.String.escape(row[1]) + '</td></tr>';
+                if (/^https?:\/\//.test(row[1])){
+                    data += '<tr><td>' + qx.bom.String.escape(row[0]) + ':&nbsp;</td><td>' + '<a href="'+row[1]+'" target="_blank">'+qx.bom.String.escape(row[1]) + '</a></td></tr>';
+                }
+                else {
+                    data += '<tr><td>' + qx.bom.String.escape(row[0]) + ':&nbsp;</td><td>' + qx.bom.String.escape(row[1]) + '</td></tr>';
+                }
             });
 
             data += '</table>';
