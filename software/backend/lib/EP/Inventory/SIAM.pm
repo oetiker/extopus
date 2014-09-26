@@ -24,7 +24,7 @@ configuration information from the main config file.
  skipnode_pl = $R{'cablecom.port.display'} eq 'skip'
 
  # load all data regardles of user
- load_all = true
+ load_all = devices|contracts
 
  +TREE
  'Location',$R{country}, $R{city}, $R{street}.' '.($R{number}||'')
@@ -83,7 +83,7 @@ sub _getContracts {
     my $username = shift;
     my %user = ();
     my $contracts;
-    if ($self->cfg->{load_all}){
+    if ($self->cfg->{load_all}//'' eq 'contracts'){
         $self->app->log->debug('opening ALL contracts');
         $contracts = $siam->get_all_contracts();
     }
@@ -108,6 +108,12 @@ returns an md5 hash of all $cntr->computable('siam.contract.content_md5hash') va
 sub getVersion {
     my $self = shift;
     my $user = shift;
+    # in device mode we always want to reload
+    # is there a better way ?
+    if ($self->cfg->{load_all}//'' eq 'devices'){
+        return time;
+    }
+
     my $siam = $self->siam;
     $siam->connect || die mkerror(6234,"Failed to connect SIAM");
     my $contracts = $self->_getContracts($user);
@@ -131,10 +137,47 @@ sub walkInventory {
 #   DB::enable_profile();
 #   $ENV{DBI_PROFILE}=2;
     my $self = shift;
+    my $mode = $self->cfg->{load_all}//'';
+    for ($mode){
+        /^devices$/ && do {
+            return $self->walkDevices(@_);
+        };
+    }
+    # by default just walk the contracts
+    return $self->walkContracts(@_);    
+}
+
+sub walkDevices {    
+    my $self = shift;
     my $storeCallback = shift;
     my $user = shift;
     my $siam = $self->siam;    
-    $siam->connect;
+    my $count = 0; 
+    $siam->connect;        
+    my $devices = $siam->get_all_devices();
+    for my $device ( @{$devices} ){
+        next unless $device->attr('siam.object.complete');               
+        for my $cmpt ( @{$device->get_components} ){
+             next unless $cmpt->attr('siam.object.complete');
+             my $raw_rec = {
+                 %{$device->attributes},
+                 %{$cmpt->attributes},
+             };                                                                                                                                                                
+             my $rec = $self->buildRecord($raw_rec);
+             $storeCallback->($stableId->($raw_rec),$rec);
+             $count++;   
+        }
+    }
+    $siam->disconnect;
+    $self->app->log->debug('loaded '.$count.' nodes');
+}
+
+sub walkContracts {
+    my $self = shift;
+    my $storeCallback = shift;
+    my $user = shift;
+    my $siam = $self->siam;    
+    $siam->connect;        
     my %user = ();
     my $contracts = $self->_getContracts($user);
     my $count = 0;
@@ -148,7 +191,7 @@ sub walkInventory {
         if (not @srv){
             my $raw_rec = {%cntr};
             next if defined $skip and $skip->($raw_rec);
-            my $rec = $self->buildRecord($raw_rec);
+             my $rec = $self->buildRecord($raw_rec);
             $storeCallback->($stableId->($raw_rec),$rec);
             $count++;
             next;
