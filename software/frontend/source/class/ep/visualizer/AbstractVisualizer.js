@@ -17,7 +17,7 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
      * @param instance {String} unique key for visualizer
      * @param title {String} title to display on the tab
      * @param args {Map} argument map for the view
-     * @param table {String} the view table    
+     * @param view {String} the view table    
      *
      * common arguments: recIds: [], compact: true
      */
@@ -80,7 +80,9 @@ qx.Class.define("ep.visualizer.AbstractVisualizer", {
                 case ep.visualizer.Chart.KEY:  
                     control = new ep.visualizer.Chart(instance, title, args,view);
                     break;
-
+                case ep.visualizer.BrowserChart.KEY:  
+                    control = new ep.visualizer.BrowserChart(instance, title, args,view);
+                    break;
                 case ep.visualizer.MultiData.KEY:
                     control = new ep.visualizer.MultiData(instance, title, args,view);
                     break;

@@ -26,12 +26,6 @@ qx.Class.define("ep.ui.LoadingBox", {
     construct : function(widget,tardis) {
         this.base(arguments);
 
-        this.set({
-            allowGrowX   : true,
-            allowGrowY   : true,
-            allowShrinkX : true,
-            allowShrinkY : true
-        });
         this.__image = widget;
         this._setLayout(new qx.ui.layout.Grow());
         /* the tardis layout does not care for the size of the image contained within */

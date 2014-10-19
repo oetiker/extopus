@@ -106,7 +106,7 @@ sub getData {
     }
     my @ret;
     my $stamp;
-    my $cache = EP::Cache->new(controller=>$controller,user=>($controller->app->cfg->{GENERAL}{default_user}|| $controller->session('epUser')));
+    my $cache = EP::Cache->new(controller=>$controller);
     for my $recId (@$recIds){
         my $data =  $self->SUPER::getData($recId,$end,$interval,1);
         if ($data->{status}){       

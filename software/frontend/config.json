@@ -47,7 +47,10 @@
    "libraries" : {
        "library" : [
        {
-         "manifest"   : "contrib://CanvasCell/trunk/Manifest.json"
+         "manifest"   : "./extra/CanvasCell/Manifest.json",
+       },
+       {
+         "manifest"   : "./extra/QxD3/Manifest.json",
        }
        ]
     },

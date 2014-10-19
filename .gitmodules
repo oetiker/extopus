@@ -1,0 +1,3 @@
+[submodule "software/frontend/extra/QxD3"]
+	path = software/frontend/extra/QxD3
+	url = git@github.com:oetiker/QxD3.git

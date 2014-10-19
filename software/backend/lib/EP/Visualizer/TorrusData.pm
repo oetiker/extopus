@@ -211,7 +211,7 @@ sub getData {
     my $interval = shift;
     my $count = shift;
     my @return;
-    my $cache = EP::Cache->new(controller=>$controller,user=>($controller->app->cfg->{GENERAL}{default_user}|| $controller->session('epUser')));
+    my $cache = EP::Cache->new(controller=>$controller);
     my $rec = $cache->getNode($recId);    
     my $treeUrl = $rec->{'torrus.tree-url'};
     my $nodeId = $rec->{'torrus.nodeid'};

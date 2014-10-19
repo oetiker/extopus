@@ -143,8 +143,8 @@ sub matchRecord {
     # replace magic selectboxes ...  they will require sql queries to determine
     # content later on
     for my $item (@$form){
-        given ($item->{widget}){
-            when ('counterSelect'){
+        for ($item->{widget}){
+            /^counterSelect$/ && do {
                 $item->{widget} = 'selectBox';
                 my $dbh = $self->dbh;
                 my $data = $dbh->selectall_arrayref('SELECT COUNTER_TITLE as "title", COUNTER_ID as "key" from TOPX_COUNTER_INFO order by COUNTER_TITLE',{Slice => {}});
@@ -154,8 +154,8 @@ sub matchRecord {
                 $item->{cfg} = {
                     structure => $data,
                 };   
-            }
-            when ('networkTypeSelect'){
+            };
+            /^networkTypeSelect$'/ && do {
                 $item->{widget} = 'selectBox';
                 my $dbh = $self->dbh;
                 my $data = $dbh->selectall_arrayref('SELECT NETWORK_TYPE_NAME as "title", NETWORK_TYPE_ID as "key" from NETWORK_TYPE order by NETWORK_TYPE_NAME',{Slice => {}});
@@ -165,7 +165,7 @@ sub matchRecord {
                 $item->{cfg} = {
                     structure => $data
                 };   
-            }
+            };
         }
 
     }

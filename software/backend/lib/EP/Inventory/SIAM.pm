@@ -44,12 +44,16 @@ configuration information from the main config file.
  torrus.tree-url = torrus.tree-url
  torrus.nodeid = torrus.nodeid
  car = cablecom.svc.car_name
+ report_def = report_def
+ report_name = siam.report.name
+ report_type = siam.report.type
 
 =cut
 
 use Mojo::Base 'EP::Inventory::base';
 use EP::Exception qw(mkerror);
 use Mojo::Util qw(md5_sum);
+use Data::Dumper;
 
 use SIAM;
 use YAML;
@@ -183,6 +187,28 @@ sub walkContracts {
     for my $cntr ( @{$contracts} ){
         my %cntr = (%{$cntr->attributes});
         next unless $cntr{'siam.object.complete'};
+        # oh! we have reports lets suck themm in too
+        if ($cntr{'siam.object.has_reports'}){
+            for my $report (@{$cntr->get_reports}){
+                my @report;
+                my $objclass = $report->attr('siam.report.object_class');
+                for my $item (@{$report->get_items}){
+                    my $item_ref = $item->{'siam.report.item'};
+                    my $device = $item_ref->contained_in() or next;
+                    push @report, {
+                        color => $item->{'ifmib.port.color'},
+                        legend => $item->{'ifmib.port.legend'},
+                        tree_url => $device->attr('torrus.tree-url'),
+                        node_id => $item_ref->attr('torrus.nodeid'),
+                    }
+                }
+                my $raw_rec = { %{$cntr->attributes}, %{$report->attributes}, report_def=>\@report };
+                next if defined $skip and $skip->($raw_rec);                   
+                my $rec = $self->buildRecord($raw_rec);
+                $storeCallback->($stableId->($raw_rec),$rec);
+                $count++;
+            }
+        }
         my @srv = @{$cntr->get_services};
         if (not @srv){
             my $raw_rec = {%cntr};

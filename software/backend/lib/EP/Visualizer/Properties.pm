@@ -44,7 +44,7 @@ sub matchRecord {
     else {
         @list = map {
             [ ''.($attr->{$_} || $_), defined $rec->{$_} ? "$rec->{$_}" : '-' ]
-        } sort { ($attr->{$a} || $a) cmp ($attr->{$b} || $b) } keys %$rec;        
+        } sort { ($attr->{$a} || $a) cmp ($attr->{$b} || $b) } grep { not ref $rec->{$_} } keys %$rec;        
     }
     return {
         visualizer =>  'properties',
