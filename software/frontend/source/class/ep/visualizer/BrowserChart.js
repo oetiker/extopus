@@ -101,7 +101,6 @@ qx.Class.define("ep.visualizer.BrowserChart", {
             var cfg = this._userCfg;
             this._cfgForm.setSelectBoxData('view',sb);
             this.base(arguments, newArgs, oldArgs);
-            this.__chart.clearData();
             this.__chart.set({
                 recId: newArgs.recId,
                 instance: this.getInstance(),

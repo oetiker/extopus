@@ -41,14 +41,16 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
      */ 
     construct : function(instance,recId,chartDef) {
         this.base(arguments);
-        this._setLayout(new qx.ui.layout.Grow());
+        this._setLayout(new qx.ui.layout.VBox(10).set({
+            reversed: true
+        }));
         this.set({
             instance: instance,
             recId: recId,
             chartDef: chartDef
         });
         // the chart
-        var d3Obj = new qxd3.Svg();
+        var d3Obj = this.__d3Obj = new qxd3.Svg();
         var margin = this.self(arguments).MARGIN;
         this.__chart = d3Obj.getD3SvgNode()
         .append("g")
@@ -57,8 +59,8 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         this.__d3 = d3Obj.getD3(); 
                 
         // add the svg object into the LoadingBox
-        this._add(d3Obj);
-        
+        this._add(d3Obj,{flex: 1});
+
         // insert our global CSS once only
         var CSS = this.self(arguments).BASECSS;
         var selector;
@@ -69,23 +71,23 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         this.__dataNode = [];
 
         
-        this.addListener('appear',this.setSize,this);
+        d3Obj.addListener('appear',this.setSize,this);
 
-        this.addListener('resize',this.setSize,this);
+        d3Obj.addListener('resize',this.setSize,this);
 
         var timer = this.__timer = new qx.event.Timer(60 * 1000);
 
-        this.addListener('disappear', function() {
+        d3Obj.addListener('disappear', function() {
             timer.stop()
         }, this);
 
-        this.addListener('appear', function() {
+        d3Obj.addListener('appear', function() {
             timer.start()
         }, this);
 
         timer.addListener('interval', function() {
             if (!this.getEndTime()) {
-                this.reloadChart();
+                this.setSize();
             }
         }, this);
 
@@ -174,7 +176,8 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         chartDef: {
             init     : [],
             check    : 'Array',
-            nullable : true 
+            nullable : true,
+            apply    : 'resetChart'
         }
 
     },
@@ -196,19 +199,8 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         __clipPath: null,
         __chartWidth: null,
         __fetchWait: null,
-         /**
-         * Reload the chart. The reload will only happen when all the required information for requesting a chart from the 
-         * server are provided.
-         *
-         * @return {void} 
-         */
-        reloadChart : function(newVal,oldVal,key) {            
-            // do not reload if something is being set without changeing it
-            if (key && newVal && oldVal && newVal == oldVal){
-                return;
-            }
-            this.setSize(); 
-        },
+        __legendContainer: null,
+        __d3Obj: null,
         getDataArea: function(){
             if (this.__dataArea) return this.__dataArea;
             return this.__dataArea =
@@ -360,15 +352,46 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             return this.__dataNode[id];
         },
 
-        clearData: function(){
-            for (var i=0;i<this.__dataNode.length;i++){
-                this.__dataNode[i].remove();
+        resetChart: function(newValue, oldValue, propertyName){
+            if (this.__dataNode){
+                for (var i=0;i<this.__dataNode.length;i++){
+                    this.__dataNode[i].remove();
+                }
             }
             this.__dataNode = [];
+            this.setupLegend();
         },
-
+        setupLegend: function(){
+            var lc;
+            if (! this.__legendContainer ) {
+                lc = this.__legendContainer = new qx.ui.core.Widget();
+                lc._setLayout(new qx.ui.layout.Flow(5,5));
+                this._add(lc);
+            } 
+            else {
+                lc = this.__legendContainer;
+                lc._removeAll();
+            }
+            this.getChartDef().forEach(function(item){
+                var label = new qx.ui.core.Widget();
+                label._setLayout(new qx.ui.layout.HBox(5));
+                var box = new qx.ui.core.Widget().set({
+                    width: 10,
+                    height: 10,
+                    allowGrowX: false,
+                    allowGrowY: false,
+                    backgroundColor: item.color
+                });
+                label._add(box);
+                var legend = new qx.ui.basic.Label().set({
+                    value: item.legend
+                });
+                label._add(legend);
+                lc._add(label);
+            });
+        },
         setSize: function(){
-            var el = this.getContentElement().getDomElement();
+            var el = this.__d3Obj.getContentElement().getDomElement();
             if (!el) return;
             // sync screen before we measure things
             qx.html.Element.flush();
@@ -461,6 +484,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             var minStart = data[0].start;
             var maxVal = 0;
             data.forEach(function(d){
+                if (d.status != 'ok') return;
                 if (minStep > d.step){
                     minStep = d.step;
                     minStart = d.start;
@@ -469,6 +493,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             var d3Data = [];
             for (var i=0; i<data.length;i++){
                 d3Data[i] = [];
+                if (data[i].status != 'ok') continue;
                 var stack = this.getChartDef()[i].stack;
                 for (var ii=0;ii*minStep/data[i].step < data[i].data.length; ii++){
                     var y0 = 0;

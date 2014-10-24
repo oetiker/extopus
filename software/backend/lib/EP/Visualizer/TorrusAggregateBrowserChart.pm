@@ -172,22 +172,32 @@ sub rpcService {
                 my $ret = $self->json->decode($res->body);
                 if ($ret->{success}){
                     push @$return, {
+                        status => 'ok',
                         start => $ret->{data}{start},
                         step => $ret->{data}{step},
                         data => [ map { $dataExtract ? $dataExtract->(@$_) : $_->[0] } @{$ret->{data}{data}} ],
                     }
                 }
                 else {
-                    die mkerror(7393,"Failed Fetch $url: $ret->{error}");
+                    push @$return, {
+                        status => 'faild',
+                        message => "Torrus Problem $url: $ret->{error}"
+                    };
                 }
             }
             else {
-                die mkerror(3764,"Faild Fetch $url: Data Type ".$res->headers->content_type);
+                push @$return, {
+                        status => 'faild',
+                        message => "Faild Fetch $url: Data Type ".$res->headers->content_type,
+                };
             }
         }
         else {
             my $error = $tx->error;
-            die mkerror(3764,"Faild Fetch $url: $error->{message}");
+            push @$return, {
+                        status => 'faild',
+                        message => "Faild Fetch $url: $error->{message}",
+            };
         }
     }
     return $return;
