@@ -482,6 +482,29 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             this.redraw();
         },
 
+        yScaleRedraw: function(){
+            var dates = this.getXScale().domain();
+            if (this.__data){
+                var maxValue = 0;
+                for(var i=0;i<this.getChartDef().length;i++){
+                    this.__data.data[i].forEach(function(item){
+                        if (item.y > maxValue && item.date >= dates[0] && item.date <= dates[1]){
+                            maxValue = item.y;
+                        }
+                    })
+                }
+                this.getYScale().domain([0,maxValue]).nice();
+
+                this.getYAxisNode().call(this.getYAxisPainter());
+                this.getYAxisMinorNode().call(this.getYAxisMinorPainter());
+                for(var i=0;i<this.getChartDef().length;i++){
+                    var node = this.getDataNode(i);
+                    if (node.data()[0]){
+                        node.attr("d",this.getDataPainter(i)); 
+                    }
+                }
+            }
+        },
         redraw: function(){
             var dates = this.getXScale().domain();
             var start = Math.round(dates[0].getTime()/1000);
@@ -493,28 +516,12 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             start -= extra;
             end += extra;
             
-            if (this.__data){
-                var maxValue = 0;
-                for(var i=0;i<this.getChartDef().length;i++){
-                    this.__data.data[i].forEach(function(item){
-                        if (item.y > maxValue && item.date >= dates[0] && item.date <= dates[1]){
-                            maxValue = item.y;
-                        }
-                    })
-                }
-                this.getYScale().domain([0,maxValue]).nice();
-                this.getYAxisNode().call(this.getYAxisPainter());
-                this.getYAxisMinorNode().call(this.getYAxisMinorPainter());
-            }
+            
+            this.yScaleRedraw();
 
             this.getXAxisNode().call(this.getXAxisPainter());
 
-            for(var i=0;i<this.getChartDef().length;i++){
-                var node = this.getDataNode(i);
-                if (node.data()[0]){
-                    node.attr("d",this.getDataPainter(i)); 
-                }
-            }
+            
             if (this.__fetchWait){
                 this.__fetchAgain = 1;
                 return;
@@ -533,22 +540,11 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                     var dataNode = that.getDataNode(i);
                     if (existingData.prepend){
                         d3Data.data[i] = existingData.prepend[i].concat(d3Data.data[i],existingData.append[i]);
-                    }                    
-                    d3Data.data[i].forEach(function(item){
-                        if (item.y > maxValue && item.date >= dates[0] && item.date <= dates[1]){
-                            maxValue = item.y;
-                        }
-                    })
+                    }
                     dataNode.data([d3Data.data[i]]);
                 }
                 
-                that.getYScale().domain([0,maxValue]).nice();
-                that.getYAxisNode().call(that.getYAxisPainter());
-                that.getYAxisMinorNode().call(that.getYAxisMinorPainter());
-
-                for(var i=0;i<data.length;i++){
-                    that.getDataNode(i).attr("d",that.getDataPainter(i)); 
-                }
+                that.yScaleRedraw();
 
                 that.__fetchWait = 0;
                 // if we skipped one, lets redraw again just to be sure we got it all
