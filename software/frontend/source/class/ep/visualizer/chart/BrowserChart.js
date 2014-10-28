@@ -8,19 +8,11 @@
 ************************************************************************ */
 
 /**
- * Create an image widget to display the chart within the chart visualizer. The chart
- * is reloaded as the widget size changes.
+ * Create a D3.js based, interactive chart.
  *
  */
 
 var ID;
-
-qx.bom.Event.$$stopPropagation_old = qx.bom.Event.stopPropagation;
-qx.bom.Event.stopPropagation = function(e) {
-    if (typeof e.target.className !== "object"){
-        qx.bom.Event.$$stopPropagation_old(e);
-    }
-};
 
 qx.Class.define("ep.visualizer.chart.BrowserChart", {
     extend : qx.ui.core.Widget,
@@ -86,9 +78,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         }, this);
 
         timer.addListener('interval', function() {
-            if (!this.getEndTime()) {
-                this.setSize();
-            }
+            this.trackingRedraw();
         }, this);
 
         timer.start();
@@ -121,6 +111,9 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 'stroke': '#000',
                 'stroke-opacity': '.2',
                 'stroke-dasharray': '1,1'
+            },
+            '.y.axis.minor line': {
+                'stroke': '#888'
             }
         },
         MARGIN: {
@@ -137,7 +130,8 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
          */
         view : {
             init     : null,
-            nullable : true
+            nullable : true,
+            apply    : 'resetChart'
         },
         /**
          * amount of time in the chart (in seconds)
@@ -154,6 +148,14 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             init     : null,
             check    : 'Integer',
             nullable : true
+        },
+        /**
+         * track current time
+         */
+        trackCurrentTime: {
+            init     : null,
+            check    : 'Boolean',
+            nullable : true  
         },
         /**
          * instance name of the table. This lets us identify ourselfs when requesting data from the server
@@ -201,6 +203,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         __fetchWait: null,
         __legendContainer: null,
         __d3Obj: null,
+        __data: null,
         getDataArea: function(){
             if (this.__dataArea) return this.__dataArea;
             return this.__dataArea =
@@ -230,7 +233,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             var si = ['p','n','y','m','','k','M','G','T','P'];
             var d3 = this.__d3;
             var commasFormatter = d3.format(",.1f");
-            this.__yAxisPainter = this.__d3.svg.axis()
+            this.__yAxisPainter = d3.svg.axis()
                 .scale(this.getYScale())
                 .orient("left")
                 .tickPadding(6)
@@ -245,6 +248,16 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 });
 
             return this.__yAxisPainter;
+        },
+        getYAxisMinorPainter: function(){
+            if (this.__yAxisMinorPainter) return this.__yAxisMinorPainter;
+            var d3 = this.__d3;
+            this.__yAxisMinorPainter = d3.svg.axis()
+                .scale(this.getYScale())
+                .orient("left")
+                .tickFormat("");
+
+            return this.__yAxisMinorPainter;
         },
         
         getXScale: function(){
@@ -292,7 +305,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         getZoomRectNode: function(){
             if (this.__zoomRectNode) return this.__zoomRectNode;
             var that = this;
-            var zoomer = this.__d3.behavior.zoom()
+            var zoomer = this.__zoomer = this.__d3.behavior.zoom()
                 .scaleExtent([0.0001, 1000])
                 .on("zoom", function (){that.redraw()});
 
@@ -321,6 +334,13 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             this.__yAxisNode = this.__chart.append("g")
                 .attr("class", "y axis");
             return this.__yAxisNode;
+        },
+
+        getYAxisMinorNode: function(){
+            if (this.__yAxisMinorNode) return this.__yAxisMinorNode;
+            this.__yAxisMinorNode = this.__chart.append("g")
+                .attr("class", "y axis minor");
+            return this.__yAxisMinorNode;
         },
 
         getClipPath: function(){
@@ -359,13 +379,17 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 }
             }
             this.__dataNode = [];
+            this.__data = null;
             this.setupLegend();
         },
         setupLegend: function(){
             var lc;
             if (! this.__legendContainer ) {
-                lc = this.__legendContainer = new qx.ui.core.Widget();
-                lc._setLayout(new qx.ui.layout.Flow(5,5));
+                var margin = this.self(arguments).MARGIN;
+                lc = this.__legendContainer = new qx.ui.core.Widget().set({
+                    paddingLeft: margin.left
+                });
+                lc._setLayout(new qx.ui.layout.Flow(15,20));
                 this._add(lc);
             } 
             else {
@@ -374,13 +398,23 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             }
             this.getChartDef().forEach(function(item){
                 var label = new qx.ui.core.Widget();
-                label._setLayout(new qx.ui.layout.HBox(5));
+                label._setLayout(new qx.ui.layout.HBox(5).set({alignY: 'middle'}));
+                var cu = qx.util.ColorUtil;
+                var borderColorHsb = cu.rgbToHsb(cu.hex6StringToRgb(item.color));
+                borderColorHsb[2] *= 0.9;
+                var borderColor = cu.rgbToHexString(cu.hsbToRgb(borderColorHsb));
                 var box = new qx.ui.core.Widget().set({
-                    width: 10,
-                    height: 10,
+                    width: 12,
+                    height: 12,
                     allowGrowX: false,
                     allowGrowY: false,
-                    backgroundColor: item.color
+                    marginBottom: 6,
+                    decorator: new qx.ui.decoration.Decorator().set({
+                        color: [borderColor],
+                        width: [1],
+                        style: ['solid'],
+                        backgroundColor: item.color
+                    })
                 });
                 label._add(box);
                 var legend = new qx.ui.basic.Label().set({
@@ -411,7 +445,14 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 .attr("width",width)
                 .attr("height",height);
 
-            this.getYAxisPainter().tickSize(width);
+            this.getYAxisPainter()
+                .tickSize(width)
+                .ticks(Math.round(height/50));
+
+            this.getYAxisMinorPainter()
+                .tickSize(-width)
+                .ticks(Math.round(height/25));
+
             this.getXAxisPainter().tickSize(-height,0);
 
             for (var i=0;i<this.getChartDef().length;i++){
@@ -422,67 +463,153 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             this.getXAxisNode()
                 .attr("transform", "translate(0," + height + ")");
 
-           
-
-
             this.getZoomRectNode()
                 .attr('width',width)
                 .attr('height',height);
 
+            this.__zoomer.size([width,height]);
             this.redraw();
         },
 
+        trackingRedraw: function(){
+            if (this.getTrackCurrentTime()){
+                var dates = this.getXScale().domain();
+                var interval = dates[1].getTime() - dates[0].getTime();
+                dates[1] = new Date();
+                dates[0] = new Date(dates[1].getTime() - interval);
+                this.getXScale().domain(dates);
+            }
+            this.redraw();
+        },
 
         redraw: function(){
             var dates = this.getXScale().domain();
             var start = Math.round(dates[0].getTime()/1000);
             var end = Math.round(dates[1].getTime()/1000);
-            var extra = Math.round((end - start ) / 10);
+            var dataStep = (end-start )/ this.__chartWidth;
+            var extra = Math.round(end - start );
             var d3 = this.__d3;
 
             start -= extra;
             end += extra;
-
+            
+            if (this.__data){
+                var maxValue = 0;
+                for(var i=0;i<this.getChartDef().length;i++){
+                    this.__data.data[i].forEach(function(item){
+                        if (item.y > maxValue && item.date >= dates[0] && item.date <= dates[1]){
+                            maxValue = item.y;
+                        }
+                    })
+                }
+                this.getYScale().domain([0,maxValue]).nice();
+                this.getYAxisNode().call(this.getYAxisPainter());
+                this.getYAxisMinorNode().call(this.getYAxisMinorPainter());
+            }
 
             this.getXAxisNode().call(this.getXAxisPainter());
+
             for(var i=0;i<this.getChartDef().length;i++){
                 var node = this.getDataNode(i);
                 if (node.data()[0]){
                     node.attr("d",this.getDataPainter(i)); 
                 }
             }
-
-            var rpc = ep.data.Server.getInstance();
-            var that = this;
             if (this.__fetchWait){
+                this.__fetchAgain = 1;
                 return;
             }
+            
+            var rpc = ep.data.Server.getInstance();
+            var that = this;
             this.__fetchWait = 1;
+            var existingData = this.dataSlicer(start,end,dataStep);
             rpc.callAsyncSmart(function(data){
-                var d3Data = that.d3DataTransformer(data);
-                that.getYScale().domain([0,d3Data.max]).nice();
-                that.getYAxisNode().call(that.getYAxisPainter());
+                var d3Data = that.__data = that.d3DataTransformer(data,dataStep);
+                
+                var maxValue = 0;
+
                 for(var i=0;i<data.length;i++){
                     var dataNode = that.getDataNode(i);
+                    if (existingData.prepend){
+                        d3Data.data[i] = existingData.prepend[i].concat(d3Data.data[i],existingData.append[i]);
+                    }                    
+                    d3Data.data[i].forEach(function(item){
+                        if (item.y > maxValue && item.date >= dates[0] && item.date <= dates[1]){
+                            maxValue = item.y;
+                        }
+                    })
                     dataNode.data([d3Data.data[i]]);
+                }
+                
+                that.getYScale().domain([0,maxValue]).nice();
+                that.getYAxisNode().call(that.getYAxisPainter());
+                that.getYAxisMinorNode().call(that.getYAxisMinorPainter());
+
+                for(var i=0;i<data.length;i++){
                     that.getDataNode(i).attr("d",that.getDataPainter(i)); 
                 }
+
                 that.__fetchWait = 0;
+                // if we skipped one, lets redraw again just to be sure we got it all
+                if (this.__fetchAgain == 1){
+                    qx.event.Timer.once(that.redraw,that,0);
+                    this.__fetchAgain = 0;
+                }
             },
             'visualize', this.getInstance(), {
                 recId    : this.getRecId(),
-                width    : this.__chartWidth,
-                start    : start,
-                end      : end,
+                step     : dataStep,
+                start    : existingData.missingStart,
+                end      : existingData.missingEnd,
                 view     : this.getView()
             });
         },
 
-        d3DataTransformer: function(data){
+        dataSlicer: function(start,end,dataStep){
+            var oldData = this.__data;
+            var missingStart = start;
+            var missingEnd = end;
+            var prepend = [];
+            var append = [];
+            var keepData = oldData && Math.round(oldData.dataStep) == Math.round(dataStep);
+            if (!keepData) {
+                return { missingStart: missingStart, missingEnd: missingEnd};
+            }
+            var prependMode = keepData && oldData.data[0][0].date.getTime()/1000 <= start;
+            var appendMode = keepData && oldData.data[0][oldData.data[0].length-1].date.getTime()/1000 >= end;
+            for (var i=0;i<oldData.data.length;i++){
+                append[i] = [];
+                prepend[i] = [];
+                for (var ii=0;ii<oldData.data[i].length;ii++){
+                    var item = oldData.data[i][ii];
+                    var date = item.date.getTime()/1000;
+                    if ( prependMode && date >= start ) {
+                        prepend[i].push(item);
+                        missingStart = date;
+                    }
+                    if (appendMode && date <= end ){
+                        append[i].push(item);
+                        if ( missingEnd > date) {
+                            missingEnd = date; 
+                        }
+                    }
+
+                }
+            }
+            
+            return {
+                missingStart: missingStart,
+                missingEnd: missingEnd,
+                append: append,
+                prepend: prepend
+            }
+        },
+
+        d3DataTransformer: function(data,dataStep){
             var d3 = this.__d3;
             var minStep = data[0].step;
             var minStart = data[0].start;
-            var maxVal = 0;
             data.forEach(function(d){
                 if (d.status != 'ok') return;
                 if (minStep > d.step){
@@ -506,13 +633,10 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                         y0: y0,
                         date: new Date((minStart+ii*minStep)*1000) 
                     }
-                    if (y > maxVal){
-                        maxVal = y;
-                    }
                 }
             }
-            return {data:d3Data,max:maxVal}; 
-        }       
+            return {data:d3Data,dataStep: dataStep}
+        }    
     },
 
     destruct : function() {

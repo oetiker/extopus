@@ -59,7 +59,10 @@ qx.Class.define("ep.ui.FormBar", {
                         dateFormat  : new qx.util.format.DateFormat(this.tr("dd.MM.yyyy")),
                         placeholder : 'now'
                     });
-                    break;                                    
+                    break;
+                case 'checkBox':
+                    control = new qx.ui.form.CheckBox();
+                    break;                            
                 case 'text':
                     control = new qx.ui.form.TextField();
                     break;

@@ -54,6 +54,13 @@ qx.Class.define("ep.visualizer.BrowserChart", {
                     width         : 400,
                     minWidth      : 250
                 }
+            },
+            {
+                key: 'track',
+                widget: 'checkBox',
+                set: {
+                    label:  this.tr("track current time") 
+                }
             }
         ]);
         titleContainer.add(form);
@@ -87,6 +94,7 @@ qx.Class.define("ep.visualizer.BrowserChart", {
             this._userCfg = d;
             this.__titleContainer.setEnabled(true);
             this.__chart.setView(d.view);
+            this.__chart.setTrackCurrentTime(d.track);
             this.__chart.setSize();
         },
         /**

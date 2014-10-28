@@ -114,7 +114,7 @@ sub matchRecord {
             ],
             chart => [
                 map { {
-                    legend => $_->{legeng},
+                    legend => $_->{legend},
                     color => $_->{color},
                     cmd => 'AREA',
                     stack => 1
@@ -137,7 +137,7 @@ sub rpcService {
     my $recId = $arg->{recId};
     my $start = $arg->{start};
     my $end = $arg->{end};
-    my $width = $arg->{width};
+    my $step = $arg->{step};
     my $view = $arg->{view};
 
     my $cache = EP::Cache->new(controller=>$controller);
@@ -158,7 +158,8 @@ sub rpcService {
             RPCCALL => 'TIMESERIES',
             Gstart => int($start),
             Gend => int($end),
-            Gstep => int(($end-$start)/$width),
+            Gstep =>int($step || 1),
+            Gmaxrows => 4000,
             nodeid=>$item->{node_id}.'//'.$view
         );
         $self->app->log->debug($url->to_string);
