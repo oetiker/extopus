@@ -111,9 +111,6 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 'stroke': '#000',
                 'stroke-opacity': '.2',
                 'stroke-dasharray': '1,1'
-            },
-            '.y.axis.minor line': {
-                'stroke': '#888'
             }
         },
         MARGIN: {
@@ -249,17 +246,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
 
             return this.__yAxisPainter;
         },
-        getYAxisMinorPainter: function(){
-            if (this.__yAxisMinorPainter) return this.__yAxisMinorPainter;
-            var d3 = this.__d3;
-            this.__yAxisMinorPainter = d3.svg.axis()
-                .scale(this.getYScale())
-                .orient("left")
-                .tickFormat("");
-
-            return this.__yAxisMinorPainter;
-        },
-        
+       
         getXScale: function(){
             if (this.__xScale) return this.__xScale;
             this.__xScale = this.__d3.time.scale();
@@ -334,13 +321,6 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             this.__yAxisNode = this.__chart.append("g")
                 .attr("class", "y axis");
             return this.__yAxisNode;
-        },
-
-        getYAxisMinorNode: function(){
-            if (this.__yAxisMinorNode) return this.__yAxisMinorNode;
-            this.__yAxisMinorNode = this.__chart.append("g")
-                .attr("class", "y axis minor");
-            return this.__yAxisMinorNode;
         },
 
         getClipPath: function(){
@@ -449,10 +429,6 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 .tickSize(width)
                 .ticks(Math.round(height/50));
 
-            this.getYAxisMinorPainter()
-                .tickSize(-width)
-                .ticks(Math.round(height/25));
-
             this.getXAxisPainter().tickSize(-height,0);
 
             for (var i=0;i<this.getChartDef().length;i++){
@@ -496,7 +472,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 this.getYScale().domain([0,maxValue]).nice();
 
                 this.getYAxisNode().call(this.getYAxisPainter());
-                this.getYAxisMinorNode().call(this.getYAxisMinorPainter());
+               
                 for(var i=0;i<this.getChartDef().length;i++){
                     var node = this.getDataNode(i);
                     if (node.data()[0]){
@@ -505,6 +481,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 }
             }
         },
+        
         redraw: function(){
             var dates = this.getXScale().domain();
             var start = Math.round(dates[0].getTime()/1000);
