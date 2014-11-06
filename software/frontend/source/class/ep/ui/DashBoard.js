@@ -18,11 +18,11 @@ qx.Class.define("ep.ui.DashBoard", {
     /**
      * create a new dashboard Page. Dashboard page names are for 'fun' only, they register
      * a unique identity with the {ep.ui.DashManager}.
-     * 
+     *
      * @param name {String} name for the dashboard page
      */
-    construct : function(name) {                
-        this.base(arguments, name);        
+    construct : function(name) {
+        this.base(arguments, name);
         this.set({
             layout: new qx.ui.layout.Grow
         });
@@ -30,7 +30,7 @@ qx.Class.define("ep.ui.DashBoard", {
         this._boardView._setLayout(this._boardGrid = new qx.ui.layout.Grid(1,1));
         this._boardView.set({
             backgroundColor: '#bfbfbf'
-        });        
+        });
         this.add(this._cfgView = new ep.ui.DashConfig(this._boardGrid));
         this._cfgView.hide();
         this._addLabelEditor();
@@ -43,7 +43,7 @@ qx.Class.define("ep.ui.DashBoard", {
         /**
          * the server side identification number of the dashboard
          */
-        dashId: {            
+        dashId: {
             nullable: true,
             event: 'changeDashId'
         },
@@ -84,7 +84,7 @@ qx.Class.define("ep.ui.DashBoard", {
             rpc.callAsyncSmart(function(ret){
                 that.setDashId(ret.id);
                 that.setUpdateTime(ret.up);
-            },'saveDash',this.getConfig(),this.getLabel(),this.getDashId(),this.getUpdateTime());
+            },'saveDash',this.getConfig(),this.getLabel(),this.getDashId(),this.getUpdateTime(),0 /* not private */);
         },
         /**
          * create the label editor
@@ -183,7 +183,7 @@ qx.Class.define("ep.ui.DashBoard", {
          * @param cfg {Map} config map for the visualizer
          * @param position {Map} position map for the visualizer
          * @return null
-         */       
+         */
         addVisualizer: function(cfg,position){
             var rpc = ep.data.Server.getInstance();
             var that = this;
@@ -195,10 +195,10 @@ qx.Class.define("ep.ui.DashBoard", {
                         ctrl.setUserData('cfgListItem',cfgListItem);
                         if (position == null){
                             that._cfgView.show();
-                            that._cfgView.selectPosition(function(position){        
-                                that._cfgView.hide();                                
+                            that._cfgView.selectPosition(function(position){
+                                that._cfgView.hide();
                                 /* only add and save if successfully placed */
-                                try { 
+                                try {
                                     that._addVisualizerWidget(ctrl,position);
                                     cfgList.push(cfgListItem);
                                     cfgListItem.position = position;
@@ -211,7 +211,7 @@ qx.Class.define("ep.ui.DashBoard", {
                         }
                         else {
                             /* only add and save if successfully placed */
-                            try { 
+                            try {
                                 that._addVisualizerWidget(ctrl,position);
                                 cfgListItem.position = position;
                                 cfgList.push(cfgListItem);
@@ -221,9 +221,9 @@ qx.Class.define("ep.ui.DashBoard", {
                             }
                         }
                         that._cfgView.syncGrid();
-                    }   
+                    }
                 },
-                'getVisualizers', 
+                'getVisualizers',
                 cfg.recIds.length > 1 ? 'multi' : 'single' ,
                 cfg.recIds[0]
             );
@@ -232,8 +232,8 @@ qx.Class.define("ep.ui.DashBoard", {
          * Create a Visualizer Instance
          *
          * @param {Array} list of potential visualizers
-         * @return {visualizer} 
-         */       
+         * @return {visualizer}
+         */
         _makeVisualizer : function(cfg,vizList) {
             for (var i=0;i<vizList.length;i++){
                 var viz = vizList[i];
@@ -248,9 +248,9 @@ qx.Class.define("ep.ui.DashBoard", {
         },
         /**
          * Add the popup menu to the tab button.
-         */       
+         */
         _addButtonMenu: function(){
-            var button = this.getChildControl('button');            
+            var button = this.getChildControl('button');
 
             var menuButton = this._menuButton = new qx.ui.basic.Atom().set({
                 icon   : 'ep/view-menu-black.png',
@@ -278,7 +278,7 @@ qx.Class.define("ep.ui.DashBoard", {
         },
         /**
          * Make a visualizer Edit Box
-         */       
+         */
         _makeVizEditBox: function(box,visualizer){
             var editBox = new qx.ui.container.Composite(new qx.ui.layout.HBox(3,'center').set({
                 alignY: 'middle'
@@ -293,7 +293,7 @@ qx.Class.define("ep.ui.DashBoard", {
             });
             var removeBtn = new qx.ui.basic.Atom(null,"icon/48/places/user-trash.png").set({
                 allowGrowY: false
-            });            
+            });
             editBox.add(moveBtn);
             editBox.add(removeBtn);
             editBox.addListener('tap',function(){
@@ -314,7 +314,7 @@ qx.Class.define("ep.ui.DashBoard", {
             removeBtn.addListenerOnce('tap',function(){
                 this._boardView._remove(box);
                 this.removeListenerById(startLst);
-                this.removeListenerById(endLst);                    
+                this.removeListenerById(endLst);
                 this._cfgView.freePosition(box.getLayoutProperties());
                 var cfgList = this.getConfig();
                 var cfgItem = visualizer.getUserData('cfgListItem');
@@ -346,7 +346,7 @@ qx.Class.define("ep.ui.DashBoard", {
                     catch (err){
                         this.debug(err);
                     }
-                        
+
                     var w = position.column + (position.colSpan || 1);
                     var h = position.row + ( position.rowSpan || 1);
 
@@ -361,7 +361,7 @@ qx.Class.define("ep.ui.DashBoard", {
                  },this);
             },this);
 
-            return editBox;          
+            return editBox;
         }
     }
 });

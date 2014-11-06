@@ -14,7 +14,7 @@ EP::Cache - extopus data cache
 
  my $cache = EP::Cache->new(
         cacheRoot => $cfg->{GENERAL}{cache_dir},
-        user => $user,        
+        user => $user,
         inventory => $self->inventory,
         treeCols => $self->getTableColumnDef('tree')->{ids},
         searchCols => $self->getTableColumnDef('search')->{ids},
@@ -24,7 +24,7 @@ EP::Cache - extopus data cache
  $self->cache($cache);
 
  $es->getNodes('expression',offset,limit);
- 
+
  $es->getBranch($parent);
 
 =head1 DESCRIPTION
@@ -67,7 +67,7 @@ the user name supplied to the inventory plugins
 
 =cut
 
-has user => sub { 
+has user => sub {
     shift->controller->user;
 };
 
@@ -100,7 +100,7 @@ has searchCols  => sub {
 array with the attributes to report for tree leave nodes
 
 =cut
- 
+
 has treeCols    => sub {
     shift->controller->getTableColumnDef('tree')->{ids}
 };
@@ -203,7 +203,7 @@ sub new {
     my $self =  shift->SUPER::new(@_);
     $self->dbhCa(my $dbc = $self->_connect('cache'));
     $self->dbhPe(my $dbp = $self->_connect('persistant'));
-    do { 
+    do {
         local $dbc->{RaiseError} = undef;
         local $dbc->{PrintError} = undef;
         $self->meta({ map { @$_ } @{$dbc->selectall_arrayref("select key,value from meta")||[]} });
@@ -214,7 +214,7 @@ sub new {
         $self->createTables;
         $self->setMeta('created',time);
     }
-    if ($self->updateInterval > 0  
+    if ($self->updateInterval > 0
         and time - ($self->meta->{lastup}||0) > $self->updateInterval ){
         my $now = time;
         my $populatorPid = $self->meta->{populatorPid};
@@ -224,7 +224,7 @@ sub new {
         else {
             my $oldVersion = $self->meta->{version} || '';
             my $version = $self->inventory->getVersion($user);
-            $self->log->info("checking inventory version '$version' vs '$oldVersion'");     
+            $self->log->info("checking inventory version '$version' vs '$oldVersion'");
             if ( $oldVersion  ne  $version){
                 $self->log->info("loading nodes into ".$self->cacheRoot." for $user");
                 $self->setMeta('populatorPid',$$);
@@ -243,10 +243,10 @@ sub new {
                     $dbh->do("VACUUM");
                     $dbh->do("PRAGMA synchronous = 1");
                 }
-                $self->setMeta('populatorPid','');    
-            } 
+                $self->setMeta('populatorPid','');
+            }
             else {
-                $self->log->info("no re-population required, cache is current");            
+                $self->log->info("no re-population required, cache is current");
             }
             $self->setMeta('lastup',time);
         }
@@ -282,7 +282,7 @@ sub createTables {
         $dbp->do("ALTER TABLE dash ADD COLUMN login TEXT default 'base' NOT NULL");
         $dbp->do("ALTER TABLE dash ADD COLUMN private INTEGER default 0");
     }
-    $dbp->do("CREATE INDEX IF NOT EXISTS dash_idx ON dash(lastupdate)");    
+    $dbp->do("CREATE INDEX IF NOT EXISTS dash_idx ON dash(lastupdate)");
     return;
 }
 
@@ -297,10 +297,10 @@ sub dropTables {
     my $dbh = $self->dbhCa;
     $dbh->do("DROP TABLE IF EXISTS branch");
     $dbh->do("DROP TABLE IF EXISTS leaf");
-    $dbh->do("DROP TABLE IF EXISTS node");            
+    $dbh->do("DROP TABLE IF EXISTS node");
     return;
 }
- 
+
 =head2 add({...})
 
 Store a node in the database.
@@ -363,15 +363,15 @@ sub addTreeNode {
     my $self = shift;
     my $nodeId = shift;
     my $node = shift;
-    my $dbh = $self->dbhCa;    
+    my $dbh = $self->dbhCa;
     my $cache = $self->{treeCache};
     my $treeData = $self->tree->($node);
     LEAF:
-    for my $subTree (@{$treeData}){                  
+    for my $subTree (@{$treeData}){
         my $parent = 0;
         # make sure the whole branche is populated
         for my $value (@{$subTree}){
-            next LEAF unless $value;            
+            next LEAF unless $value;
         }
         for my $value (@{$subTree}){
             my $id;
@@ -406,7 +406,7 @@ sub getNodeCount {
     my $self = shift;
     my $expression = shift;
     return 0 unless defined $expression;
-    my $dbh = $self->dbhCa;    
+    my $dbh = $self->dbhCa;
     my $re = $dbh->{RaiseError};
     $dbh->{RaiseError} = 0;
     my $answer = (($dbh->selectrow_array("SELECT count(docid) FROM node WHERE data MATCH ?",{},$self->encodeUtf8->encode($expression)))[0]);
@@ -417,7 +417,7 @@ sub getNodeCount {
     return $answer;
 }
 
-    
+
 =head2 getNodes($expression,$limit,$offset)
 
 Return nodes matching the given search term
@@ -452,7 +452,7 @@ Return node matching the given nodeId. Including the __epId attribute.
 
 sub getNode {
     my $self = shift;
-    my $nodeId = shift;    
+    my $nodeId = shift;
     my $dbh = $self->dbhCa;
     my @row = $dbh->selectrow_array("SELECT data FROM node WHERE docid = ?",{},$nodeId);
     my $json = $self->json;
@@ -490,12 +490,12 @@ sub getBranch {
     } @$branches){
         $sth->execute($branch->[0]);
         my @leaves;
-        while (my ($docid,$row) = $sth->fetchrow_array()){  
-            my $data = $self->json->decode($row);    
+        while (my ($docid,$row) = $sth->fetchrow_array()){
+            my $data = $self->json->decode($row);
             $data->{__epId} = $docid;
             push @leaves, [ map { $data->{$_} } @{$self->treeCols} ];
         }
-        push @$branch, \@leaves;        
+        push @$branch, \@leaves;
         push @sortedBranches, $branch;
     }
     return \@sortedBranches;
@@ -520,15 +520,15 @@ sub getDashList {
     my $dbh = $self->dbhPe;
     my @data = @{$dbh->selectall_arrayref(<<"SQL_END",{Slice => {}},$lastUp,$self->login,$self->login)};
         SELECT
-            numid, 
-            lastupdate, 
+            numid,
+            lastupdate,
             label,
             login,
             private,
             CASE WHEN lastupdate > ? THEN config ELSE 0 END AS cf,
-            CASE WHEN login == ? THEN 1 ELSE 0 END AS mine
-        FROM dash 
-        WHERE login == ? OR private == 0
+            CASE WHEN login = ? THEN 1 ELSE 0 END AS mine
+        FROM dash
+        WHERE login = ? OR private is null or private = 0
         ORDER by label
 SQL_END
     my @ret;
