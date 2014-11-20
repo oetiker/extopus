@@ -489,6 +489,8 @@ sub getBranch {
         ( $l =~ s/^(\d+).*/$1/s and $r =~ s/^(\d+).*/$1/s ) ? $l <=> $r : $l cmp $r
     } @$branches){
         $sth->execute($branch->[0]);
+        # if a branch name starts with the magic key {SORT:...} the string gets removed
+        $branch->[1] =~ s/^{SORT:.+?}//;
         my @leaves;
         while (my ($docid,$row) = $sth->fetchrow_array()){
             my $data = $self->json->decode($row);
@@ -505,6 +507,19 @@ sub getBranch {
 
 Return a list of Dashboards on file, supplying detailed configuration data for those
 that changed since lastFetch (epoch time).
+
+=over
+
+=item *
+
+If a string starts with a number, it will be sorted numerically
+
+=item *
+
+If a string starts with {SORT:...} then this part of the string gets removed
+
+=back
+
 
  [
     { id => i1, up => x1, lb => l1, cfg => z1 }

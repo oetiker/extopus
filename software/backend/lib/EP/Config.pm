@@ -360,6 +360,19 @@ DOC
                 _doc => <<'DOC',
 Define the attributes to be added to the tree. By entering rows of comma separated
 attributes in perl notation. The data from the current record is accessible via the %R hash.
+
+=over
+
+=item *
+
+If a string starts with a number, it will be sorted numerically
+
+=item *
+  
+If a string starts with {SORT:...} then this part of the string gets removed
+  
+=back
+
 DOC
                 _example => <<'EX',
 'Company Index',uc(substr($R{company},0,1)), uc(substr($R{company},1,1)),$R{company},$R{town},$R{street}
