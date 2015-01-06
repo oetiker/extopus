@@ -135,7 +135,6 @@ custom rpc service of this visualizer. accessible via the C<visualize(visualizer
 
 sub rpcService {  ## no critic (RequireArgUnpacking)
     my $self = shift;
-    my $instance = shift;
     my $controller = shift;
     my @args = @_;
     die "sorry, no rpc service support";   

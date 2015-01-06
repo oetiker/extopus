@@ -27,7 +27,7 @@ PM :=  $(shell find lib/ -name "*.pm")
 
 POD :=  $(shell find lib/ -name "*.pod")
 
-RES :=  $(shell test -d public/resource && find public/resource -type f)        
+RES :=  $(shell test -d public/resource && find public/resource -type f)
 
 TEMPL := $(shell test -d templates && find templates -type f)
 

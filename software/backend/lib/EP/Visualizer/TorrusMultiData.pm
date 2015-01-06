@@ -89,7 +89,7 @@ sub getWbName {
     return $data->{title};
 }
 
-=head2 getData(recId[],end,interval)
+=head2 getData($controller,recId[],end,interval)
 
 run get data for multiple records
 
@@ -108,7 +108,7 @@ sub getData {
     my $stamp;
     my $cache = EP::Cache->new(controller=>$controller);
     for my $recId (@$recIds){
-        my $data =  $self->SUPER::getData($recId,$end,$interval,1);
+        my $data =  $self->SUPER::getData($controller,$recId,$end,$interval,1);
         if ($data->{status}){       
             $stamp =  $data->{stepLabels}[0];
             push @ret, $data->{data}[0];

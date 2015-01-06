@@ -197,7 +197,7 @@ sub matchRecord {
     };
 }
 
-=head2 getData(recId,end,interval,count)
+=head2 getData(controller,recId,end,interval,count)
 
 use the AGGREGATE_DS rpc call to pull some statistics from the server.
 
@@ -364,18 +364,17 @@ sub addProxyRoute {
     my $self = shift;
     my $routes = $self->app->routes;
     $routes->get($self->app->prefix.$self->root, sub {
-        my $ctrl = shift;
+        my $controller = shift;
         # make sure the rest of the object knows what we are doing here
-        $self->controller($ctrl);
-        my $req = $ctrl->req;
+        my $req = $controller->req;
         my $recId = $req->param('recid');
         my $end = $req->param('end');
         my $interval = $req->param('interval');
         my $count = $req->param('count') || 1;
         my $format = $req->param('format');
-        my $data = $self->getData($recId,$end,$interval,$count);
+        my $data = $self->getData($controller,$recId,$end,$interval,$count);
         if (not $data->{status}){
-            $ctrl->render(
+            $controller->render(
                  status => 401,
                  text => $data->{error},
             );
@@ -384,7 +383,7 @@ sub addProxyRoute {
         }
         my $rp = Mojo::Message::Response->new;
         $rp->code(200);
-        my $cache = $ctrl->cache;
+        my $cache = $controller->cache;
         my $wbname = $self->getWbName($cache,$recId,$data);
 
         my $name = $wbname . ' - '.strftime('%Y-%m-%d',localtime($end));
@@ -408,8 +407,8 @@ sub addProxyRoute {
         $rp->headers->last_modified(Mojo::Date->new(time-24*3600));
         $rp->headers->add('Content-Disposition',$fileData->{contentDisposition});
         $rp->body($fileData->{body});
-        $ctrl->tx->res($rp);
-        $ctrl->rendered;
+        $controller->tx->res($rp);
+        $controller->rendered;
     });
     return;
 }
