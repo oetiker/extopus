@@ -46,12 +46,9 @@ it to the browser. This can be used to massage the data.
 
 =head1 METHODS
 
-all the methods from L<EP::Visualizer::base>. As well as these:               
+all the methods from L<EP::Visualizer::base>. As well as these:
 
 =cut
-
-use strict;
-use warnings;
 
 use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(url_unescape);
@@ -76,7 +73,7 @@ sub new {
     }
     return $self;
 }
-   
+
 =head2 matchRecord(type,args)
 
 can we handle this type of record
@@ -90,7 +87,7 @@ sub matchRecord {
     return unless $type eq 'single';
     my $rec = shift;
     # only work for items with report_def;
-    return unless $rec->{report_def} and ref $rec->{report_def} eq 'ARRAY'; 
+    return unless $rec->{report_def} and ref $rec->{report_def} eq 'ARRAY';
 
     my $cfg = $self->cfg;
     # only work if there is a view selector config
@@ -106,11 +103,11 @@ sub matchRecord {
         caption => $self->caption($rec),
         arguments => {
             recId => $rec->{__epId},
-            views => [ 
-                map { {  
-                        key => $_, 
-                        title => $viewMap->{$_}{label} 
-                    } } @$order 
+            views => [
+                map { {
+                        key => $_,
+                        title => $viewMap->{$_}{label}
+                    } } @$order
             ],
             chart => [
                 map { {
@@ -124,7 +121,7 @@ sub matchRecord {
     };
 }
 
-=head2 rpcService 
+=head2 rpcService
 
 provide data for the browser charts
 
@@ -165,7 +162,7 @@ sub rpcService {
         $self->app->log->debug($url->to_string);
         if (defined($self->hostauth)){
             $url->query({hostauth=>$self->hostauth});
-        }        
+        }
         my $tx = Mojo::UserAgent->new->get($url);
         if (my $res=$tx->success) {
             if ($res->headers->content_type =~ m'application/json'i){
@@ -176,19 +173,19 @@ sub rpcService {
                         status => 'ok',
                         start => $ret->{data}{start},
                         step => $ret->{data}{step},
-                        data => [ map { $dataExtract ? $dataExtract->(@$_) : $_->[0] } @{$ret->{data}{data}} ],
+                        values => [ map { $dataExtract ? $dataExtract->(@$_) : $_->[0] } @{$ret->{data}{data}} ],
                     }
                 }
                 else {
                     push @$return, {
-                        status => 'faild',
+                        status => 'failed',
                         message => "Torrus Problem $url: $ret->{error}"
                     };
                 }
             }
             else {
                 push @$return, {
-                        status => 'faild',
+                        status => 'failed',
                         message => "Faild Fetch $url: Data Type ".$res->headers->content_type,
                 };
             }
@@ -201,7 +198,7 @@ sub rpcService {
             };
         }
     }
-    return $return;
+    return $return
 }
 1;
 

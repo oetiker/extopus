@@ -9,7 +9,7 @@ EP::Visualizer::TorrusData - pull numeric data associated with torrus data sourc
  *** VISUALIZER: data ***
  module = TorrusData
  selector = data_type
- type = PortTraffic 
+ type = PortTraffic
  title = Traffic Data
  caption = "$R{prod} $R{inv_id} $R{device_name}:$R{port}"
  caption_live = "Traffic Analysis $R{device_name}:$R{port}"
@@ -18,7 +18,7 @@ EP::Visualizer::TorrusData - pull numeric data associated with torrus data sourc
 
  sub_nodes = inbytes, outbytes
  col_names = Date, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
- col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, % 
+ col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
  col_widths = 3,  3  ,    3,    3,  3,  3,    3, 2
  col_data = $D{range},int($D{inbytes}{AVG}*8/1e4)/1e2, \
            int($D{outbytes}{AVG}*8/1e4)/1e2, \
@@ -44,12 +44,9 @@ It determines further processing by evaluation additional configurable attribute
 
 =head1 METHODS
 
-all the methods from L<EP::Visualizer::base>. As well as these:               
+all the methods from L<EP::Visualizer::base>. As well as these:
 
 =cut
-
-use strict;
-use warnings;
 
 use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(url_unescape);
@@ -90,10 +87,10 @@ sub new {
     }
     my $sub = eval 'sub { my $DURATION = shift; my $RANGE=shift; my %D = (%{$_[0]}); my %R = (%{$_[1]}); return [ '.$self->cfg->{col_data} . ' ] }'; ## no critic (ProhibitStringyEval)
     if ($@){
-        die mkerror(38734,"Failed to compile ".$self->cfg->{col_data}.": $@"); 
+        die mkerror(38734,"Failed to compile ".$self->cfg->{col_data}.": $@");
     }
     $self->cfg->{col_data} = $sub;
-    $self->addProxyRoute();    
+    $self->addProxyRoute();
     return $self;
 }
 
@@ -113,10 +110,10 @@ sub rrd2float {
         if ( defined $val and $val ne ""){
             if ( $val =~ /[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?/ ){
                 $out{$key} = 1.0 * $val;
-            }            
+            }
             elsif ( $val =~ /nan/i ){
                 # perl turns this into a real NaN it seems
-                $out{$key} = $nan; 
+                $out{$key} = $nan;
             }
             else {
                 $out{$key} = $val;
@@ -125,13 +122,13 @@ sub rrd2float {
         else {
             $out{$key} = undef;
         }
-    }    
+    }
     return \%out;
 }
 
 =head2 denan(array)
 
-turn nan values into undef since json implementations have issues with nan ... 
+turn nan values into undef since json implementations have issues with nan ...
 
 =cut
 
@@ -141,7 +138,7 @@ sub denan {
     no warnings; # don't get your undies in a twist when we look at a text bit
     return [
         map { defined $nan <=> $_ ? $_ : undef } @$in
-    ]    
+    ]
 }
 
 =head2 matchRecord(type,rec)
@@ -162,7 +159,7 @@ sub matchRecord {
 
     if ($rec->{$cfg->{selector}} ne $cfg->{type}){
         return;
-    } 
+    }
 
     my $baseProps = {
         visualizer => 'data',
@@ -171,14 +168,14 @@ sub matchRecord {
         caption => $cfg->{caption}($rec),
         arguments => {}
     };
-    
+
     if ($cfg->{skiprec_pl} and $cfg->{skiprec_pl}->($rec)){
         return $baseProps;
     };
 
     my $src = Mojo::URL->new();
-    $src->path($self->root);    
-    
+    $src->path($self->root);
+
     return {
         %$baseProps,
         arguments => {
@@ -190,7 +187,7 @@ sub matchRecord {
                 { key => 'week', name => 'Weekly' },
                 { key => 'month', name => 'Monthly' },
                 { key => 'year', name => 'Yearly' },
-            ],            
+            ],
             recId => $rec->{__epId},
             csvUrl => $src->to_string,
         }
@@ -212,7 +209,7 @@ sub getData {
     my $count = shift;
     my @return;
     my $cache = EP::Cache->new(controller=>$controller);
-    my $rec = $cache->getNode($recId);    
+    my $rec = $cache->getNode($recId);
     my $treeUrl = $rec->{'torrus.tree-url'};
     my $nodeId = $rec->{'torrus.nodeid'};
     if (not $treeUrl or not $nodeId){
@@ -230,7 +227,7 @@ sub getData {
         my %E;
         my %S;
         for ($interval){
-            /day/ && do { 
+            /day/ && do {
                 @S{qw{sec min hour mday mon year wday yday isdst}} = localtime($end-$step*24*3600);
                 $stepStart = timelocal_nocheck(0,0,0,$S{mday},@S{qw(mon year)});
                 @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($stepStart+25*3600);
@@ -264,7 +261,7 @@ sub getData {
                 next;
             };
         }
-        my %data;    
+        my %data;
         for my $subNode (@{$self->cfg->{sub_nodes}}){
             $url->query(
                 view=> 'rpc',
@@ -275,8 +272,8 @@ sub getData {
             );
             if (defined($self->hostauth)){
                 $url->query({hostauth=>$self->hostauth});
-            }        
-            
+            }
+
             $self->app->log->debug("getting ".$url->to_string);
             my $tx = Mojo::UserAgent->new->get($url);
             my $data;
@@ -305,13 +302,13 @@ sub getData {
             else {
                 my $error = $tx->error;
                 $self->app->log->error("Fetching ".$url->to_string." returns $error->{message}");
-                return {    
-                    status => 0,    
+                return {
+                    status => 0,
                     error => "fetching data for $nodeId from torrus server: $error->{message}"
                 };
             }
         };
-        my $row = denan($self->cfg->{col_data}($stepEnd - $stepStart,$stepLabel,\%data,$rec));       
+        my $row = denan($self->cfg->{col_data}($stepEnd - $stepStart,$stepLabel,\%data,$rec));
         push @stepLabels, $stepLabel;
         push @return, $row;
     }
@@ -325,7 +322,7 @@ sub getData {
 }
 
 
-=head2 rpcService 
+=head2 rpcService
 
 provide rpc data access
 
@@ -338,7 +335,7 @@ sub rpcService {
     return $self->getData($controller,$arg->{recId},$arg->{endDate},$arg->{interval},$arg->{count});
 }
 
-=head2 getWbName 
+=head2 getWbName
 
 determine title and file name for the export
 
@@ -347,9 +344,9 @@ determine title and file name for the export
 sub getWbName {
     my $self = shift;
     my $cache = shift;
-    my $recId = shift;    
+    my $recId = shift;
     my $data = shift;
-    my $rec = $cache->getNode($recId); 
+    my $rec = $cache->getNode($recId);
     return $self->cfg->{savename_pl} ? $self->cfg->{savename_pl}($rec) : 'missing save name for $recId';
 }
 
@@ -436,7 +433,7 @@ sub csvBuilder {
    my @extra;
    if ($data->{title}){
         @extra = ($data->{title});
-   } 
+   }
    my $body = join(";",@cnames)."\r\n";
    for my $row (@{$data->{data}}){
        $body .= join(";",map { defined $_ && /[^-e.0-9]/ ? qq{"$_"} : ($_||'') } @extra,@$row)."\r\n";
@@ -506,7 +503,7 @@ sub _excelBuilder {
     my $name      = shift;
     my $wbname    = shift;
     my $fileData      = shift;
-    my $excelBody_ref = shift; 
+    my $excelBody_ref = shift;
     my $workbook      = shift;
     my @cnames;
     for (my $c=0;$c < scalar @{$self->cfg->{col_names}};$c++){
@@ -516,7 +513,7 @@ sub _excelBuilder {
     }
     my $worksheet = $workbook->add_worksheet(substr($wbname,0,31));
     $worksheet->set_column('A:I',18);
-    
+
     my $cnames_ref = \@cnames;
     my $header_format = $workbook->add_format();
     $header_format->set_bold();
@@ -525,7 +522,7 @@ sub _excelBuilder {
         $worksheet->write_row($rowcounter++, 0,['Range',$data->{title}],$header_format);
     }
     $worksheet->write_row($rowcounter++, 0,$cnames_ref,$header_format);
-    for my $row (@{$data->{data}}){ 
+    for my $row (@{$data->{data}}){
         my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_||'') } @$row;
         my $line_ref = \@line;
         $worksheet->write_row($rowcounter++,0,$line_ref);

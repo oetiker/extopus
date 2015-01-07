@@ -37,11 +37,11 @@ EP::Visualizer::SiamSqlReport - run custom sql and show result in extopus
     key => 'days',
     widget => 'selectBox',
     cfg => {
-        structure => [ 
-            { title => '1 Day',  key => 1 }, 
-            { title => '2 Days',  key => 2 * 24 * 3600 }, 
-            { title => '1 Week',  key => 7 },  
-            { title => '4 Weeks', key => 28 },  
+        structure => [
+            { title => '1 Day',  key => 1 },
+            { title => '2 Days',  key => 2 * 24 * 3600 },
+            { title => '1 Week',  key => 7 },
+            { title => '4 Weeks', key => 28 },
          ]
      }
   }
@@ -50,7 +50,7 @@ EP::Visualizer::SiamSqlReport - run custom sql and show result in extopus
  # PortId,Value,Unit
 
  +SQL_TX
- SELECT TOPX_PORTID, RATE, 'bits/s' FROM 
+ SELECT TOPX_PORTID, RATE, 'bits/s' FROM
  ( SELECT TOPX_DAILY_PORT_TRAFFIC.NC_PORTID AS TOPX_PORTID, AVERAGE(DAILY_RATE_AVG) as RATE
      FROM TOPX_DAILY_PORT_TRAFFIC JOIN PORT ON PORT.NC_PORTID=TOPX_DAILY_PORT_TRAFFIC.NC_PORTID
      WHERE AGGR_DATE > TO_DATE(<%= strftime('%Y-%m-%d',localtime($C{date})) %>, 'YYYY-MM-DD')
@@ -80,12 +80,9 @@ As well as:
 
 =head1 METHODS
 
-all the methods from L<EP::Visualizer::base>. As well as these:               
+all the methods from L<EP::Visualizer::base>. As well as these:
 
 =cut
-
-use strict;
-use warnings;
 
 use Mojo::Base 'EP::Visualizer::base';
 use SIAM;
@@ -106,21 +103,21 @@ sub new {
             if not defined $self->cfg->{$prop};
     }
     my $sql = $self->cfg->{SQL_TX}{_text};
-    my $args = $self->args;    
+    my $args = $self->args;
 
     while ($sql =~ s/<%=(.+?)%>/?/){
         my $sub = eval 'sub { my %C = (%{$_[0]});my %R = (%{$_[1]});'.${1}.'}';
         if ($@){
             $self->app->log->error("Failed to compile $1");
-            $sub = sub { undef };            
+            $sub = sub { undef };
         }
         push @$args, $sub;
-    }    
+    }
     $self->sql($sql);
     my $siamCfg =  YAML::LoadFile($self->cfg->{siam_cfg});
     $siamCfg->{Logger} = $self->app->log;
     my $siam = SIAM->new($siamCfg);
-    $siam->set_log_manager($self->app->log);    
+    $siam->set_log_manager($self->app->log);
     $siam->connect;
     $self->dbh($siam->computable($self->cfg->{siam_dbh}));
     $self->siam($siam);
@@ -150,10 +147,10 @@ sub matchRecord {
                 my $data = $dbh->selectall_arrayref('SELECT COUNTER_TITLE as "title", COUNTER_ID as "key" from TOPX_COUNTER_INFO order by COUNTER_TITLE',{Slice => {}});
                 if ($dbh->err){
                     die mkerror(9172, 'fetching counter types: '.$dbh->errstr);
-                }                 
+                }
                 $item->{cfg} = {
                     structure => $data,
-                };   
+                };
             };
             /^networkTypeSelect$'/ && do {
                 $item->{widget} = 'selectBox';
@@ -161,10 +158,10 @@ sub matchRecord {
                 my $data = $dbh->selectall_arrayref('SELECT NETWORK_TYPE_NAME as "title", NETWORK_TYPE_ID as "key" from NETWORK_TYPE order by NETWORK_TYPE_NAME',{Slice => {}});
                 if ($dbh->err){
                     die mkerror(9172, 'fetching network types: '.$dbh->errstr);
-                }                 
+                }
                 $item->{cfg} = {
                     structure => $data
-                };   
+                };
             };
         }
 
@@ -177,10 +174,10 @@ sub matchRecord {
         arguments => {
             form => $form
         }
-    };    
+    };
 }
 
-=head2 rpcService(arg) 
+=head2 rpcService(arg)
 
 provide rpc data access
 

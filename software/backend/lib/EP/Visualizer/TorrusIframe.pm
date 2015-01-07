@@ -24,12 +24,9 @@ This visualizer will match any records that have the following attributes:
 
 =head1 METHODS
 
-all the methods from L<EP::Visualizer::base>. As well as these:               
+all the methods from L<EP::Visualizer::base>. As well as these:
 
 =cut
-
-use strict;
-use warnings;
 
 use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(hmac_md5_sum url_unescape);
@@ -50,7 +47,7 @@ sub new {
     $self->addProxyRoute();
     return $self;
 }
-   
+
 sub matchRecord {
     my $self = shift;
     my $type = shift;
@@ -63,7 +60,7 @@ sub matchRecord {
     my $leaves = $self->getLeaves($url,$rec->{'torrus.nodeid'});
     my $view = $self->view;
     my @views;
-    for my $token (sort { ($leaves->{$b}{precedence} || 0) <=> ($leaves->{$a}{precedence} || 0) } keys %$leaves){        
+    for my $token (sort { ($leaves->{$b}{precedence} || 0) <=> ($leaves->{$a}{precedence} || 0) } keys %$leaves){
         my $leaf = $leaves->{$token};
         next unless ref $leaf; # skip emtpy leaves
         my $nodeid = $leaf->{nodeid} or next; # skip leaves without nodeid
@@ -76,10 +73,10 @@ sub matchRecord {
             view => $view,
             url => $url
         );
-        
+
         push @views, {
             visualizer =>  'iframe',
-            instance => $self->instance,   
+            instance => $self->instance,
             title => $self->cfg->{title},
             caption => $self->caption($rec),
             arguments => {
@@ -93,7 +90,7 @@ sub matchRecord {
 
 =head2 getLeaves(treeurl,nodeid)
 
-pull the list of leaves from torrus 
+pull the list of leaves from torrus
 
 =cut
 
@@ -107,7 +104,7 @@ sub getLeaves {
         view=> 'rpc',
         RPCCALL => 'WALK_LEAVES',
         GET_PARAMS => 'precedence',
-    );    
+    );
     $self->app->log->debug("getting ".$url->to_string);
     my $tx = Mojo::UserAgent->new->get($url);
     if (my $res=$tx->success) {
@@ -127,7 +124,7 @@ sub getLeaves {
     else {
         my $error = $tx->error;
         $self->app->log->error("Fetching ".$url->to_string." returns $error->{message}");
-        die mkerror(48877,"fetching Leaves for $nodeid from torrus server: $error->{message}");        
+        die mkerror(48877,"fetching Leaves for $nodeid from torrus server: $error->{message}");
     }
 }
 
@@ -162,7 +159,7 @@ sub addProxyRoute {
         $pxReq->query(nodeid=>$nodeid,view=>$view);
         if ($self->hostauth){
             $pxReq->query({hostauth=>$self->hostauth});
-        }        
+        }
         $self->app->log->debug("Fetching ".$pxReq->to_string);
         my $tx = $ctrl->ua->get($pxReq);
         if (my $res=$tx->success) {
@@ -183,7 +180,7 @@ sub addProxyRoute {
            $ctrl->tx->res($rp);
            $ctrl->rendered;
         }
-        else {     
+        else {
             my $error = $tx->error;
             $ctrl->render(
                 status => $error->{code},
@@ -232,10 +229,10 @@ sub signImgSrc {
             );
             if ($self->hostauth){
                 $newSrc->query({hostauth=>$self->hostauth});
-            }        
+            }
             $self->app->log->debug('img[src] in '.$attrs->{src});
             $attrs->{src} = $newSrc->to_string;
-            # I guess to to_xml method of the dom re-escapes the urls again ... 
+            # I guess to to_xml method of the dom re-escapes the urls again ...
             # without this they end up being double escaped
             url_unescape $attrs->{src};
             $self->app->log->debug('img[src] out '.$attrs->{src});

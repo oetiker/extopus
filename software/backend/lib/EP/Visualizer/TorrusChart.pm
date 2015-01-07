@@ -13,13 +13,14 @@ EP::Visualizer::TorrusChart - provide access to appropriate torrus pages via a p
  call = WALK_LEAVES
  call_arg_pl = nodeid => $R{'torrus.nodeid'}
  call_url = torrus.tree-url
-  
- skiprec_pl = $R{port.display} eq 'data_unavailable'  
+
+ skiprec_pl = $R{port.display} eq 'data_unavailable'
  savename_pl = $R{sap}
- 
- extra_params=cbqos-class-map-name,cbqos-parent-name                       
- 
- +VIEW_MAPPER_PL   
+
+ extra_params=cbqos-class-map-name,cbqos-parent-name
+ chart_type = browser
+
+ +VIEW_MAPPER_PL
  # use this section to remap the names provided by torrus to something
  # more 'end user friendly'. Return nothing to supress an entry
  return unless $R{'cbqos-parent-name'} =~ /^cos-po2-cos-SAP\@/;
@@ -27,7 +28,7 @@ EP::Visualizer::TorrusChart - provide access to appropriate torrus pages via a p
  for ($R{'cbqos-class-map-name'}){
      $label = 'Voice' if /-vo-/;
      $label = 'Business' if /-bu-/;
-     $label = 'Economy' if /-ec-/;   
+     $label = 'Economy' if /-ec-/;
  }
  my $kind;
  for ($R{nodeid}){
@@ -50,8 +51,7 @@ EP::Visualizer::TorrusChart - provide access to appropriate torrus pages via a p
 
 =head1 DESCRIPTION
 
-The proxy will only deliver pages with a valid hash. As it ships html pages,
-it can rewrite internal img refs to include appropriate hash keys.
+Provide a proxy service to access rrd charts.
 
 This visualizer will match any records that provide the C<call_url> property
 and don't match C<skip_url_pl>.
@@ -69,19 +69,13 @@ information on date format strings (according to unicode tr35).
  @@END(format)@@ End date of the chart
  @@VIEW@@ The selected view
 
-Example configuration snipped
-
-
 =cut
 
 =head1 METHODS
 
-all the methods from L<EP::Visualizer::base>. As well as these:               
+all the methods from L<EP::Visualizer::base>. As well as these:
 
 =cut
-
-use strict;
-use warnings;
 
 use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(url_unescape);
@@ -109,7 +103,7 @@ sub new {
     $self->addProxyRoute();
     if ($self->cfg->{mode}){
         $self->mode($self->cfg->{mode});
-    }    
+    }
     if ($self->cfg->{PRINTTEMPLATE_TX}){
         my $mt = Mojo::Template->new;
 #       $mt->prepend('my $self=shift; my %R = (%{$_[0]});');
@@ -122,7 +116,7 @@ sub new {
     }
     return $self;
 }
-   
+
 =head2 matchRecord(type,args)
 
 can we handle this type of record
@@ -142,13 +136,13 @@ sub matchRecord {
     my $leaves = $self->getLeaves($url,$cfg->{call}, { $cfg->{call_arg_pl}->($rec) });
     my @nodes;
     my $mapper = $self->cfg->{VIEW_MAPPER_PL}{_text};
-    for my $token (sort { 
+    for my $token (sort {
         if (defined $leaves->{$b}{precedence}){
-            ($leaves->{$b}{precedence} || 0) <=> ($leaves->{$a}{precedence} || 0) 
+            ($leaves->{$b}{precedence} || 0) <=> ($leaves->{$a}{precedence} || 0)
         } else {
             ($leaves->{$a}{'cbqos-object-descr'} || $leaves->{$a}{'comment'}) cmp ($leaves->{$b}{'cbqos-object-descr'} || $leaves->{$b}{'comment'})
         }
-    } keys %$leaves){        
+    } keys %$leaves){
         my $leaf = $leaves->{$token};
         next unless ref $leaf; # skip emtpy leaves
         my $nodeid = $leaf->{nodeid} or next; # skip leaves without nodeid
@@ -171,13 +165,14 @@ sub matchRecord {
 
         push @nodes, {
             src => $src->to_string,
-            title => $title
+            title => $title,
+            nodeid => $nodeid,
         },
     };
     my $template;
     if ($self->printtemplate){
         $template = $self->printtemplate->interpret($rec);
-    }    
+    }
     return {
         visualizer => 'chart',
         instance => $self->instance,
@@ -185,14 +180,16 @@ sub matchRecord {
         caption => $self->cfg->{caption}->($rec),
         arguments => {
             views => \@nodes,
-            template => $template
+            recId => $rec->{__epId},
+            template => $template,
+            treeUrl => $rec->{$self->cfg->{call_url}}
         }
     };
 }
 
 =head2 getLeaves(treeurl,nodeid)
 
-pull the list of leaves from torrus 
+pull the list of leaves from torrus
 
 =cut
 
@@ -207,7 +204,7 @@ sub getLeaves {
     if ($self->cfg->{extra_params}){
          $extraParams= ','.$self->cfg->{extra_params};
          $extraParams=~ s/\s+//g;
-    }    
+    }
     $url->query(
         view=> 'rpc',
         RPCCALL => $rpcCall,
@@ -216,7 +213,7 @@ sub getLeaves {
     );
     if (defined($self->hostauth)){
         $url->query({hostauth=>$self->hostauth});
-    }        
+    }
 
     $log->debug("getting ".$url->to_string);
     my $tx = Mojo::UserAgent->new->get($url);
@@ -279,7 +276,7 @@ sub addProxyRoute {
         $pxReq->query(nodeid=>$nodeid,view=>$view,Gwidth=>$width,Gheight=>$height,Gstart=>$start,Gend=>$end);
         if (defined($self->hostauth)){
             $pxReq->query({hostauth=>$self->hostauth});
-        }        
+        }
         if ($maxlinestep){
             $pxReq->query({Gmaxline=>1,Gmaxlinestep=>$maxlinestep});
         }
@@ -300,14 +297,14 @@ sub addProxyRoute {
                my $cache = EP::Cache->new(controller=>$ctrl,user=>($ctrl->app->cfg->{GENERAL}{default_user}|| $ctrl->session('epUser')));
                my $rec = $cache->getNode($recId);
                my $name = $self->cfg->{savename_pl} ? $self->cfg->{savename_pl}($rec) : $nodeid;
-               $name .= '-'.strftime('%Y-%m-%d',localtime($start)).'_'.strftime('%Y-%m-%d',localtime($end));               
+               $name .= '-'.strftime('%Y-%m-%d',localtime($start)).'_'.strftime('%Y-%m-%d',localtime($end));
                $rp->headers->add('Content-Disposition',"attachement; filename=$name.pdf");
            }
            $rp->body($body);
            $ctrl->tx->res($rp);
            $ctrl->rendered;
         }
-        else {     
+        else {
             my $error = $tx->error;
             $ctrl->render(
                 status => $error->{code},
@@ -317,6 +314,7 @@ sub addProxyRoute {
     });
     return;
 }
+
 
 1;
 

@@ -26,20 +26,17 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
      * { [
      *       { cmd: 'LINE', width: 1, color, '#ff00ff', legend: 'text' },
      *       { cmd: 'AREA', stack: 1, color, '#df33ff', legend: 'more text' },
-     *        ... 
+     *        ...
      *    ]
      * }
      * </pre>
-     */ 
+     */
     construct : function(instance,recId,chartDef) {
         this.base(arguments);
-        this._setLayout(new qx.ui.layout.VBox(10).set({
-            reversed: true
-        }));
+        this._setLayout(new qx.ui.layout.VBox(10));
         this.set({
             instance: instance,
-            recId: recId,
-            chartDef: chartDef
+            recId: recId
         });
         // the chart
         var d3Obj = this.__d3Obj = new qxd3.Svg();
@@ -47,11 +44,15 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         this.__chart = d3Obj.getD3SvgNode()
         .append("g")
             .attr("transform", "translate("+margin.left+","+margin.top+")");
-        
-        this.__d3 = d3Obj.getD3(); 
-                
+
+        this.__d3 = d3Obj.getD3();
+
         // add the svg object into the LoadingBox
         this._add(d3Obj,{flex: 1});
+
+        if (chartDef){
+            this.setChartDef(chartDef);
+        }
 
         // insert our global CSS once only
         var CSS = this.self(arguments).BASECSS;
@@ -62,7 +63,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
 
         this.__dataNode = [];
 
-        
+
         d3Obj.addListener('appear',this.setSize,this);
 
         d3Obj.addListener('resize',this.setSize,this);
@@ -84,7 +85,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         timer.start();
     },
 
-    statics : { 
+    statics : {
         /**
          * Some basic css for the D3 chart <code>browserchart</code>
          */
@@ -128,7 +129,6 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         view : {
             init     : null,
             nullable : true,
-            apply    : 'resetChart'
         },
         /**
          * amount of time in the chart (in seconds)
@@ -152,10 +152,10 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         trackCurrentTime: {
             init     : null,
             check    : 'Boolean',
-            nullable : true  
+            nullable : true
         },
         /**
-         * instance name of the table. This lets us identify ourselfs when requesting data from the server
+         * instance name of the table. This lets us identify ourselves when requesting data from the server
          */
         instance : {
             init     : null,
@@ -167,7 +167,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         recId: {
             init     : null,
             check    : 'Integer',
-            nullable : true 
+            nullable : true
          },
          /**
           * chart defs (chart definitions)
@@ -176,7 +176,6 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             init     : [],
             check    : 'Array',
             nullable : true,
-            apply    : 'resetChart'
         }
 
     },
@@ -221,7 +220,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 .orient("bottom")
                 .tickPadding(6)
                 .tickFormat(customTimeFormat);
-                
+
             return this.__xAxisPainter;
         },
 
@@ -246,28 +245,36 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
 
             return this.__yAxisPainter;
         },
-       
+
         getXScale: function(){
             if (this.__xScale) return this.__xScale;
             this.__xScale = this.__d3.time.scale();
             this.__xScale.domain([new Date(new Date().getTime() - 24*3600*1000),new Date()]);
             return this.__xScale;
         },
-        
+
         getYScale: function(){
             if (this.__yScale) return this.__yScale;
             this.__yScale = this.__d3.scale.linear();
             return this.__yScale;
         },
+
         getDataPainter: function(id){
             switch(this.getChartDef()[id].cmd){
-                case 'LINE': return this.getLinePainter();
-                case 'AREA': return this.getAreaPainter();
-                default: this.debug("invalid cmd");
+                case 'LINE':
+                    return this.getLinePainter();
+                    break;
+                case 'AREA':
+                    return this.getAreaPainter();
+                    break;
+                default:
+                    this.debug("invalid cmd");
+                    break;
             }
         },
+
         getLinePainter: function(){
-            if (this.__linePainter) return this.__linePainter;            
+            if (this.__linePainter) return this.__linePainter;
             var xScale = this.getXScale();
             var yScale = this.getYScale();
             this.__linePainter = this.__d3.svg.line()
@@ -276,7 +283,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 .y(function(d){ return yScale(d.y); });
             return this.__linePainter;
         },
-        
+
         getAreaPainter: function(){
             if (this.__areaPainter) return this.__areaPainter;
             var xScale = this.getXScale();
@@ -343,11 +350,17 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                     .attr("clip-path", "url(#"+this.__clipPathID+")")
                     .attr('stroke', chartDef.color)
                     .attr('stroke-width', 2)
-                    .attr("fill", "none");
+                    .attr("fill", "none")
+                    .attr("shape-rendering", 'crispEdges');
+                    break;
                 case 'AREA':
                     this.__dataNode[id] = dataArea.append("path")
                     .attr("clip-path", "url(#"+this.__clipPathID+")")
                     .attr("fill",chartDef.color);
+                    break;
+                default:
+                    this.debug("invalid cmd");
+                    break;
             }
             return this.__dataNode[id];
         },
@@ -369,9 +382,9 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 lc = this.__legendContainer = new qx.ui.core.Widget().set({
                     paddingLeft: margin.left
                 });
-                lc._setLayout(new qx.ui.layout.Flow(15,20));
+                lc._setLayout(new qx.ui.layout.Flow(15,5));
                 this._add(lc);
-            } 
+            }
             else {
                 lc = this.__legendContainer;
                 lc._removeAll();
@@ -463,6 +476,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             if (this.__data){
                 var maxValue = 0;
                 for(var i=0;i<this.getChartDef().length;i++){
+                    if (!this.__data.data[i]) continue;
                     this.__data.data[i].forEach(function(item){
                         if (item.y > maxValue && item.date >= dates[0] && item.date <= dates[1]){
                             maxValue = item.y;
@@ -472,16 +486,16 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 this.getYScale().domain([0,maxValue]).nice();
 
                 this.getYAxisNode().call(this.getYAxisPainter());
-               
+
                 for(var i=0;i<this.getChartDef().length;i++){
                     var node = this.getDataNode(i);
-                    if (node.data()[0]){
-                        node.attr("d",this.getDataPainter(i)); 
+                    if (node.data().length > 0){
+                        node.attr("d",this.getDataPainter(i));
                     }
                 }
             }
         },
-        
+
         redraw: function(){
             var dates = this.getXScale().domain();
             var start = Math.round(dates[0].getTime()/1000);
@@ -492,35 +506,37 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
 
             start -= extra;
             end += extra;
-            
-            
+
+
             this.yScaleRedraw();
 
             this.getXAxisNode().call(this.getXAxisPainter());
 
-            
+
             if (this.__fetchWait){
                 this.__fetchAgain = 1;
                 return;
             }
-            
+
             var rpc = ep.data.Server.getInstance();
             var that = this;
             this.__fetchWait = 1;
             var existingData = this.dataSlicer(start,end,dataStep);
-            rpc.callAsyncSmart(function(data){
-                var d3Data = that.__data = that.d3DataTransformer(data,dataStep);
-                
+            var needChartDef = this.getChartDef().length == 0;
+            rpc.callAsyncSmart(function(ret){
+
+                var d3Data = that.__data = that.d3DataTransformer(ret,dataStep);
+
                 var maxValue = 0;
 
-                for(var i=0;i<data.length;i++){
+                for(var i=0;i<ret.length;i++){
                     var dataNode = that.getDataNode(i);
                     if (existingData.prepend){
                         d3Data.data[i] = existingData.prepend[i].concat(d3Data.data[i],existingData.append[i]);
                     }
                     dataNode.data([d3Data.data[i]]);
                 }
-                
+
                 that.yScaleRedraw();
 
                 that.__fetchWait = 0;
@@ -538,6 +554,8 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 view     : this.getView()
             });
         },
+
+        /* figure out what data range we are missing and keep the bits we already have */
 
         dataSlicer: function(start,end,dataStep){
             var oldData = this.__data;
@@ -564,13 +582,21 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                     if (appendMode && date <= end ){
                         append[i].push(item);
                         if ( missingEnd > date) {
-                            missingEnd = date; 
+                            missingEnd = date;
                         }
                     }
-
                 }
             }
-            
+            /* lets make sure don't trip over ourselves */
+            if (missingStart > missingEnd){
+                if (appendMode){
+                    missingEnd = missingStart + dataStep;
+                }
+                else {
+                    missingStart = missingEnd - dataStep;
+                }
+            }
+
             return {
                 missingStart: missingStart,
                 missingEnd: missingEnd,
@@ -595,21 +621,22 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 d3Data[i] = [];
                 if (data[i].status != 'ok') continue;
                 var stack = this.getChartDef()[i].stack;
-                for (var ii=0;ii*minStep/data[i].step < data[i].data.length; ii++){
+                var len = data[i].values.length;
+                for (var ii=0;ii*minStep/data[i].step < len ; ii++){
                     var y0 = 0;
                     if (stack && i > 0 ){
                         y0 = d3Data[i-1][ii].y;
                     }
-                    var y = y0 + data[i].data[Math.round(ii*minStep/data[i].step)];
+                    var y = y0 + data[i].values[Math.round(ii*minStep/data[i].step)];
                     d3Data[i][ii] = {
                         y: y,
                         y0: y0,
-                        date: new Date((minStart+ii*minStep)*1000) 
+                        date: new Date((minStart+ii*minStep)*1000)
                     }
                 }
             }
             return {data:d3Data,dataStep: dataStep}
-        }    
+        }
     },
 
     destruct : function() {

@@ -15,10 +15,10 @@ qx.Class.define("ep.visualizer.BrowserChart", {
      * @param instance {String} unique key for visualizer
      * @param title {String} tab title
      * @param args  {Map} configuration arguments.
-     * @return {void} 
+     * @return {void}
      *
      * Setup the Chart view. The arguments map must look like this:
-     * 
+     *
      * <pre code='javascript'>
      * {
      *    recId: recordId,
@@ -47,7 +47,7 @@ qx.Class.define("ep.visualizer.BrowserChart", {
         var form = this._cfgForm = new ep.ui.FormBar([
             {
                 key: 'view',
-                widget: 'selectBox',                
+                widget: 'selectBox',
                 set: {
                     maxListHeight: null,
                     maxWidth      : 600,
@@ -59,7 +59,7 @@ qx.Class.define("ep.visualizer.BrowserChart", {
                 key: 'track',
                 widget: 'checkBox',
                 set: {
-                    label:  this.tr("track current time") 
+                    label:  this.tr("track current time")
                 }
             }
         ]);
@@ -71,23 +71,23 @@ qx.Class.define("ep.visualizer.BrowserChart", {
         this.setArgs(args);
     },
 
-    statics : { 
+    statics : {
         /**
          * The name of the visualizer is <code>chart</code>
          */
-        KEY : 'browserchart' 
+        KEY : 'browserchart'
     },
 
     members : {
         __titleContainer: null,
         __chart : null,
-       
+        __chartDefMap : null,
         /**
          * Update Chart Event Handler
          *
          * @param newArgs {var} new args
          * @param oldArgs {var} old args
-         * @return {void} 
+         * @return {void}
          */
         _updateChart: function(e){
             var d = e.getData();
@@ -95,6 +95,10 @@ qx.Class.define("ep.visualizer.BrowserChart", {
             this.__titleContainer.setEnabled(true);
             this.__chart.setView(d.view);
             this.__chart.setTrackCurrentTime(d.track);
+            if (this.__chartDefMap[d.view]){
+                this.__chart.setChartDef(this.__chartDefMap[d.view]);
+            }
+            this.__chart.resetChart();
             this.__chart.setSize();
         },
         /**
@@ -102,18 +106,25 @@ qx.Class.define("ep.visualizer.BrowserChart", {
          *
          * @param newArgs {var} new args
          * @param oldArgs {var} old args
-         * @return {void} 
+         * @return {void}
          */
         _applyArgs : function(newArgs, oldArgs) {
-            var sb = newArgs.views || [];
+            var chartDefMap = this.__chartDefMap = {};
+            var sb = newArgs.views.map(function(item){
+                chartDefMap[item.key] = item.chart;
+                return { title: item.title, key: item.key };
+            });
+
             var cfg = this._userCfg;
             this._cfgForm.setSelectBoxData('view',sb);
             this.base(arguments, newArgs, oldArgs);
             this.__chart.set({
                 recId: newArgs.recId,
                 instance: this.getInstance(),
-                chartDef: newArgs.chart
             });
+            if (qx.lang.Type.isArray(newArgs.chart)){
+                this.__chart.setChartDef(newArgs.chart);
+            }
             this._cfgForm.setData(cfg);
         }
     }

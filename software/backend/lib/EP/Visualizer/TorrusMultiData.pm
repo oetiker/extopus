@@ -45,12 +45,9 @@ It determines further processing by evaluation additional configurable attribute
 
 =head1 METHODS
 
-all the methods from L<EP::Visualizer::base>. As well as these:               
+all the methods from L<EP::Visualizer::base>. As well as these:
 
 =cut
-
-use strict;
-use warnings;
 
 use Mojo::Base 'EP::Visualizer::TorrusData';
 use EP::Exception qw(mkerror);
@@ -75,16 +72,16 @@ sub matchRecord {   ## no critic (RequireArgUnpacking)
     return $ret;
 }
 
-=head2 getWbName 
+=head2 getWbName
 
 determine title and file name for the export
 
 =cut
 
-sub getWbName {  
-    my $self = shift; 
+sub getWbName {
+    my $self = shift;
     my $cache = shift;
-    my $recId = shift;      
+    my $recId = shift;
     my $data = shift;
     return $data->{title};
 }
@@ -109,7 +106,7 @@ sub getData {
     my $cache = EP::Cache->new(controller=>$controller);
     for my $recId (@$recIds){
         my $data =  $self->SUPER::getData($controller,$recId,$end,$interval,1);
-        if ($data->{status}){       
+        if ($data->{status}){
             $stamp =  $data->{stepLabels}[0];
             push @ret, $data->{data}[0];
         } else {
@@ -124,7 +121,7 @@ sub getData {
     };
 }
 
-=head2 rpcService 
+=head2 rpcService
 
 provide rpc data access
 
