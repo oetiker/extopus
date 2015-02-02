@@ -78,6 +78,7 @@ sub matchRecord {
         my %chart;
         if ($ret->{status} eq 'ok'){
             for my $line ( @{$ret->{data}{rrgraph_args}} ){
+                # warn $line."\n";
                 if (my ($cmd,$width,$name,$color,$legend) =
                     ( $line =~ m/^(LINE|AREA)(\d*(?:\.\d+)?):([^#]+)(#[0-9a-f]+)(?::([^\\]*))?/ ) ){
                     $chart{$name} = {

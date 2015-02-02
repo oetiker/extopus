@@ -120,7 +120,7 @@ qx.Class.define("ep.visualizer.BrowserChart", {
             this.base(arguments, newArgs, oldArgs);
             this.__chart.set({
                 recId: newArgs.recId,
-                instance: this.getInstance(),
+                instance: this.getInstance()
             });
             if (qx.lang.Type.isArray(newArgs.chart)){
                 this.__chart.setChartDef(newArgs.chart);

@@ -128,7 +128,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
          */
         view : {
             init     : null,
-            nullable : true,
+            nullable : true
         },
         /**
          * amount of time in the chart (in seconds)
@@ -175,7 +175,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         chartDef: {
             init     : [],
             check    : 'Array',
-            nullable : true,
+            nullable : true
         }
 
     },
@@ -280,7 +280,8 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             this.__linePainter = this.__d3.svg.line()
                 .interpolate("step-before")
                 .x(function(d){ return xScale(d.date); })
-                .y(function(d){ return yScale(d.y); });
+                .y(function(d){ return yScale(d.y); })
+                .defined(function(d){ return d.d });
             return this.__linePainter;
         },
 
@@ -292,7 +293,8 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 .interpolate("step-before")
                 .x(function(d){ return xScale(d.date); })
                 .y0(function(d){ return yScale(d.y0);})
-                .y1(function(d){ return yScale(d.y); });
+                .y1(function(d){ return yScale(d.y); })
+                .defined(function(d){ return d.d });
             return this.__areaPainter;
         },
 
@@ -619,18 +621,21 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             var d3Data = [];
             for (var i=0; i<data.length;i++){
                 d3Data[i] = [];
+                var chartDef = this.getChartDef()[i];
                 if (data[i].status != 'ok') continue;
-                var stack = this.getChartDef()[i].stack;
+                var stack = chartDef.stack;
                 var len = data[i].values.length;
-                for (var ii=0;ii*minStep/data[i].step < len ; ii++){
+                var st = minStep/data[i].step;
+                for (var ii=0;ii*st < len ; ii++){
                     var y0 = 0;
                     if (stack && i > 0 ){
                         y0 = d3Data[i-1][ii].y;
                     }
-                    var y = y0 + data[i].values[Math.round(ii*minStep/data[i].step)];
+                    var yval = data[i].values[Math.round(ii*st)];
                     d3Data[i][ii] = {
-                        y: y,
+                        y: yval+y0,
                         y0: y0,
+                        d: yval !== null,
                         date: new Date((minStart+ii*minStep)*1000)
                     }
                 }
