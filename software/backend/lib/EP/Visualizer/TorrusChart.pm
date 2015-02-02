@@ -80,7 +80,7 @@ all the methods from L<EP::Visualizer::base>. As well as these:
 use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(url_unescape);
 use Mojo::URL;
-use Mojo::JSON;
+use Mojo::JSON qw(decode_json);
 
 use Mojo::UserAgent;
 use Mojo::Template;
@@ -90,7 +90,7 @@ use POSIX qw(strftime);
 
 has 'hostauth';
 has view => 'embedded';
-has json => sub {Mojo::JSON->new};
+
 has 'printtemplate';
 has 'mode' => 'traffic';
 has root => sub {'torrusChart_'.shift->instance};
@@ -219,7 +219,11 @@ sub getLeaves {
     my $tx = Mojo::UserAgent->new->get($url);
     if (my $res=$tx->success) {
         if ($res->headers->content_type =~ m'application/json'i){
-            my $ret = $self->json->decode($res->body);
+            my $ret = eval { decode_json($res->body) };
+            if ($@){
+                $log->error("Running $rpcCall on ".join(', ',map{"$_: $callParams->{$_}"} keys %$callParams).$@);
+                return {};
+            }
             if ($ret->{success}){
                 return $ret->{data};
             } else {

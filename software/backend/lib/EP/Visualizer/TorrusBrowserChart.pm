@@ -52,7 +52,7 @@ all the methods from L<EP::Visualizer::TorrusChart>. As well as these:
 
 use Mojo::Base 'EP::Visualizer::TorrusChart';
 use EP::Exception qw(mkerror);
-
+use Mojo::JSON qw(decode_json);
 
 =head2 matchRecord(type,args)
 
@@ -125,7 +125,7 @@ sub getChartData {
     if (my $res=$tx->success) {
         if ($res->headers->content_type =~ m'application/json'i){
             # $self->app->log->debug($res->body);
-            my $ret = eval { $self->json->decode($res->body) };
+            my $ret = eval { decode_json($res->body) };
             if ($@){
                 return {
                     status => 'failed',

@@ -53,7 +53,8 @@ all the methods from L<EP::Visualizer::base>. As well as these:
 use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(url_unescape);
 use Mojo::URL;
-use Mojo::JSON;
+use Mojo::JSON qw(decode_json);
+use Data::Dumper;
 
 use Mojo::UserAgent;
 use Mojo::Template;
@@ -63,8 +64,6 @@ use POSIX qw(strftime);
 
 has 'hostauth';
 has view => 'embedded';
-
-has json => sub {Mojo::JSON->new};
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -157,6 +156,7 @@ sub rpcService {
             Gend => int($end),
             Gstep =>int($step || 1),
             Gmaxrows => 4000,
+            DATAONLY => 1,
             nodeid=>$item->{node_id}.'//'.$view
         );
         $self->app->log->debug($url->to_string);
@@ -167,36 +167,42 @@ sub rpcService {
         if (my $res=$tx->success) {
             if ($res->headers->content_type =~ m'application/json'i){
                 # $self->app->log->debug($res->body);
-                my $ret = $self->json->decode($res->body);
+                my $ret = eval { decode_json($res->body) };
+                if ($@){
+                    $self->log->error("Error JSON Decode:".$@);
+                    push @$return, {
+                        status => 'failed',
+                        message => "JSON Decode Problem $url: $@"
+                    };
+                    next;
+                }
                 if ($ret->{success}){
                     push @$return, {
                         status => 'ok',
                         start => $ret->{data}{start},
                         step => $ret->{data}{step},
                         values => [ map { $dataExtract ? $dataExtract->(@$_) : $_->[0] } @{$ret->{data}{data}} ],
-                    }
-                }
-                else {
-                    push @$return, {
-                        status => 'failed',
-                        message => "Torrus Problem $url: $ret->{error}"
                     };
+                    next;
                 }
-            }
-            else {
+                $self->log->error("Torrus Problem $url: $ret->{error}");
                 push @$return, {
-                        status => 'failed',
-                        message => "Faild Fetch $url: Data Type ".$res->headers->content_type,
+                    status => 'failed',
+                    message => "Torrus Problem $url: $ret->{error}"
                 };
+                next;
             }
-        }
-        else {
-            my $error = $tx->error;
             push @$return, {
-                        status => 'faild',
-                        message => "Faild Fetch $url: $error->{message}",
+                status => 'failed',
+                message => "Faild Fetch $url: Data Type ".$res->headers->content_type,
             };
+            next;
         }
+        my $error = $tx->error;
+        push @$return, {
+            status => 'failed',
+            message => "Faild Fetch $url: $error->{message}",
+        };
     }
     return $return
 }

@@ -51,7 +51,7 @@ all the methods from L<EP::Visualizer::base>. As well as these:
 use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(url_unescape);
 use Mojo::URL;
-use Mojo::JSON;
+use Mojo::JSON qw(decode_json);
 use Mojo::UserAgent;
 use Mojo::Template;
 
@@ -68,7 +68,7 @@ has 'hostauth';
 has root => sub {'torrusCSV_'.shift->instance };
 
 has view => 'embedded';
-has json => sub { Mojo::JSON->new};
+
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -279,7 +279,14 @@ sub getData {
             my $data;
             if (my $res=$tx->success) {
                 if ($res->headers->content_type =~ m'application/json'i){
-                    my $ret = $self->json->decode($res->body);
+                    my $ret = eval { decode_json($res->body) };
+                    if ($@){
+                        $self->app->log->error("Fetching ".$url->to_string.": ".$@);
+                        return {
+                           status => 0,
+                           error => $@
+                        };
+                    }
                     if ($ret->{success}){
                         my $key = (keys %{$ret->{data}})[0];
                         $data{$subNode} = rrd2float($ret->{data}{$key});

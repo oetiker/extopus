@@ -68,7 +68,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
 
         d3Obj.addListener('resize',this.setSize,this);
 
-        var timer = this.__timer = new qx.event.Timer(60 * 1000);
+        var timer = this.__timer = new qx.event.Timer(5 * 1000);
 
         d3Obj.addListener('disappear', function() {
             timer.stop()
@@ -197,6 +197,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
         __clipPath: null,
         __chartWidth: null,
         __fetchWait: null,
+        __fetchAgain: null,
         __legendContainer: null,
         __d3Obj: null,
         __data: null,
@@ -361,7 +362,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                     .attr("fill",chartDef.color);
                     break;
                 default:
-                    this.debug("invalid cmd");
+                    this.debug("unsupported cmd:" + chartDef.cmd);
                     break;
             }
             return this.__dataNode[id];
@@ -469,8 +470,8 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 dates[1] = new Date();
                 dates[0] = new Date(dates[1].getTime() - interval);
                 this.getXScale().domain(dates);
+                this.redraw();
             }
-            this.redraw();
         },
 
         yScaleRedraw: function(){
@@ -502,7 +503,7 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             var dates = this.getXScale().domain();
             var start = Math.round(dates[0].getTime()/1000);
             var end = Math.round(dates[1].getTime()/1000);
-            var dataStep = (end-start )/ this.__chartWidth;
+            var dataStep = Math.round((end-start)/ this.__chartWidth);
             var extra = Math.round(end - start );
             var d3 = this.__d3;
 
@@ -520,11 +521,16 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 return;
             }
 
+            var existingData = this.dataSlicer(start,end,dataStep);
+            if (existingData.missingStart == existingData.missingEnd){
+                return;
+            }
+
+            var needChartDef = this.getChartDef().length == 0;
+
             var rpc = ep.data.Server.getInstance();
             var that = this;
             this.__fetchWait = 1;
-            var existingData = this.dataSlicer(start,end,dataStep);
-            var needChartDef = this.getChartDef().length == 0;
             rpc.callAsyncSmart(function(ret){
 
                 var d3Data = that.__data = that.d3DataTransformer(ret,dataStep);
@@ -540,7 +546,6 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
                 }
 
                 that.yScaleRedraw();
-
                 that.__fetchWait = 0;
                 // if we skipped one, lets redraw again just to be sure we got it all
                 if (this.__fetchAgain == 1){
@@ -565,38 +570,38 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
             var missingEnd = end;
             var prepend = [];
             var append = [];
-            var keepData = oldData && Math.round(oldData.dataStep) == Math.round(dataStep);
+            var keepData = oldData != null && typeof(oldData) == 'object' && Math.round(oldData.dataStep) == Math.round(dataStep);
             if (!keepData) {
                 return { missingStart: missingStart, missingEnd: missingEnd};
             }
-            var prependMode = keepData && oldData.data[0][0].date.getTime()/1000 <= start;
-            var appendMode = keepData && oldData.data[0][oldData.data[0].length-1].date.getTime()/1000 >= end;
+            var oldStart = oldData.data[0][0].date.getTime()/1000;
+            var oldEnd = oldData.data[0][oldData.data[0].length-1].date.getTime()/1000;
+            // prepend the existing data to the new data
+            var prependMode = oldStart <= start && oldEnd >= start;
+            var appendMode = oldEnd >= end && oldStart <= end;
             for (var i=0;i<oldData.data.length;i++){
                 append[i] = [];
                 prepend[i] = [];
-                for (var ii=0;ii<oldData.data[i].length;ii++){
+                var len = oldData.data[i].length;
+                for (var ii=0;ii<len;ii++){
                     var item = oldData.data[i][ii];
                     var date = item.date.getTime()/1000;
                     if ( prependMode && date >= start ) {
                         prepend[i].push(item);
-                        missingStart = date;
+                        missingStart = date+dataStep;
                     }
                     if (appendMode && date <= end ){
                         append[i].push(item);
-                        if ( missingEnd > date) {
-                            missingEnd = date;
+                        if ( date < missingEnd ) {
+                            missingEnd = date-dataStep;
                         }
                     }
                 }
             }
             /* lets make sure don't trip over ourselves */
             if (missingStart > missingEnd){
-                if (appendMode){
-                    missingEnd = missingStart + dataStep;
-                }
-                else {
-                    missingStart = missingEnd - dataStep;
-                }
+                this.debug("missingStart:"+missingStart+" missingEnd:"+missingEnd);
+                missingEnd = missingStart;
             }
 
             return {
@@ -609,33 +614,40 @@ qx.Class.define("ep.visualizer.chart.BrowserChart", {
 
         d3DataTransformer: function(data,dataStep){
             var d3 = this.__d3;
-            var minStep = data[0].step;
-            var minStart = data[0].start;
+            if (data == null || typeof(data) != 'object' || data[0] == null){
+                return null;
+            }
+            var minStep = 24*3600;
+            var minStart = (new Date).getTime()/1000;
             data.forEach(function(d){
                 if (d.status != 'ok') return;
-                if (minStep > d.step){
+                if (minStep == null || minStep > d.step){
                     minStep = d.step;
                     minStart = d.start;
                 }
             });
+
             var d3Data = [];
             for (var i=0; i<data.length;i++){
                 d3Data[i] = [];
                 var chartDef = this.getChartDef()[i];
-                if (data[i].status != 'ok') continue;
+                if (data[i].status != 'ok') {
+                    data[i].values = [NaN];
+                    data[i].step = 3600*24;
+                }
                 var stack = chartDef.stack;
                 var len = data[i].values.length;
                 var st = minStep/data[i].step;
                 for (var ii=0;ii*st < len ; ii++){
                     var y0 = 0;
-                    if (stack && i > 0 ){
+                    if (stack && i > 0 && d3Data[i-1][ii] != null && typeof(d3Data[i-1][ii]) == 'object'){
                         y0 = d3Data[i-1][ii].y;
                     }
-                    var yval = data[i].values[Math.round(ii*st)];
+                    var yval = parseFloat(data[i].values[Math.round(ii*st)]);
                     d3Data[i][ii] = {
-                        y: yval+y0,
+                        y: (isNaN(yval) ? 0 : yval) +y0,
                         y0: y0,
-                        d: yval !== null,
+                        d: !isNaN(yval),
                         date: new Date((minStart+ii*minStep)*1000)
                     }
                 }

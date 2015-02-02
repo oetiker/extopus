@@ -37,6 +37,16 @@ a pointer to the application object
 
 has 'app';
 
+=head2 log
+
+log object
+
+=cut
+
+has log => sub {
+    shift->app->log;
+};
+
 =head2 instance
 
 the name of the instance
@@ -71,7 +81,7 @@ used on extopus side. It returns either undef (no match) or an array of maps:
 
 sub matchRecord {
     my $self= shift;
-    my $rec = shift;    
+    my $rec = shift;
     return;
 }
 
@@ -83,7 +93,7 @@ Can the Visualizer deal with multiple records of the given type?
 
 sub matchMultiRecord {
     my $self= shift;
-    my $rec = shift;    
+    my $rec = shift;
     return;
 }
 
@@ -115,7 +125,7 @@ rpcService wants to provide. The config option is called caption_live.
 sub caption_live {
     my $self = shift;
     my $rec = shift;
-    
+
     return $self->caption($rec) unless $self->cfg->{caption_live};
 
     my $conf = shift;
@@ -137,7 +147,7 @@ sub rpcService {  ## no critic (RequireArgUnpacking)
     my $self = shift;
     my $controller = shift;
     my @args = @_;
-    die "sorry, no rpc service support";   
+    die "sorry, no rpc service support";
 }
 
 =head2 calcHash(ref)
@@ -148,7 +158,7 @@ Returns a hash for authenticating access to the ref
 
 sub calcHash {   ## no critic (RequireArgUnpacking)
     my $self = shift;
-    # $self->log->debug('HASH '.join(',',@_));    
+    # $self->log->debug('HASH '.join(',',@_));
     my $hash = hmac_sha1_sum(join('::',@_),$self->app->secrets->[0]);
     return $hash;
 }

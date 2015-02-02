@@ -39,7 +39,7 @@ information.
 use Mojo::Base -base;
 use Carp;
 use DBI;
-use Mojo::JSON;
+use Mojo::JSON qw(decode_json encode_json);
 use Encode;
 use EP::Exception qw(mkerror);
 
@@ -159,7 +159,6 @@ has 'dbhPe';
 
 has encodeUtf8  => sub { find_encoding('utf8') };
 has tree        => sub { [] };
-has json        => sub { Mojo::JSON->new };
 
 
 =head2 B<new>(I<config>)
@@ -324,7 +323,7 @@ sub add {
     }
     $self->log->debug("keygen $rawNodeId => $nodeId");
     eval {
-        $dbc->do("INSERT INTO node (rowid,data) VALUES (?,?)",{},$nodeId,$self->json->encode($nodeData));
+        $dbc->do("INSERT INTO node (rowid,data) VALUES (?,?)",{},$nodeId,encode_json($nodeData));
     };
     if ($@){
         $self->log->warn("$@");
@@ -433,10 +432,9 @@ sub getNodes {
     my $dbh = $self->dbhCa;
     my $sth = $dbh->prepare("SELECT docid,data FROM node WHERE data MATCH ? LIMIT ? OFFSET ?");
     $sth->execute($self->encodeUtf8->encode($expression),$limit,$offset);
-    my $json = $self->json;
     my @return;
     while (my $row = $sth->fetchrow_hashref){
-        my $data = $json->decode($row->{data});
+        my $data = decode_json($row->{data});
         my $entry = { map { $_ => $data->{$_} } @{$self->searchCols} };
         $entry->{__epId} = $row->{docid};
         push @return, $entry;
@@ -455,8 +453,7 @@ sub getNode {
     my $nodeId = shift;
     my $dbh = $self->dbhCa;
     my @row = $dbh->selectrow_array("SELECT data FROM node WHERE docid = ?",{},$nodeId);
-    my $json = $self->json;
-    my $ret = $json->decode($row[0]);
+    my $ret = decode_json($row[0]);
     $ret->{__epId} = $nodeId;
     return $ret;
 }
@@ -493,7 +490,7 @@ sub getBranch {
         $branch->[1] =~ s/^{SORT:.+?}//;
         my @leaves;
         while (my ($docid,$row) = $sth->fetchrow_array()){
-            my $data = $self->json->decode($row);
+            my $data = decode_json($row);
             $data->{__epId} = $docid;
             push @leaves, [ map { $data->{$_} } @{$self->treeCols} ];
         }
@@ -556,7 +553,7 @@ SQL_END
                 lb => $row->{label}, # label
                 login => $row->{login}, # owner - login
                 private => $row->{private}, # private
-                cfg => $self->json->decode($row->{cf}), #cfg
+                cfg => decode_json($row->{cf}), #cfg
                 mine => $row->{mine},
             };
         }
@@ -583,7 +580,7 @@ Returns:
 
 sub saveDash  {
     my $self = shift;
-    my $cfg = $self->json->encode(shift);
+    my $cfg = encode_json(shift);
     my $label = shift;
     my $id = shift;
     my $updateTime = shift;

@@ -38,7 +38,6 @@ use EP::Exception qw(mkerror);
 has 'hostauth';
 #has 'view' => 'expanded-dir-html';
 has view    => 'iframe-rrd';
-has json    => sub {Mojo::JSON->new};
 
 
 sub new {
@@ -109,7 +108,11 @@ sub getLeaves {
     my $tx = Mojo::UserAgent->new->get($url);
     if (my $res=$tx->success) {
         if ($res->headers->content_type =~ m'application/json'i){
-            my $ret = $self->json->decode($res->body);
+            my $ret = eval { decode_json($res->body) };
+            if ($@){
+                $log->error("JSON decode Problem:".$@);
+                return {};
+            }
             if ($ret->{success}){
                 return $ret->{data};
             } else {
