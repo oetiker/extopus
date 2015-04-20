@@ -208,7 +208,7 @@ sub getData {
     my $interval = shift;
     my $count = shift;
     my @return;
-    my $cache = EP::Cache->new(controller=>$controller);
+    my $cache = EP::Cache->new(controller=>$controller,user=>($controller->app->cfg->{GENERAL}{default_user}|| $controller->session('epUser')));
     my $rec = $cache->getNode($recId);
     my $treeUrl = $rec->{'torrus.tree-url'};
     my $nodeId = $rec->{'torrus.nodeid'};
@@ -387,7 +387,7 @@ sub addProxyRoute {
         }
         my $rp = Mojo::Message::Response->new;
         $rp->code(200);
-        my $cache = $controller->cache;
+        my $cache = EP::Cache->new(controller=>$controller,user=>($controller->app->cfg->{GENERAL}{default_user}|| $controller->session('epUser')));
         my $wbname = $self->getWbName($cache,$recId,$data);
 
         my $name = $wbname . ' - '.strftime('%Y-%m-%d',localtime($end));
