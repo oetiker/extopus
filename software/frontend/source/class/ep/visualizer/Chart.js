@@ -200,6 +200,10 @@ qx.Class.define("ep.visualizer.Chart", {
             var start = end - chart.getTimeRange();
             var baseUrl = chart.getBaseUrl();
             var url = baseUrl + '&width=1000&height=500&start=' + start + '&end=' + end + '&format=.pdf';
+            var maxInterval = chart.getMaxInterval();
+            if (maxInterval){
+                url += '&maxlinestep=' + maxInterval
+            }
             var win = qx.bom.Window.open(url, '_blank');
 
             qx.bom.Event.addNativeListener(win, 'load', function(e) {
@@ -231,14 +235,23 @@ qx.Class.define("ep.visualizer.Chart", {
             var chart = this.__chart;
             var end = chart.getEndTime() || Math.round(new Date().getTime() / 1000);
             var start = end - chart.getTimeRange();
+            var maxInterval = chart.getMaxInterval();
             var that = this;
             var map = {
                 'SRC\\((\\d+)x(\\d+)\\)' : function(str,width,height) {
-                    return chart.getBaseUrl() + '&width=' + width + '&height=' + height + '&start=' + start + '&end=' + end + '&format=.png';
+                    var url = chart.getBaseUrl() + '&width=' + width + '&height=' + height + '&start=' + start + '&end=' + end + '&format=.png';
+                    if (maxInterval){
+                        url += '&maxlinestep=' + maxInterval
+                    }
+                    return url;
                 },
 
                 'SRC' : function() {
-                    return chart.getBaseUrl() + '&width=800&height=350&start=' + start + '&end=' + end + '&format=.png';
+                    var url = chart.getBaseUrl() + '&width=800&height=350&start=' + start + '&end=' + end + '&format=.png';
+                    if (maxInterval){
+                        url += '&maxlinestep=' + maxInterval
+                    }
+                    return url;
                 },
 
                 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String/replace#Specifying_a_function_as_a_parameter
