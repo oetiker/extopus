@@ -17,7 +17,7 @@
 AUTOMAKE_OPTIONS=foreign
 CLASS=ep
 
-EXTRA_DIST = config.json Manifest.json source/index.html $(shell find source/class/ -name "*.js") $(wildcard source/translation/*.po source/resource/*/*.png  source/resource/*/*.gif)
+EXTRA_DIST = config.json Manifest.json source/index.html $(shell find source/class/ -name "*.js") $(shell find extra/ -type f)  $(wildcard source/translation/*.po source/resource/*/*.png  source/resource/*/*.gif)
 
 if BUILD_QOOXDOO_APP
 
