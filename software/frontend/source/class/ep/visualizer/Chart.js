@@ -85,6 +85,8 @@ qx.Class.define("ep.visualizer.Chart", {
                 cfg : {
                     structure : [ 
                         { title : 'no Max',     key : 0                  },
+                        { title : '5 Min Max', key : 600               },
+                        { title : '30 Min Max', key : 1800               },
                         { title : '1 Hour Max', key : 3600               },
                         { title : '6 Hour Max', key : 6 * 3600           },
                         { title : '1 Day Max',  key : 24 * 3600          }
