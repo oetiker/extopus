@@ -18,7 +18,8 @@ qx.Class.define('ep.data.Server', {
         this.set({
             timeout     : 15000,
             url         : 'jsonrpc/',
-            serviceName : 'ep'
+            serviceName : 'ep',
+            protocol: 'qx1' 
         });
     },
 
