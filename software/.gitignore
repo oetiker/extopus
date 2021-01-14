@@ -13,3 +13,4 @@ thirdparty/
 backend/public/index.html
 backend/public/resource/
 backend/public/script/
+*.gz
