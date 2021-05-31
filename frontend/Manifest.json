@@ -1,0 +1,30 @@
+{
+  "info": {
+    "name": "extopus",
+    "summary": "Extopus - Aggregating Monitor",
+    "description": "A generic frontend to monitoring applications.",
+    "homepage": "http://www.extopus.org/",
+    "license": "GPLv3",
+    "authors": [
+      {
+        "name": "Tobias Oetiker (oetiker)",
+        "email": "tobi@oetiker.ch"
+      }
+    ],
+    "version": "0.6.7"
+  },
+  "provides": {
+    "namespace": "ep",
+    "encoding": "utf-8",
+    "class": "source/class",
+    "resource": "source/resource",
+    "translation": "source/translation"
+  },
+  "$schema": "https://qooxdoo.org/schema/Manifest-1-0-0.json",
+  "requires": {
+    "@qooxdoo/compiler": "^1.0.0",
+    "@qooxdoo/framework": "^6.0.0",
+    "oetiker/CanvasCell": "^1.0.4",
+    "oetiker/QxD3": "^0.4.1"
+  }
+}

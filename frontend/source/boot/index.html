@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="icon" type="image/x-icon" class="js-site-favicon" href="${resourcePath}${appPath}favicon.ico">
+  <title>${appTitle}</title>
+</head>
+<body>
+    <div id="op-loading" style="position: absolute; left: 50%;top: 50%; transform: translate(-50%,-50%); text-align: center;font-family: sans-serif;">
+        <div id="op-percent"></div>
+    </div>
+    <script>
+    (function(){
+        let splash = document.getElementById('op-loading');
+        let output = document.getElementById('op-percent');
+        window.QOOXDOO_SPLASH_SCREEN = {
+            loadBegin: function(callback) {
+                callback();
+            },
+
+            loadComplete: function(callback) {
+                output = null;
+                if (splash.remove) {
+                  splash.remove();
+                }
+                else if (splash.parentNode) {
+                  splash.parentNode.removeChild(splash);
+                }
+                splash = null;
+                callback();
+            },
+
+            scriptLoaded: function(options, callback) {
+                let out = Math.round(options.numScriptsLoaded/options.numScripts*100) + '% ';
+                output.innerHTML = out;
+                callback();
+            },
+            getSettings: function() {
+                return {
+                    isLoadChunked: true,
+                    loadChunkSize: 1
+                };
+            }
+        };
+    }());
+    </script>
+    ${preBootJs}
+    <script type="text/javascript" src="${appPath}index.js?version=#VERSION#"></script>
+</body>
+</html>
