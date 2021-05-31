@@ -1,0 +1,46 @@
+{
+  "$schema": "https://qooxdoo.org/schema/compile-1-0-0.json",
+  "targets": [
+    {
+      "type": "source",
+      "outputPath": "compiled/source",
+      "bundle": {
+        "include": "qx.*"
+      },
+      "babelOptions": {
+        "targets": {
+          "chrome": "80",
+          "firefox": "74",
+          "edge": "18",
+          "safari": "13"
+        }
+      }
+    },
+    {
+      "type": "build",
+      "outputPath": "compiled/build",
+      "babelOptions": {
+        "targets": {
+          "chrome": "80",
+          "firefox": "74",
+          "edge": "18",
+          "safari": "13"
+        }
+      }
+    }
+  ],
+  "defaultTarget": "source",
+  "locales": ["en","de","fr","it"],
+  "environment": {
+      "qx.icontheme": "Tango"
+  },
+  "applications": [
+    {
+      "class": "ep.Application",
+      "theme": "ep.theme.Theme",
+      "title": "Extopus",
+      "name": "ep",
+      "bootPath": "source/boot"
+    }
+  ]
+}

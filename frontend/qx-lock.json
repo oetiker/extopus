@@ -1,0 +1,21 @@
+{
+  "libraries": [
+    {
+      "library_name": "CanvasCell",
+      "library_version": "1.0.4",
+      "path": "qx_packages/oetiker_CanvasCell_v1_0_4",
+      "uri": "oetiker/CanvasCell",
+      "repo_name": "oetiker/CanvasCell",
+      "repo_tag": "v1.0.4"
+    },
+    {
+      "library_name": "QxD3",
+      "library_version": "0.4.1",
+      "path": "qx_packages/oetiker_QxD3_v0_4_1",
+      "uri": "oetiker/QxD3",
+      "repo_name": "oetiker/QxD3",
+      "repo_tag": "v0.4.1"
+    }
+  ],
+  "version": "2.1.0"
+}

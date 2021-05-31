@@ -1,0 +1,143 @@
+#: ep/ui/Desktop.js
+msgid "Tree"
+msgstr ""
+
+#: ep/ui/SearchView.js
+msgid "Search"
+msgstr ""
+
+#: ep/ui/Desktop.js
+msgid "Extopus - the Opensource Monitoring Aggregator // #VERSION# // &copy; #YEAR# by OETIKER+PARTNER AG"
+msgstr ""
+
+#: ep/ui/DashServerMenu.js
+msgid "Library"
+msgstr ""
+
+#: ep/ui/SearchView.js
+msgid "wor* AND ( this OR that )"
+msgstr ""
+
+#: ep/ui/MsgBox.js
+msgid "Cancel"
+msgstr ""
+
+#: ep/ui/MsgBox.js
+msgid "Apply"
+msgstr ""
+
+#: ep/ui/MsgBox.js
+msgid "OK"
+msgstr ""
+
+#: ep/ui/MsgBox.js
+msgid "RPC Error %1"
+msgstr ""
+
+#: ep/ui/MsgBox.js
+msgid "%1 (Error Code %2)%3"
+msgstr ""
+
+#: ep/ui/ViewMenu.js
+msgid "Breakout Window"
+msgstr ""
+
+#: ep/ui/ViewMenu.js
+msgid "Show Direkt Link"
+msgstr ""
+
+#: ep/ui/ViewMenu.js
+msgid "Add to Dashboard"
+msgstr ""
+
+#: ep/ui/CopyBuffer.js
+msgid "Press [ctrl]+[c] to copy selection."
+msgstr ""
+
+#: ep/ui/DashBoard.js
+msgid "Copy DashBoard"
+msgstr ""
+
+#: ep/ui/DashBoard.js
+msgid "This is not your Dashboard. I have created a Copy for you"
+msgstr ""
+
+#: ep/ui/DashBoard.js
+msgid "Dashboard Name"
+msgstr ""
+
+#: ep/visualizer/Chart.js
+msgid "Save PDF"
+msgstr ""
+
+#: ep/visualizer/Chart.js
+msgid "Print"
+msgstr ""
+
+#: ep/visualizer/AbstractData.js
+msgid "File"
+msgstr ""
+
+#: ep/visualizer/BrowserChart.js
+msgid "track current time"
+msgstr ""
+
+#: ep/ui/DashConfig.js
+msgid "Select a location for the visualizer."
+msgstr ""
+
+#: ep/ui/DashConfig.js
+msgid "Select a location by dragging the mouse. Enlarge the grid by taping the [+] buttons."
+msgstr ""
+
+#: ep/ui/DashConfig.js
+msgid "Grow Dashboard"
+msgstr ""
+
+#: ep/ui/DashMenu.js
+msgid "Rename"
+msgstr ""
+
+#: ep/ui/DashMenu.js
+msgid "Edit"
+msgstr ""
+
+#: ep/ui/DashMenu.js
+msgid "Close"
+msgstr ""
+
+#: ep/ui/DashMenu.js
+msgid "Delete"
+msgstr ""
+
+#: ep/ui/DashMenu.js
+msgid "Delete Dashboard"
+msgstr ""
+
+#: ep/ui/DashMenu.js
+msgid "Permanantly delete this dashboard from the server."
+msgstr ""
+
+#: ep/ui/FormBar.js
+msgid "dd.MM.yyyy"
+msgstr ""
+
+#: ep/visualizer/AbstractData.js
+msgid "Save CSV"
+msgstr ""
+
+#: ep/visualizer/AbstractData.js
+msgid "Save Excel 2003 XLS"
+msgstr ""
+
+#: ep/visualizer/AbstractData.js
+msgid "Save Excel 2010 XLSX"
+msgstr ""
+
+#: ep/visualizer/data/MultiDataTable.js
+msgid "Cached Title"
+msgstr ""
+
+#: ep/ui/LoadingBox.js
+msgid "no data available"
+msgstr ""
