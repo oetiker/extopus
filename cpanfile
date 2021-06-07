@@ -1,5 +1,5 @@
-requires 'Mojolicious';
-requires 'Mojolicious::Plugin::Qooxdoo';
+requires 'Mojolicious', '>= 9.19';
+requires 'Mojolicious::Plugin::Qooxdoo', '>= 1.0.12';
 requires 'Mojo::Server::FastCGI';
 requires 'Config::Grammar';
 requires 'JSON::XS';

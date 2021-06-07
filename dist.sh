@@ -12,12 +12,13 @@ echo >> CHANGES.new
 cat CHANGES >> CHANGES.new && mv CHANGES.new CHANGES
 $EDITOR CHANGES
 rm -f config.status
+export PLENV_VERSION=
 ./bootstrap
 for x in 5.32.0; do
   xs=$(echo $x| sed 's/.[0-9]*$//')
   test thirdparty/cpanfile-$xs.snapshot -nt cpanfile && continue
   echo "Building dependencies for perl $x ($xs)"
-  plenv shell $x
+  export PLENV_VERSION=$x
   ./configure 
   cd thirdparty
   mv lib .lib-off
@@ -31,6 +32,7 @@ for x in 5.32.0; do
   mv .lib-off lib
   cd ..
 done
+export PLENV_VERSION=
 ./configure
 make
 make test

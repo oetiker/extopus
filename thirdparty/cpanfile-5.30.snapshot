@@ -600,8 +600,8 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Mojolicious 6.43
-  Mojolicious-8.52
-    pathname: S/SR/SRI/Mojolicious-8.52.tar.gz
+  Mojolicious-9.19
+    pathname: S/SR/SRI/Mojolicious-9.19.tar.gz
     provides:
       Mojo undef
       Mojo::Asset undef
@@ -630,7 +630,6 @@ DISTRIBUTIONS
       Mojo::Home undef
       Mojo::IOLoop undef
       Mojo::IOLoop::Client undef
-      Mojo::IOLoop::Delay undef
       Mojo::IOLoop::Server undef
       Mojo::IOLoop::Stream undef
       Mojo::IOLoop::Subprocess undef
@@ -670,11 +669,12 @@ DISTRIBUTIONS
       Mojo::UserAgent::Transactor undef
       Mojo::Util undef
       Mojo::WebSocket undef
-      Mojolicious 8.52
+      Mojolicious 9.19
       Mojolicious::Command undef
       Mojolicious::Command::Author::cpanify undef
       Mojolicious::Command::Author::generate undef
       Mojolicious::Command::Author::generate::app undef
+      Mojolicious::Command::Author::generate::dockerfile undef
       Mojolicious::Command::Author::generate::lite_app undef
       Mojolicious::Command::Author::generate::makefile undef
       Mojolicious::Command::Author::generate::plugin undef
@@ -698,6 +698,7 @@ DISTRIBUTIONS
       Mojolicious::Plugin::HeaderCondition undef
       Mojolicious::Plugin::JSONConfig undef
       Mojolicious::Plugin::Mount undef
+      Mojolicious::Plugin::NotYAMLConfig undef
       Mojolicious::Plugin::TagHelpers undef
       Mojolicious::Plugins undef
       Mojolicious::Renderer undef
@@ -717,16 +718,6 @@ DISTRIBUTIONS
       IO::Socket::IP 0.37
       Sub::Util 1.41
       perl 5.016
-  Mojolicious-Plugin-Qooxdoo-1.0.11
-    pathname: O/OE/OETIKER/Mojolicious-Plugin-Qooxdoo-1.0.11.tar.gz
-    provides:
-      Mojolicious::Plugin::Qooxdoo 1.000011
-      Mojolicious::Plugin::Qooxdoo::JsonRpcController 1.000011
-    requirements:
-      CPAN::Uploader 0
-      ExtUtils::MakeMaker 0
-      Mojolicious 8.26
-      perl 5.022000
   Mozilla-CA-20200520
     pathname: A/AB/ABH/Mozilla-CA-20200520.tar.gz
     provides:

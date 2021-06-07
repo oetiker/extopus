@@ -600,8 +600,8 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Mojolicious 6.43
-  Mojolicious-9.18
-    pathname: S/SR/SRI/Mojolicious-9.18.tar.gz
+  Mojolicious-9.19
+    pathname: S/SR/SRI/Mojolicious-9.19.tar.gz
     provides:
       Mojo undef
       Mojo::Asset undef
@@ -669,7 +669,7 @@ DISTRIBUTIONS
       Mojo::UserAgent::Transactor undef
       Mojo::Util undef
       Mojo::WebSocket undef
-      Mojolicious 9.18
+      Mojolicious 9.19
       Mojolicious::Command undef
       Mojolicious::Command::Author::cpanify undef
       Mojolicious::Command::Author::generate undef
@@ -718,10 +718,10 @@ DISTRIBUTIONS
       IO::Socket::IP 0.37
       Sub::Util 1.41
       perl 5.016
-  Mojolicious-Plugin-Qooxdoo-1.0.11
-    pathname: O/OE/OETIKER/Mojolicious-Plugin-Qooxdoo-1.0.11.tar.gz
+  Mojolicious-Plugin-Qooxdoo-1.0.12
+    pathname: O/OE/OETIKER/Mojolicious-Plugin-Qooxdoo-1.0.12.tar.gz
     provides:
-      Mojolicious::Plugin::Qooxdoo 1.000011
+      Mojolicious::Plugin::Qooxdoo 1.000012
       Mojolicious::Plugin::Qooxdoo::JsonRpcController 1.000011
     requirements:
       CPAN::Uploader 0

@@ -12,13 +12,13 @@ use_ok 'EP';
 
 my $t = Test::Mojo->new('EP');
 
-$t->post_ok('/QX-JSON-RPC', json => {
+$t->post_ok('/app/jsonrpc', json => {
     id => 1,
-    service => 'default',
+    service => 'ep',
     method => 'ping'
 })
   ->status_is(200)
   ->content_type_is('application/json; charset=utf-8')
-  ->json_is({id => 1,result => "pong"});
+  ->json_is('/error/message' => "Your session has expired. Please re-connect.");
 
 done_testing();

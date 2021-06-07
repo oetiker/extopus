@@ -275,18 +275,11 @@ sub getData {
             }
 
             $self->app->log->debug("getting ".$url->to_string);
-            my $tx = Mojo::UserAgent->new->get($url);
+            my $res = Mojo::UserAgent->new->get($url)->result;
             my $data;
-            if (my $res=$tx->success) {
+            if ($res->is_success) {
                 if ($res->headers->content_type =~ m'application/json'i){
-                    my $ret = eval { decode_json($res->body) };
-                    if ($@){
-                        $self->app->log->error("Fetching ".$url->to_string.": ".$@);
-                        return {
-                           status => 0,
-                           error => $@
-                        };
-                    }
+                    my $ret = $res->json;
                     if ($ret->{success}){
                         my $key = (keys %{$ret->{data}})[0];
                         $data{$subNode} = rrd2float($ret->{data}{$key});
@@ -306,8 +299,8 @@ sub getData {
                     };
                 }
             }
-            else {
-                my $error = $tx->error;
+            elsif ($res->is_error) {
+                my $error = {message => $res->message};
                 $self->app->log->error("Fetching ".$url->to_string." returns $error->{message}");
                 return {
                     status => 0,

@@ -121,17 +121,11 @@ sub getChartData {
     if (defined($self->hostauth)){
         $url->query({hostauth=>$self->hostauth});
     }
-    my $tx = Mojo::UserAgent->new->get($url);
-    if (my $res=$tx->success) {
+    my $res = Mojo::UserAgent->new->get($url)->res;
+    if ($res->is_success) {
         if ($res->headers->content_type =~ m'application/json'i){
             # $self->app->log->debug($res->body);
-            my $ret = eval { decode_json($res->body) };
-            if ($@){
-                return {
-                    status => 'failed',
-                    message => "Torrus Problem $url: $@"
-                };
-            }
+            my $ret = $res->json;
             if (ref $ret eq 'HASH'){
                 if ($ret->{success}){
                     delete $ret->{success};
@@ -153,7 +147,7 @@ sub getChartData {
             message => "Failed to fetch $url: Data Type ".$res->headers->content_type,
         };
     }
-    my $error = $tx->error;
+    my $error = {message => $res->message};
     return {
         status => 'failed',
         message => "Failed to fetch $url: $error->{message}",

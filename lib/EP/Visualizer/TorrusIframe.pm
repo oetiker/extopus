@@ -105,14 +105,10 @@ sub getLeaves {
         GET_PARAMS => 'precedence',
     );
     $self->app->log->debug("getting ".$url->to_string);
-    my $tx = Mojo::UserAgent->new->get($url);
-    if (my $res=$tx->success) {
+    my $res = Mojo::UserAgent->new->get($url)->result;
+    if ($res->is_success) {
         if ($res->headers->content_type =~ m'application/json'i){
-            my $ret = eval { decode_json($res->body) };
-            if ($@){
-                $log->error("JSON decode Problem:".$@);
-                return {};
-            }
+            my $ret = $res->json;
             if ($ret->{success}){
                 return $ret->{data};
             } else {
@@ -124,8 +120,8 @@ sub getLeaves {
             die mkerror(39944,"expected torrus to return and application/json result, but got ".$res->headers->content_type);
         }
     }
-    else {
-        my $error = $tx->error;
+    elsif ($res->is_error) {
+        my $error = {message => $res->message };
         $self->app->log->error("Fetching ".$url->to_string." returns $error->{message}");
         die mkerror(48877,"fetching Leaves for $nodeid from torrus server: $error->{message}");
     }
@@ -164,8 +160,8 @@ sub addProxyRoute {
             $pxReq->query({hostauth=>$self->hostauth});
         }
         $self->app->log->debug("Fetching ".$pxReq->to_string);
-        my $tx = $ctrl->ua->get($pxReq);
-        if (my $res=$tx->success) {
+        my $res = $ctrl->ua->get($pxReq)->result;
+        if ($res->is_success) {
            my $body;
            if ($res->headers->content_type =~ m'text/html'i){
               my $dom = $res->dom;
@@ -183,8 +179,8 @@ sub addProxyRoute {
            $ctrl->tx->res($rp);
            $ctrl->rendered;
         }
-        else {
-            my $error = $tx->error;
+        elsif ($res->is_error){
+            my $error = {message => $res->message,code => $res->code};
             $ctrl->render(
                 status => $error->{code},
                 text => $error->{message}

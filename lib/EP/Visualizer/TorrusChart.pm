@@ -217,14 +217,10 @@ sub getLeaves {
     }
 
     $log->debug("getting ".$url->to_string);
-    my $tx = Mojo::UserAgent->new->get($url);
-    if (my $res=$tx->success) {
+    my $res = Mojo::UserAgent->new->get($url)->result;
+    if ($res->is_success) {
         if ($res->headers->content_type =~ m'application/json'i){
-            my $ret = eval { decode_json($res->body) };
-            if ($@){
-                $log->error("Running $rpcCall on ".join(', ',map{"$_: $callParams->{$_}"} keys %$callParams).$@);
-                return {};
-            }
+            my $ret = $res->json;
             if ($ret->{success}){
                 return $ret->{data};
             } else {
@@ -237,8 +233,8 @@ sub getLeaves {
             return {};
         }
     }
-    else {
-        my $error = $tx->error;
+    elsif ($res->is_error){
+        my $error = {message => $res->message};
         $log->error("Fetching ".$url->to_string." returns $error->{message}");
         return {};
     }
@@ -289,8 +285,8 @@ sub addProxyRoute {
             $pxReq->query({Gimgformat=>'PDF'})
         }
         $self->app->log->debug("Fetching ".$pxReq->to_string);
-        my $tx = $ctrl->ua->get($pxReq);
-        if (my $res=$tx->success) {
+        my $res = $ctrl->ua->get($pxReq);
+        if ($res->is_success) {
            my $body = $res->body;
            my $rp = Mojo::Message::Response->new;
            $rp->code(200);
@@ -310,7 +306,7 @@ sub addProxyRoute {
            $ctrl->rendered;
         }
         else {
-            my $error = $tx->error;
+            my $error = { message=>$res->message,code => $res->code};
             $ctrl->render(
                 status => $error->{code},
                 text => $error->{message}

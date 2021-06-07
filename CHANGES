@@ -1,3 +1,7 @@
+0.7.2 2021-06-07 15:21:41 +0200 Tobias Oetiker <tobi@oetiker.ch>
+
+ - fix prefix routing by upgrading qooxdoo plugin
+
 0.7.1 2021-06-02 08:15:15 +0200 Tobias Oetiker <tobi@oetiker.ch>
 
  - fix routes to comply with new syntax

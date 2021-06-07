@@ -164,6 +164,7 @@ sub startup {
 
     $app->plugin('qooxdoo',{
         prefix => $app->prefix,
+        path => '/jsonrpc',
         controller => 'RpcService'
     }); 
 }

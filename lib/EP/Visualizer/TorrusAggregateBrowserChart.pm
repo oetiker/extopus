@@ -163,19 +163,11 @@ sub rpcService {
         if (defined($self->hostauth)){
             $url->query({hostauth=>$self->hostauth});
         }
-        my $tx = Mojo::UserAgent->new->get($url);
-        if (my $res=$tx->success) {
+        my $res = Mojo::UserAgent->new->get($url);
+        if ($res->is_success) {
             if ($res->headers->content_type =~ m'application/json'i){
                 # $self->app->log->debug($res->body);
-                my $ret = eval { decode_json($res->body) };
-                if ($@){
-                    $self->log->error("Error JSON Decode:".$@);
-                    push @$return, {
-                        status => 'failed',
-                        message => "JSON Decode Problem $url: $@"
-                    };
-                    next;
-                }
+                my $ret = $res->json;
                 if ($ret->{success}){
                     push @$return, {
                         status => 'ok',
@@ -198,7 +190,7 @@ sub rpcService {
             };
             next;
         }
-        my $error = $tx->error;
+        my $error = {message => $res->message};
         push @$return, {
             status => 'failed',
             message => "Faild Fetch $url: $error->{message}",
