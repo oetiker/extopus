@@ -172,7 +172,7 @@ sub matchRecord {
     };
     my $template;
     if ($self->printtemplate){
-        $template = $self->printtemplate->interpret($rec);
+        $template = $self->printtemplate->process($rec);
     }
     return {
         visualizer => 'chart',
