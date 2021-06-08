@@ -5,12 +5,10 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/* ************************************************************************
-
-#asset(qx/icon/${qx.icontheme}/22/mimetypes/office-spreadsheet.png)
-#asset(ep/loading22.gif)
-
-************************************************************************ */
+/**
+ * @asset(qx/icon/Tango/22/mimetypes/office-spreadsheet.png)
+ * @asset(ep/loading22.gif)
+ */
 
 /**
  * The Extopus node navigation tree with table and view areas.
