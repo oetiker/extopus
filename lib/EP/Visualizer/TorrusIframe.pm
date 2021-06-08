@@ -31,7 +31,6 @@ all the methods from L<EP::Visualizer::base>. As well as these:
 use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(hmac_md5_sum url_unescape);
 use Mojo::URL;
-use Mojo::UserAgent;
 use EP::Exception qw(mkerror);
 
 
@@ -104,8 +103,8 @@ sub getLeaves {
         RPCCALL => 'WALK_LEAVES',
         GET_PARAMS => 'precedence',
     );
-    $self->app->log->debug("getting ".$url->to_string);
-    my $res = Mojo::UserAgent->new->get($url)->result;
+    $self->log->debug("getting ".$url->to_string);
+    my $res = $self->ua->get($url)->result;
     if ($res->is_success) {
         if ($res->headers->content_type =~ m'application/json'i){
             my $ret = $res->json;

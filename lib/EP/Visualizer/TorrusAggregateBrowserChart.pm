@@ -56,7 +56,6 @@ use Mojo::URL;
 use Mojo::JSON qw(decode_json);
 use Data::Dumper;
 
-use Mojo::UserAgent;
 use Mojo::Template;
 
 use EP::Exception qw(mkerror);
@@ -163,7 +162,7 @@ sub rpcService {
         if (defined($self->hostauth)){
             $url->query({hostauth=>$self->hostauth});
         }
-        my $res = Mojo::UserAgent->new->get($url);
+        my $res = $self->ua->get($url)->result;
         if ($res->is_success) {
             if ($res->headers->content_type =~ m'application/json'i){
                 # $self->app->log->debug($res->body);

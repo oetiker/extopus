@@ -47,6 +47,16 @@ has log => sub {
     shift->app->log;
 };
 
+=head2 ua
+
+useragent
+
+=cut
+
+has ua => sub {
+   shift->app->ua;
+};
+
 =head2 instance
 
 the name of the instance

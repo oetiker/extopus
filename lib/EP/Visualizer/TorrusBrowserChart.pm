@@ -121,7 +121,7 @@ sub getChartData {
     if (defined($self->hostauth)){
         $url->query({hostauth=>$self->hostauth});
     }
-    my $res = Mojo::UserAgent->new->get($url)->res;
+    my $res = $self->ua->get($url)->result;
     if ($res->is_success) {
         if ($res->headers->content_type =~ m'application/json'i){
             # $self->app->log->debug($res->body);

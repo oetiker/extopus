@@ -52,7 +52,6 @@ use Mojo::Base 'EP::Visualizer::base';
 use Mojo::Util qw(url_unescape);
 use Mojo::URL;
 use Mojo::JSON qw(decode_json);
-use Mojo::UserAgent;
 use Mojo::Template;
 
 use Time::Local qw(timelocal_nocheck);
@@ -275,7 +274,7 @@ sub getData {
             }
 
             $self->app->log->debug("getting ".$url->to_string);
-            my $res = Mojo::UserAgent->new->get($url)->result;
+            my $res = $self->ua->get($url)->result;
             my $data;
             if ($res->is_success) {
                 if ($res->headers->content_type =~ m'application/json'i){

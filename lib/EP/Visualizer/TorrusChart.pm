@@ -82,7 +82,6 @@ use Mojo::Util qw(url_unescape);
 use Mojo::URL;
 use Mojo::JSON qw(decode_json);
 
-use Mojo::UserAgent;
 use Mojo::Template;
 
 use EP::Exception qw(mkerror);
@@ -217,7 +216,7 @@ sub getLeaves {
     }
 
     $log->debug("getting ".$url->to_string);
-    my $res = Mojo::UserAgent->new->get($url)->result;
+    my $res = $self->ua->get($url)->result;
     if ($res->is_success) {
         if ($res->headers->content_type =~ m'application/json'i){
             my $ret = $res->json;
@@ -285,7 +284,7 @@ sub addProxyRoute {
             $pxReq->query({Gimgformat=>'PDF'})
         }
         $self->app->log->debug("Fetching ".$pxReq->to_string);
-        my $res = $ctrl->ua->get($pxReq);
+        my $res = $ctrl->ua->get($pxReq)->result;
         if ($res->is_success) {
            my $body = $res->body;
            my $rp = Mojo::Message::Response->new;
