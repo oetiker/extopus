@@ -6,8 +6,8 @@
 ************************************************************************ */
 
 /*
-#asset(ep/loader.gif)
-#asset(qx/icon/${qx.icontheme}/64/status/dialog-information.png)
+ * @asset(ep/loader.gif)
+ * @asset(qx/icon/Tango/64/status/dialog-information.png)
 */
 
 /**

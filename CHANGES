@@ -1,3 +1,9 @@
+0.7.6 2021-06-16 15:12:49 +0200 Tobias Oetiker <tobi@oetiker.ch>
+
+ - add more missing icons
+ - add explicit no dashboards found message
+ - allow usernames with .
+
 0.7.5 2021-06-08 17:25:26 +0200 Tobias Oetiker <tobi@oetiker.ch>
 
  - add missing tree icon

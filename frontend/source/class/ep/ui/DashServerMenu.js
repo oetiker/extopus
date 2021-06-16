@@ -6,9 +6,9 @@
 ************************************************************************ */
 
 /*
-#asset(qx/icon/${qx.icontheme}/16/actions/list-add.png)
-#asset(ep/loading16.gif)
-*/
+ * @asset(qx/icon/Tango/16/actions/list-add.png)
+ * @asset(ep/loading16.gif)
+ */
 
 /**
  * Master Dashboard Menu, showing all Dashboards available on the server. 
@@ -32,7 +32,9 @@ qx.Class.define("ep.ui.DashServerMenu", {
         this._menuBusy = new qx.ui.menu.Button("Updating Dashlist","ep/loading16.gif").set({
             enabled: false
         });
-        
+        this._noDashboards = new qx.ui.menu.Button("No Dashboards found").set({
+            enabled: false
+        });
         this.addListener('changeVisibility',function(e){
             var vis = e.getData();
             if (vis == 'visible'){
@@ -49,6 +51,7 @@ qx.Class.define("ep.ui.DashServerMenu", {
         _menuItemCache: null,
         _updateing: false,
         _menuBusy: null,
+        _noDashboards: null,
         _updateMenu: function(){
             var rpc = ep.data.Server.getInstance();        
             var menu = this;
@@ -59,7 +62,7 @@ qx.Class.define("ep.ui.DashServerMenu", {
             this._updateing = true;
             var savedKids = menu.removeAll();
             menu.add(this._menuBusy);
-            
+            let that = this;
             rpc.callAsyncSmart(function(ret){
                 var libMenu;
                 var libMenuButton;
@@ -67,14 +70,21 @@ qx.Class.define("ep.ui.DashServerMenu", {
                 var updateMenu = false;
                 var itemIdCheck = {};
                 menu._updateing = false;
+                var gotItems = false;
                 ret.forEach(function(item){
                     itemIdCheck[item.id] = true;
                     if (item.up){
                         updateMenu = true;
                         menu._menuItemCache[item.id] = item;
                     }
+                    gotItems = true;
                 });
-                // remove delted items
+                menu.removeAll();
+                if (! gotItems){
+                    menu.add(that._noDashboards);
+                    return;
+                }
+                // remove deleted items
                 for (var key in menu._menuItemCache){
                     var item = menu._menuItemCache[key];
                     if (!itemIdCheck[key]){
@@ -82,7 +92,6 @@ qx.Class.define("ep.ui.DashServerMenu", {
                         updateMenu = true;
                     }
                 }
-                menu.removeAll();
                 if (! updateMenu ){
                     savedKids.forEach(function(kid){
                         menu.add(kid);

@@ -117,7 +117,7 @@ sub startup {
     if ($gcfg->{default_user}){
         # since the user is fix, just set the login for the dashboards
         # if no login is given, the word 'base' is assumed;
-        $routes->get('/setLogin/:login' => sub {
+        $routes->get('/setLogin/#login' => sub {
             my $self = shift;
             $self->session->{epLogin}  = $self->param('login');
             $self->redirect_to('/'.$app->prefix);
@@ -127,7 +127,7 @@ sub startup {
         # run /setUser/x8883:oetiker to launch the application for account
         # with login oetiker. The login name will afect the
         # dashboards displayed
-        $routes->get('/setUser/:user' => sub {
+        $routes->get('/setUser/#user' => sub {
             my $self = shift;
             my ($user,$login) = split /:/, $self->param('user');
             $self->session->{epUser} = $user;
@@ -140,7 +140,7 @@ sub startup {
     if (-d $apiDocRoot){
         my $apiDoc = Mojolicious::Static->new();
         $apiDoc->paths([$apiDocRoot]);
-        $routes->get('/apidoc/(*path)' =>  { path => 'index.html' } => sub {
+        $routes->get('/apidoc/*path' =>  { path => 'index.html' } => sub {
             my $self = shift;
             my $file = $self->param('path') || '';
             $self->req->url->path('/'.$file); # relative paths get appended ... 

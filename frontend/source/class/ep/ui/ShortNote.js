@@ -6,7 +6,7 @@
 ************************************************************************ */
 
 /*
-#asset(qx/icon/${qx.icontheme}/16/status/dialog-information.png)
+ * @asset(qx/icon/Tango/16/status/dialog-information.png)
 */
 
 /**

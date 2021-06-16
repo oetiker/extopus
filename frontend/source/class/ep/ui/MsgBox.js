@@ -7,17 +7,17 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-#asset(qx/icon/${qx.icontheme}/32/status/dialog-error.png)
-#asset(qx/icon/${qx.icontheme}/32/status/dialog-information.png)
-#asset(qx/icon/${qx.icontheme}/32/status/dialog-warning.png)
-#asset(qx/icon/${qx.icontheme}/16/status/dialog-warning.png)
-#asset(qx/icon/${qx.icontheme}/16/status/dialog-error.png)
-#asset(qx/icon/${qx.icontheme}/16/status/dialog-information.png)
-#asset(qx/icon/${qx.icontheme}/16/actions/dialog-ok.png)
-#asset(qx/icon/${qx.icontheme}/16/actions/dialog-apply.png)
-#asset(qx/icon/${qx.icontheme}/16/actions/dialog-cancel.png)
-************************************************************************ */
+/*
+ * @asset(qx/icon/Tango/32/status/dialog-error.png)
+ * @asset(qx/icon/Tango/32/status/dialog-information.png)
+ * @asset(qx/icon/Tango/32/status/dialog-warning.png)
+ * @asset(qx/icon/Tango/16/status/dialog-warning.png)
+ * @asset(qx/icon/Tango/16/status/dialog-error.png)
+ * @asset(qx/icon/Tango/16/status/dialog-information.png)
+ * @asset(qx/icon/Tango/16/actions/dialog-ok.png)
+ * @asset(qx/icon/Tango/16/actions/dialog-apply.png)
+ * @asset(qx/icon/Tango/16/actions/dialog-cancel.png)
+ */
 
 /**
  * A status window singelton. There is only one instance, several calls to

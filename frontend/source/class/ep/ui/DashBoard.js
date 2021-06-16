@@ -6,9 +6,9 @@
 ************************************************************************ */
 
 /*
-#asset(qx/icon/${qx.icontheme}/16/actions/document-save.png)
-#asset(qx/icon/${qx.icontheme}/48/actions/document-properties.png)
-#asset(qx/icon/${qx.icontheme}/48/places/user-trash.png)
+ * @asset(qx/icon/Tango/16/actions/document-save.png)
+ * @asset(qx/icon/Tango/48/actions/document-properties.png)
+ * @asset(qx/icon/Tango/48/places/user-trash.png)
 */
 /**
   * Dashboard Widget showing multiple of visualization Plugins on a single page
