@@ -136,23 +136,6 @@ sub startup {
         });
     }
 
-    my $apiDocRoot = $app->home->rel_file('apidoc');
-    if (-d $apiDocRoot){
-        my $apiDoc = Mojolicious::Static->new();
-        $apiDoc->paths([$apiDocRoot]);
-        $routes->get('/apidoc/*path' =>  { path => 'index.html' } => sub {
-            my $self = shift;
-            my $file = $self->param('path') || '';
-            $self->req->url->path('/'.$file); # relative paths get appended ... 
-            if (not $apiDoc->dispatch($self)){
-                $self->render(
-                   status => 404,
-                   text => $self->req->url->path.' not found'
-               );
-            }
-        });
-    }
-
     $routes->get('/' => sub { shift->redirect_to('/'.$app->prefix)});
 
     $app->plugin('EP::DocPlugin', {
