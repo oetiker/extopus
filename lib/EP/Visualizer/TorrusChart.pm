@@ -216,27 +216,32 @@ sub getLeaves {
     }
 
     $log->debug("getting ".$url->to_string);
-    my $res = $self->ua->get($url)->result;
-    if ($res->is_success) {
-        if ($res->headers->content_type =~ m'application/json'i){
-            my $ret = $res->json;
-            if ($ret->{success}){
-                return $ret->{data};
-            } else {
-                $log->error("Running $rpcCall on ".join(', ',map{"$_: $callParams->{$_}"} keys %$callParams).$ret->{error});
+    if (my $res = eval { $self->ua->get($url)->result }){
+        if ($res->is_success) {
+            if ($res->headers->content_type =~ m'application/json'i){
+                my $ret = $res->json;
+                if ($ret->{success}){
+                    return $ret->{data};
+                } else {
+                    $log->error("Running $rpcCall on ".join(', ',map{"$_: $callParams->{$_}"} keys %$callParams).$ret->{error});
+                    return {};
+                }
+            }
+            else {
+                $log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
                 return {};
             }
         }
-        else {
-            $log->error("Fetching ".$url->to_string." returns ".$res->headers->content_type);
+        elsif ($res->is_error){
+            my $error = {message => $res->message};
+            $log->error("Fetching ".$url->to_string." returns $error->{message}");
             return {};
         }
     }
-    elsif ($res->is_error){
-        my $error = {message => $res->message};
-        $log->error("Fetching ".$url->to_string." returns $error->{message}");
-        return {};
+    if ($@){
+        $log->error($@);
     }
+    return {};
 }
 
 =head2 addProxyRoute()

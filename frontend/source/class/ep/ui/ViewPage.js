@@ -6,7 +6,7 @@
 ************************************************************************ */
 
 /*
- * @asset(ep/view-*.png)
+ * @asset(ep/view-menu-black.png)
 */
 
 /**
@@ -21,16 +21,16 @@ qx.Class.define("ep.ui.ViewPage", {
      */
     construct : function(visualizer) {        
         this.base(arguments, visualizer.getTitle());
-        this.setLayout(new qx.ui.layout.Grow());            
+        this.set({
+            layout: new qx.ui.layout.Grow(),
+            visualizer: visualizer
+        });
         this.add(visualizer);
-
-        this.setVisualizer(visualizer);
-
         visualizer.addListener('changeTitle',function(e){
             this.setLabel(e.getData());
         },this)
 
-        var button = this.getChildControl('button');            
+        var button = this.getChildControl('button');
 
         var menuButton = this._menuButton = new qx.ui.basic.Atom().set({
             icon   : 'ep/view-menu-black.png',
