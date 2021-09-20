@@ -1,3 +1,7 @@
+0.7.9 2021-09-20 13:57:06 +0200 Tobias Oetiker <tobi@oetiker.ch>
+
+ - use csv export module and remove extra Range header from csv export
+
 0.7.8 2021-06-17 11:21:43 +0200 Tobias Oetiker <tobi@oetiker.ch>
 
  - remove old apidoc system

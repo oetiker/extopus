@@ -10,6 +10,7 @@ requires 'DBD::SQLite';
 requires 'Excel::Writer::XLSX';
 requires 'Spreadsheet::WriteExcel';
 requires 'IO::Socket::SSL';
+requires 'Text::CSV_XS';
 if ($ENV{ORACLE_HOME}) {
   requires 'DBD::Oracle';
 }

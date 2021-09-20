@@ -66,15 +66,6 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       base 0
       strict 0
-  DBD-Oracle-1.80
-    pathname: M/MJ/MJEVANS/DBD-Oracle-1.80.tar.gz
-    provides:
-      DBD::Oracle 1.80
-      DBD::Oracle::GetInfo 1.80
-      DBD::Oracle::Object 1.80
-    requirements:
-      DBI 1.623
-      ExtUtils::MakeMaker 0
   DBD-SQLite-1.66
     pathname: I/IS/ISHIGAKI/DBD-SQLite-1.66.tar.gz
     provides:
@@ -692,6 +683,7 @@ DISTRIBUTIONS
       Mojolicious::Lite undef
       Mojolicious::Plugin undef
       Mojolicious::Plugin::Config undef
+      Mojolicious::Plugin::Config::Sandbox undef
       Mojolicious::Plugin::DefaultHelpers undef
       Mojolicious::Plugin::EPLRenderer undef
       Mojolicious::Plugin::EPRenderer undef
@@ -718,6 +710,16 @@ DISTRIBUTIONS
       IO::Socket::IP 0.37
       Sub::Util 1.41
       perl 5.016
+  Mojolicious-Plugin-Qooxdoo-1.0.12
+    pathname: O/OE/OETIKER/Mojolicious-Plugin-Qooxdoo-1.0.12.tar.gz
+    provides:
+      Mojolicious::Plugin::Qooxdoo 1.000012
+      Mojolicious::Plugin::Qooxdoo::JsonRpcController 1.000011
+    requirements:
+      CPAN::Uploader 0
+      ExtUtils::MakeMaker 0
+      Mojolicious 8.26
+      perl 5.022000
   Mozilla-CA-20200520
     pathname: A/AB/ABH/Mozilla-CA-20200520.tar.gz
     provides:
@@ -904,17 +906,16 @@ DISTRIBUTIONS
       Term::ReadKey 2.38
     requirements:
       ExtUtils::MakeMaker 6.58
-  Test-NoWarnings-1.04
-    pathname: A/AD/ADAMK/Test-NoWarnings-1.04.tar.gz
+  Text-CSV_XS-1.46
+    pathname: H/HM/HMBRAND/Text-CSV_XS-1.46.tgz
     provides:
-      Test::NoWarnings 1.04
-      Test::NoWarnings::Warning 1.04
+      Text::CSV_XS 1.46
     requirements:
+      Config 0
       ExtUtils::MakeMaker 0
-      Test::Builder 0.86
-      Test::More 0.47
-      Test::Tester 0.107
-      perl 5.006
+      IO::Handle 0
+      Test::More 0
+      XSLoader 0
   TimeDate-2.33
     pathname: A/AT/ATOOMIC/TimeDate-2.33.tar.gz
     provides:
@@ -1137,7 +1138,7 @@ DISTRIBUTIONS
       HTTP::Request 6
       HTTP::Request::Common 6
       HTTP::Response 6
-      HTTP::Status 6.18
+      HTTP::Status 6.07
       IO::Select 0
       IO::Socket 0
       LWP::MediaTypes 6

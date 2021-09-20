@@ -925,6 +925,16 @@ DISTRIBUTIONS
       Test::More 0.47
       Test::Tester 0.107
       perl 5.006
+  Text-CSV_XS-1.46
+    pathname: H/HM/HMBRAND/Text-CSV_XS-1.46.tgz
+    provides:
+      Text::CSV_XS 1.46
+    requirements:
+      Config 0
+      ExtUtils::MakeMaker 0
+      IO::Handle 0
+      Test::More 0
+      XSLoader 0
   TimeDate-2.33
     pathname: A/AT/ATOOMIC/TimeDate-2.33.tar.gz
     provides:

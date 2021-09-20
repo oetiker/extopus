@@ -58,6 +58,7 @@ use Time::Local qw(timelocal_nocheck);
 
 use Spreadsheet::WriteExcel;
 use Excel::Writer::XLSX;
+use Text::CSV_XS qw(csv);
 
 use EP::Exception qw(mkerror);
 use POSIX qw(strftime);
@@ -423,20 +424,13 @@ sub csvBuilder {
         'contentType'        => 'application/csv',
         'contentDisposition' => "attachment; filename=$name.csv"
    };
-   my @cnames = ('Range');
+   my @cnames;
    for (my $c=0;$c < scalar @{$self->cfg->{col_names}};$c++){
         my $name = $self->cfg->{col_names}[$c];
         my $unit = $self->cfg->{col_units}[$c] || '';
         push @cnames, ( $unit ? qq{"$name [$unit]"} : $name );
    }
-   my @extra;
-   if ($data->{title}){
-        @extra = ($data->{title});
-   }
-   my $body = join(";",@cnames)."\r\n";
-   for my $row (@{$data->{data}}){
-       $body .= join(";",map { defined $_ && /[^-e.0-9]/ ? qq{"$_"} : ($_||'') } @extra,@$row)."\r\n";
-   }
+   csv(in=>$data->{data},out=>\my $body,headers=>\@cnames);
    $fileData->{body} = $body;
    return $fileData;
 }
