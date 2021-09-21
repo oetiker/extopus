@@ -1,3 +1,9 @@
+0.7.10 2021-09-21 14:36:27 +0200 Tobias Oetiker <tobi@oetiker.ch>
+
+ - remove extra quotes from title row
+ - show 0 in excel output
+ - make sure new js gets loaded by adding VERSION to index.html
+
 0.7.9 2021-09-20 13:57:06 +0200 Tobias Oetiker <tobi@oetiker.ch>
 
  - use csv export module and remove extra Range header from csv export

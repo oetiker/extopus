@@ -425,9 +425,9 @@ uninstall-am:
 @BUILD_QOOXDOO_APP_TRUE@	$(NPX) qx compile --target=build --feedback=false --update-po-files
 @BUILD_QOOXDOO_APP_TRUE@	mkdir -p ../public/$(QX_CLASS)
 @BUILD_QOOXDOO_APP_TRUE@	cp -p compiled/build/$(QX_CLASS)/*.js ../public/$(QX_CLASS)
-@BUILD_QOOXDOO_APP_TRUE@	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;' ../public/$(QX_CLASS)/*.js
 @BUILD_QOOXDOO_APP_TRUE@	cp -p compiled/build/index.html ../public
 @BUILD_QOOXDOO_APP_TRUE@	cp -ap compiled/build/resource   ../public
+@BUILD_QOOXDOO_APP_TRUE@	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;' ../public/$(QX_CLASS)/*.js ../public/index.html
 @BUILD_QOOXDOO_APP_TRUE@	touch $@
 
 @BUILD_QOOXDOO_APP_TRUE@compiled/source/.built: $(EXTRA_DIST) Makefile.in

@@ -428,7 +428,7 @@ sub csvBuilder {
    for (my $c=0;$c < scalar @{$self->cfg->{col_names}};$c++){
         my $name = $self->cfg->{col_names}[$c];
         my $unit = $self->cfg->{col_units}[$c] || '';
-        push @cnames, ( $unit ? qq{"$name [$unit]"} : $name );
+        push @cnames, ( $unit ? qq{$name [$unit]} : $name );
    }
    csv(in=>$data->{data},out=>\my $body,headers=>\@cnames);
    $fileData->{body} = $body;
@@ -502,7 +502,7 @@ sub _excelBuilder {
     for (my $c=0;$c < scalar @{$self->cfg->{col_names}};$c++){
         my $cname = $self->cfg->{col_names}[$c];
         my $unit = $self->cfg->{col_units}[$c] || '';
-        push @cnames, ( $unit ? qq{"$cname [$unit]"} : $cname );
+        push @cnames, ( $unit ? qq{$cname [$unit]} : $cname );
     }
     my $worksheet = $workbook->add_worksheet(substr($wbname,0,31));
     $worksheet->set_column('A:I',18);
@@ -516,7 +516,7 @@ sub _excelBuilder {
     }
     $worksheet->write_row($rowcounter++, 0,$cnames_ref,$header_format);
     for my $row (@{$data->{data}}){
-        my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_||'') } @$row;
+        my @line = map { defined $_ && /[^.0-9]/ ? qq{$_} : ($_//0) } @$row;
         my $line_ref = \@line;
         $worksheet->write_row($rowcounter++,0,$line_ref);
     }

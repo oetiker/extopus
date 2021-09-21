@@ -28,9 +28,9 @@ clean: node_modules
 	$(NPX) qx compile --target=build --feedback=false --update-po-files
 	mkdir -p ../public/$(QX_CLASS)
 	cp -p compiled/build/$(QX_CLASS)/*.js ../public/$(QX_CLASS)
-	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;' ../public/$(QX_CLASS)/*.js
 	cp -p compiled/build/index.html ../public
 	cp -ap compiled/build/resource   ../public
+	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;' ../public/$(QX_CLASS)/*.js ../public/index.html
 	touch $@
 
 YEAR := $(shell date +%Y)
