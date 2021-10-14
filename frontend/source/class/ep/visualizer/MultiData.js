@@ -101,24 +101,7 @@ qx.Class.define("ep.visualizer.MultiData", {
                 this.__view.removeListenerById(this.__viewListener);
             }
         },
-        /**
-         * Update Chart Event Handler
-         *
-         * @param newArgs {var} new args
-         * @param oldArgs {var} old args
-         * @return {void} 
-         */
-        _updateData: function(e){
-            var d = e.getData();
-            var t = this._dataTable;
-            this._userCfg = d;
-            if (! d.rows){
-                return;
-            }
-            t.setCount(parseInt(d.rows));
-            t.setInterval(d.interval);
-            t.setEndDate(d.endTime);
-        },
+        
         /**
          * Download data to the client
          *
@@ -133,7 +116,8 @@ qx.Class.define("ep.visualizer.MultiData", {
                 end = Math.round(data.getEndDate());
             }
 
-            var url = this._csvUrl + '?format=' + format + '&interval=' + data.getInterval() + '&end=' + end + '&recid=' + data.getRecordIds().join(',');
+            var url = this._csvUrl + '?format=' + format + '&interval=' + data.getInterval() + '&end=' + end + '&recid=' + data.getRecordIds().join(',')
+            + '&count=' + data.getCount();
             var win = qx.bom.Window.open(url, '_blank');
 
             qx.bom.Event.addNativeListener(win, 'load', function(e) {

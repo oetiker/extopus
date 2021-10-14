@@ -38,6 +38,7 @@ make
 make test
 make dist
 git commit -a
+git push
 gh release create v$VERS
 gh release upload v$VERS ep-$VERS.tar.gz 
 
