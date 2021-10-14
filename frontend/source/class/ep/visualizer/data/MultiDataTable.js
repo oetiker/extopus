@@ -80,6 +80,7 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
                     'visualize', this.getInstance(), {
                         interval : interval,
                         endDate  : date,
+                        count    : this.getCount(),
                         recList  : missingRecIds
                     });
                 }

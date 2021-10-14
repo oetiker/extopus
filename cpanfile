@@ -1,5 +1,5 @@
-requires 'Mojolicious', '>= 9.19';
-requires 'Mojolicious::Plugin::Qooxdoo', '>= 1.0.12';
+requires 'Mojolicious', '>= 9.21';
+requires 'Mojolicious::Plugin::Qooxdoo', '>= 1.0.13';
 requires 'Mojo::Server::FastCGI';
 requires 'Config::Grammar';
 requires 'JSON::XS';
@@ -17,7 +17,7 @@ if ($ENV{ORACLE_HOME}) {
 else {
     print <<'ORACLE_END';
 =====================================================================
-If you want to install the DBD::Oracle to allow oracle-db-access frommacs 
+If you want to install the DBD::Oracle to allow oracle-db-access from
 SIAM, make sure you have the ORACLE_HOME environment variable
 pointing to the location where you have the Oracle Instant Client
 and the SDK unpacked. Get your copies of these files from 

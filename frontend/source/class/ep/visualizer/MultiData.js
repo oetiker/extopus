@@ -44,6 +44,15 @@ qx.Class.define("ep.visualizer.MultiData", {
                 }       
             },
             {
+                key: 'rows',
+                widget: 'text',
+                label: 'Rows',
+                set: {
+                    value: "1",
+                    filter: /\d+/
+                }
+            },
+            {
                 key: 'endTime',
                 widget: 'date',
                 label: 'End'
@@ -103,6 +112,10 @@ qx.Class.define("ep.visualizer.MultiData", {
             var d = e.getData();
             var t = this._dataTable;
             this._userCfg = d;
+            if (! d.rows){
+                return;
+            }
+            t.setCount(parseInt(d.rows));
             t.setInterval(d.interval);
             t.setEndDate(d.endTime);
         },

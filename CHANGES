@@ -1,3 +1,7 @@
+0.8.0 2021-10-14 08:03:23 +0200 Tobias Oetiker <tobi@oetiker.ch>
+
+ - allow multi periode request on multidata analysis tab
+
 0.7.10 2021-09-21 14:36:27 +0200 Tobias Oetiker <tobi@oetiker.ch>
 
  - remove extra quotes from title row

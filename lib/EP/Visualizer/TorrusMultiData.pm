@@ -17,10 +17,10 @@ EP::Visualizer::TorrusMultiData - pull numeric data associated with sellected to
  savename_pl = "multi_node_data"
 
  sub_nodes = inbytes, outbytes
- col_names = Node, CAR, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
- col_units =   , , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
- col_widths = 10,  5, 3  ,    3,    3,  3,  3,    3, 2
- col_data = "$R{prod} $R{inv_id}",$R{car},int($D{inbytes}{AVG}*8/1e4)/1e2, \
+ col_names = Date, Node, CAR, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
+ col_units =   , , , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
+ col_widths = 3, 10,  5, 3  ,    3,    3,  3,  3,    3, 2
+ col_data = $RANGE,"$R{prod} $R{inv_id}",$R{car},int($D{inbytes}{AVG}*8/1e4)/1e2, \
            int($D{outbytes}{AVG}*8/1e4)/1e2, \
            int($D{inbytes}{AVG}*8 * $DURATION / 100 * $D{inbytes}{AVAIL}/1e7)/1e2, \
            int($D{outbytes}{AVG}*8 * $DURATION / 100 * $D{outbytes}{AVAIL}/1e7)/1e2, \
@@ -98,26 +98,30 @@ sub getData {
     my $recIds = shift;
     my $end = shift;
     my $interval = shift;
+    my $count = shift;
     if (ref $recIds ne 'ARRAY'){
-        $recIds = [ split /,/, $recIds ];
+        $recIds = [ split /\s*,\s*/, $recIds ];
     }
     my @ret;
-    my $stamp;
+    my @stepLabels;
     my $cache = EP::Cache->new(controller=>$controller,user=>($controller->app->cfg->{GENERAL}{default_user}|| $controller->session('epUser')));
     for my $recId (@$recIds){
-        my $data =  $self->SUPER::getData($controller,$recId,$end,$interval,1);
+        my $data =  $self->SUPER::getData($controller,$recId,$end,$interval,$count);
         if ($data->{status}){
-            $stamp =  $data->{stepLabels}[0];
-            push @ret, $data->{data}[0];
-        } else {
-            push @ret, undef;
-        };
+            push @stepLabels, @{$data->{stepLabels}};
+            push @ret, @{$data->{data}};
+        }
     }
     return {
         status => 1,
-        title => $stamp,
+        title => join ",",@$recIds,
+        stepLabels => \@stepLabels,
         data => \@ret,
-        caption => $self->caption_live({},{interval => $interval, endDate => $end, recCount => scalar @$recIds })
+        caption => $self->caption_live({},{
+            interval => $interval, 
+            endDate => $end, 
+            recCount => scalar @$recIds 
+        })
     };
 }
 
@@ -131,7 +135,7 @@ sub rpcService {
     my $self = shift;
     my $controller = shift;
     my $arg = shift;
-    return $self->getData($controller,$arg->{recList},$arg->{endDate},$arg->{interval});
+    return $self->getData($controller,$arg->{recList},$arg->{endDate},$arg->{interval},$arg->{count});
 }
 
 1;

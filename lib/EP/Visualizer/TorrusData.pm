@@ -20,7 +20,7 @@ EP::Visualizer::TorrusData - pull numeric data associated with torrus data sourc
  col_names = Date, Avg In, Avg  Out, Total In, Total Out, Max In, Max Out, Coverage
  col_units =   , Mb/s, Mb/s, Gb, Gb, Mb/s, Mb/s, %
  col_widths = 3,  3  ,    3,    3,  3,  3,    3, 2
- col_data = $D{range},int($D{inbytes}{AVG}*8/1e4)/1e2, \
+ col_data = $RANGE,int($D{inbytes}{AVG}*8/1e4)/1e2, \
            int($D{outbytes}{AVG}*8/1e4)/1e2, \
            int($D{inbytes}{AVG}*8 * $DURATION / 100 * $D{inbytes}{AVAIL}/1e7)/1e2, \
            int($D{outbytes}{AVG}*8 * $DURATION / 100 * $D{outbytes}{AVAIL}/1e7)/1e2, \
@@ -317,7 +317,10 @@ sub getData {
         status => 1,
         stepLabels => \@stepLabels,
         data => \@return,
-        caption => $self->caption_live($rec,{interval => $interval, endDate => $end })
+        caption => $self->caption_live($rec,{
+            interval => $interval, 
+            endDate => $end 
+        })
     };
 }
 

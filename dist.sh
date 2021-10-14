@@ -37,6 +37,7 @@ export PLENV_VERSION=
 make
 make test
 make dist
+git commit -a
 gh release create v$VERS
 gh release upload v$VERS ep-$VERS.tar.gz 
 
