@@ -1,3 +1,7 @@
+0.8.2 2021-10-19 17:13:19 +0200 Tobias Oetiker <tobi@oetiker.ch>
+
+ - set _userCfg even if there are no rows ... 
+
 0.8.1 2021-10-14 09:08:01 +0200 Tobias Oetiker <tobi@oetiker.ch>
 
  - added missing change on MultiData.js

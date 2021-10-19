@@ -62,16 +62,16 @@ qx.Class.define("ep.visualizer.MultiData", {
         this.base(arguments, instance, title, args, view, form);
 
         var dataTable = this._dataTable = new ep.visualizer.data.MultiDataTable(instance, args.columns, args.column_widths, args.column_units);
-        dataTable.addListener('changeCaption',function(e){this.setCaption(e.getData())},this);
+    
+        dataTable.addListener('changeCaption',function(e){
+            this.setCaption(e.getData());
+        },this);
 
         this._add(dataTable, { flex : 1 });
 
         this.setArgs(args);
         this._updateData(form);
-        dataTable.addListener('changeCaption',function(e){
-            this.setCaption(e.getData());
-        },this);
-
+        
         if (view){
             this.__view = view;
             this.__viewListener = view.addListener('changeRecIds', function(e) {

@@ -80,11 +80,11 @@ qx.Class.define("ep.visualizer.Data", {
          */
         _updateData: function(e){
             var d = e.getData();
-            var t = this._dataTable;
+            this._userCfg = d;
             if (! d.rows){
                 return;
             }
-            this._userCfg = d;
+            var t = this._dataTable;
             t.setCount(parseInt(d.rows));
             t.setInterval(d.interval);
             t.setEndDate(d.endTime);
