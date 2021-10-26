@@ -101,6 +101,24 @@ qx.Class.define("ep.visualizer.MultiData", {
                 this.__view.removeListenerById(this.__viewListener);
             }
         },
+        /**
+         * Update Chart Event Handler
+         *
+         * @param newArgs {var} new args
+         * @param oldArgs {var} old args
+         * @return {void} 
+         */
+        _updateData: function(e){
+            var d = e.getData();
+            this._userCfg = d;
+            if (! d.rows){
+                return;
+            }
+            var t = this._dataTable;
+            t.setCount(parseInt(d.rows));
+            t.setInterval(d.interval);
+            t.setEndDate(d.endTime);
+        },
         
         /**
          * Download data to the client

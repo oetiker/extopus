@@ -53,19 +53,20 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
                 this.setViewMode('loading');
                 var that = this;
                 var interval = this.getInterval();
-                var missingRecIds = this.__filterRecs(newRecIdList,interval,date);
-
+                var count = this.getCount();
+                var missingRecIds = this.__filterRecs(newRecIdList,interval,date,count);
                 if (missingRecIds.length == 0){
-                    tm.setData(this.__fetchRecData(newRecIdList,interval,date));
+                    tm.setData(this.__fetchRecData(newRecIdList,interval,date,count));
                     var title = this.__titleCache[String(interval)+':'+String(date)] || this.tr('Cached Title');
                     this.setCaption(title);
                     this.setViewMode('ready');
                 }
                 else {
+                    
                     rpc.callAsyncSmart(function(ret) {
                         if (ret.status) {
-                            that.__updateRecCache(ret.data,missingRecIds,interval,date);
-                            tm.setData(that.__fetchRecData(newRecIdList,interval,date));
+                            that.__updateRecCache(ret.data,missingRecIds,interval,date,count);
+                            tm.setData(that.__fetchRecData(newRecIdList,interval,date,count));
                             var title = ret.title + ' (' + interval + ')';
                             that.setCaption(title);
                             that.__titleCache[String(interval)+':'+String(date)] = title;
@@ -80,7 +81,7 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
                     'visualize', this.getInstance(), {
                         interval : interval,
                         endDate  : date,
-                        count    : this.getCount(),
+                        count    : count,
                         recList  : missingRecIds
                     });
                 }
@@ -98,13 +99,13 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
          *
          * @return nonCachedRecordIds {Array} 
          */
-        __filterRecs : function(recIds,interval,date){
+        __filterRecs : function(recIds,interval,date,count){
             var missingRecIds = [];
             var cache = this.__recCache;
             var now = new Date().getTime();
             for ( var i = 0; i < recIds.length; i++){
                 var recId = recIds[i];
-                var item = cache[String(interval)+':'+String(date)+':'+String(recId)];
+                var item = cache[String(interval)+':'+String(date)+':'+String(recId)+':'+String(count-1)];
                 if (item == null || item.validity < now){ 
                     missingRecIds.push(recId);
                 }
@@ -122,14 +123,16 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
          *
          * @return nonCachedRecordIds {Array} 
          */
-        __updateRecCache : function(recData,wantedRecIds,interval,date){
+        __updateRecCache : function(recData,wantedRecIds,interval,date,count){
             var cache = this.__recCache;
             var validUntil = new Date().getTime() + 1000 * 3600; /* cache valid for the next 5 minutes */
             for ( var i = 0; i < wantedRecIds.length; i++){
-                cache[String(interval)+':'+String(date)+':'+String(wantedRecIds[i])] = {
-                    validity: validUntil,                    
-                    data: recData[i]
-                };
+                for (var ii=0; ii < count; ii++){
+                    cache[String(interval)+':'+String(date)+':'+String  (wantedRecIds[i])+':'+String(ii)] = {
+                        validity: validUntil,
+                        data: recData[i*count+ii]
+                    };
+                }
             }
         },
         /**
@@ -138,22 +141,24 @@ qx.Class.define("ep.visualizer.data.MultiDataTable", {
          * @param wantedRecIds {Array} list of record ids requested from the server
          * @param interval {String} which interval are we talking about ?
          * @param data {Date} when does the interval end
-         *
+         * @param count {Number} how many intervals
          * @return nonCachedRecordIds {Array} 
          */
-        __fetchRecData : function(recIds,interval,date){
+        __fetchRecData : function(recIds,interval,date,count){
             var data = [];
             var cache = this.__recCache;
             var now = new Date().getTime();
             for ( var i = 0; i < recIds.length; i++){
-                var recId = recIds[i];    
-                var item = cache[String(interval)+':'+String(date)+':'+String(recId)];
-                if (item == null){
-                    continue;
-                }
-                // skip items where we did not get any data from the server 
-                if (item.data){
-                    data.push(item.data);
+                var recId = recIds[i];
+                for (var ii=0;ii<count;ii++) {
+                    var item = cache[String(interval)+':'+String(date)+':'+String(recId)+':'+String(ii)];
+                    if (item == null){
+                        continue;
+                    }
+                    // skip items where we did not get any data from the server 
+                    if (item.data){
+                        data.push(item.data);
+                    }
                 }
             }                               
             /* drop old data */            

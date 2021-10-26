@@ -66,6 +66,15 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       base 0
       strict 0
+  DBD-Oracle-1.80
+    pathname: M/MJ/MJEVANS/DBD-Oracle-1.80.tar.gz
+    provides:
+      DBD::Oracle 1.80
+      DBD::Oracle::GetInfo 1.80
+      DBD::Oracle::Object 1.80
+    requirements:
+      DBI 1.623
+      ExtUtils::MakeMaker 0
   DBD-SQLite-1.66
     pathname: I/IS/ISHIGAKI/DBD-SQLite-1.66.tar.gz
     provides:
@@ -905,6 +914,15 @@ DISTRIBUTIONS
       Term::ReadKey 2.38
     requirements:
       ExtUtils::MakeMaker 6.58
+  Test-NoWarnings-1.06
+    pathname: H/HA/HAARG/Test-NoWarnings-1.06.tar.gz
+    provides:
+      Test::NoWarnings 1.06
+      Test::NoWarnings::Warning 1.06
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::Builder 0.86
+      perl 5.006
   Text-CSV_XS-1.46
     pathname: H/HM/HMBRAND/Text-CSV_XS-1.46.tgz
     provides:
