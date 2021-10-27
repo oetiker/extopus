@@ -114,7 +114,7 @@ sub getData {
     }
     return {
         status => 1,
-        title => join (",",@$recIds),
+        # no title
         stepLabels => \@stepLabels,
         data => \@ret,
         caption => $self->caption_live({},{

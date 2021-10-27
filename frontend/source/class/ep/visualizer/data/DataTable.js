@@ -50,6 +50,9 @@ qx.Class.define("ep.visualizer.data.DataTable", {
         var resizeBehavior = tcm.getBehavior();
 
         this.clearCache();
+        let defr = new qx.ui.table.cellrenderer.String().set({
+            useAutoAlign: false
+        });
         for (var i=0; i<columns.length; i++) {
             if (widths[i]) {
                 resizeBehavior.setWidth(i, String(widths[i]) + '*');
@@ -60,6 +63,9 @@ qx.Class.define("ep.visualizer.data.DataTable", {
                 var format = new qx.util.format.NumberFormat('en_US').set({ postfix : ' ' + units[i] });
                 num.setNumberFormat(format);
                 tcm.setDataCellRenderer(i, num);
+            }
+            else {
+                tcm.setDataCellRenderer(i,defr);
             }
         }
 

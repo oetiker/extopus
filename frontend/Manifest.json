@@ -11,7 +11,7 @@
         "email": "tobi@oetiker.ch"
       }
     ],
-    "version": "0.7.10"
+    "version": "0.8.2"
   },
   "provides": {
     "namespace": "ep",
@@ -22,8 +22,8 @@
   },
   "$schema": "https://qooxdoo.org/schema/Manifest-1-0-0.json",
   "requires": {
-    "@qooxdoo/compiler": "^1.0.0",
-    "@qooxdoo/framework": "^6.0.0",
+    "@qooxdoo/compiler": "^1.0.3",
+    "@qooxdoo/framework": "^6.0.2",
     "oetiker/CanvasCell": "^1.0.4",
     "oetiker/QxD3": "^0.4.1"
   }

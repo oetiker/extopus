@@ -240,7 +240,7 @@ sub getData {
                 $stepStart = timelocal_nocheck(0,0,0,$S{mday} - $S{wday},@S{qw(mon year)});
                 @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($stepStart+7.1*24*3600);
                 $stepEnd = timelocal_nocheck(0,0,0,$E{mday},@E{qw(mon year)});
-                $stepLabel = strftime("%Y.%02V",localtime($stepStart+3.5*24*3600));
+                $stepLabel = strftime("%Y W%02V",localtime($stepStart+3.5*24*3600));
                 next;
             };
             /month/ && do {
@@ -257,7 +257,7 @@ sub getData {
                 @E{qw{sec min hour mday mon year wday yday isdst}} = localtime($end);
                 $stepStart = timelocal_nocheck(0,0,0,1,0,$E{year}-$step);
                 $stepEnd = timelocal_nocheck(23,59,59,31,11,$E{year}-$step);
-                $stepLabel = strftime("%Y",localtime($stepStart+180*24*3600));
+                $stepLabel = strftime("%Y ",localtime($stepStart+180*24*3600));
                 next;
             };
         }
