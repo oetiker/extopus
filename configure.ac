@@ -60,26 +60,6 @@ else
   AC_MSG_ERROR(could not find perl)
 fi
 
-ac_node_version="10"
-
-if test -x "$NODE"; then
-  AC_MSG_CHECKING(make sure we have at least node ${ac_node_version})
-  case `$NODE --version` in
-  v10*)
-    AC_MSG_RESULT(ok v10)
-    ;;
-  v12*)
-    AC_MSG_RESULT(ok v12)
-    ;;
-  v14*)
-    AC_MSG_RESULT(ok v14)
-    ;;
-  *)
-    AC_MSG_RESULT(no);
-    NODE=old-node
-  esac
-fi
-
 AM_CONDITIONAL(BUILD_QOOXDOO_APP,[test -x $NODE])
 
 AC_PATH_PROG(OPENSSL, openssl, no)
@@ -151,15 +131,6 @@ else
     AC_MSG_RESULT([install Prefix is fine])
 fi
 
-AC_ARG_VAR(CALLBACKERY_QX, [Alternate CallBackery/qooxdoo folder location])
-if test "$CALLBACKERY_QX" = ""; then
-    script_path=`dirname "$0"`
-    script_path=`cd $script_path;pwd`
-    # Absolute path this script is in, thus /home/user/bin
-    CALLBACKERY_QX="$script_path"/thirdparty/lib/perl5/CallBackery/qooxdoo
-fi
-AC_SUBST(CALLBACKERY_QX)
-
 AC_ARG_VAR(PERL5LIB,   [Colon separated list of perl library directories])
 AC_SUBST(PERL5LIB)
 
@@ -183,29 +154,13 @@ cat <<NOTES
 
 ** WARNING ***********************************************
 
-To run the qooxdoo compiler, node v10/v12/v14 is required.
-Use nvm to setup your local, up to date copy of node.
-Go to https://github.com/nvm-sh/nvm for futher information
+To run the qooxdoo compiler, node is required.
+Use asdf to setup your local, up to date copy of node.
+Go to https://github.com/asdf-vm for futher information
 
 NOTES
 fi
 
-
-if test "$mod_ok" = "0"; then
-    cat <<NOTES
-
-** SOME PERL MODULES ARE MISSING ******************************
-
-If you know where perl can find the missing modules, set
-the PERL5LIB environment variable accordingly. Otherwise
-just proceed and the missing modules will be installed
-automatically.
-
-To force the system to download missing perl modules, you can
-do a `touch PERL_MODULES` before running `$GMAKE`
-NOTES
-
-fi
 
 cat <<NOTES
 

@@ -5,10 +5,6 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/*
- * @asset(qx/icon/Tango/16/status/dialog-information.png)
-*/
-
 /**
  * A hidden textarea automatically focussing and selecting its content when it get set.
  */

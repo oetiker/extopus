@@ -4,9 +4,6 @@
    Authors:   Tobi Oetiker <tobi@oetiker.ch>
    Utf8Check: äöü
 ************************************************************************ */
-/*
- * @asset(ep/view-*.png)
-*/
 
 /**
  * The Dashboard Menu

@@ -7,18 +7,6 @@
 
 ************************************************************************ */
 
-/*
- * @asset(qx/icon/Tango/32/status/dialog-error.png)
- * @asset(qx/icon/Tango/32/status/dialog-information.png)
- * @asset(qx/icon/Tango/32/status/dialog-warning.png)
- * @asset(qx/icon/Tango/16/status/dialog-warning.png)
- * @asset(qx/icon/Tango/16/status/dialog-error.png)
- * @asset(qx/icon/Tango/16/status/dialog-information.png)
- * @asset(qx/icon/Tango/16/actions/dialog-ok.png)
- * @asset(qx/icon/Tango/16/actions/dialog-apply.png)
- * @asset(qx/icon/Tango/16/actions/dialog-cancel.png)
- */
-
 /**
  * A status window singelton. There is only one instance, several calls to
  * open will just change the windows content on the fly.
@@ -64,7 +52,7 @@ qx.Class.define("ep.ui.MsgBox", {
 
         var that = this;
 
-        var btn_cnl = this.__mk_btn(this.tr("Cancel"), "icon/16/actions/dialog-cancel.png");
+        var btn_cnl = this.__mk_btn(this.tr("Cancel"), "@MaterialIcons/cancel/16");
         this.__btn_cnl = btn_cnl;
 
         btn_cnl.addListener("execute", function(e) {
@@ -77,7 +65,7 @@ qx.Class.define("ep.ui.MsgBox", {
             btn_cnl.focus();
         }, this);
 
-        var btn_app = this.__mk_btn(this.tr("Apply"), "icon/16/actions/dialog-apply.png");
+        var btn_app = this.__mk_btn(this.tr("Apply"), "@MaterialIcons/done/16");
         this.__btn_app = btn_app;
 
         btn_app.addListener("execute", function(e) {
@@ -86,7 +74,7 @@ qx.Class.define("ep.ui.MsgBox", {
 
         box.add(btn_app);
 
-        var btn_ok = this.__mk_btn(this.tr("OK"), "icon/16/actions/dialog-ok.png");
+        var btn_ok = this.__mk_btn(this.tr("OK"), "@MaterialIcons/done/16");
         this.__btn_ok = btn_ok;
 
         btn_ok.addListener("execute", function(e) {
@@ -151,8 +139,8 @@ qx.Class.define("ep.ui.MsgBox", {
          * @return {void} 
          */
         error : function(titel, text) {
-            this.__body.setIcon("icon/32/status/dialog-error.png");
-            this.setIcon("icon/16/status/dialog-error.png");
+            this.__body.setIcon("@MaterialIcons/error_outline/32");
+            this.setIcon("@MaterialIcons/error_outline/16");
             this.__btn_ok.setVisibility('visible');
             this.__btn_app.setVisibility('excluded');
             this.__btn_cnl.setVisibility('excluded');
@@ -168,8 +156,8 @@ qx.Class.define("ep.ui.MsgBox", {
          * @return {void} 
          */
         exc : function(exc) {
-            this.__body.setIcon("icon/32/status/dialog-error.png");
-            this.setIcon("icon/16/status/dialog-error.png");
+            this.__body.setIcon("@MaterialIcons/error_outline/32");
+            this.setIcon("@MaterialIcons/error_outline/16");
             this.__btn_ok.setVisibility('visible');
             this.__btn_app.setVisibility('excluded');
             this.__btn_cnl.setVisibility('excluded');
@@ -191,8 +179,8 @@ qx.Class.define("ep.ui.MsgBox", {
          * @return {void} 
          */
         info : function(titel, text) {
-            this.__body.setIcon("icon/32/status/dialog-information.png");
-            this.setIcon("icon/16/status/dialog-information.png");
+            this.__body.setIcon("@MaterialIcons/info/32");
+            this.setIcon("@MaterialIcons/info/16");
             this.__btn_ok.setVisibility('visible');
             this.__btn_app.setVisibility('excluded');
             this.__btn_cnl.setVisibility('excluded');
@@ -210,8 +198,8 @@ qx.Class.define("ep.ui.MsgBox", {
          * @return {void} 
          */
         warn : function(titel, text, exec_action) {
-            this.__body.setIcon("icon/32/status/dialog-warning.png");
-            this.setIcon("icon/16/status/dialog-warning.png");
+            this.__body.setIcon("@MaterialIcons/warning_amber/32");
+            this.setIcon("@MaterialIcons/warning_amber/16");
             if (exec_action){
                 this.__btn_ok.setVisibility('excluded');
                 this.__btn_cnl.setVisibility('visible');

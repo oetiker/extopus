@@ -6,9 +6,6 @@
 ************************************************************************ */
 
 /*
- * @asset(qx/icon/Tango/16/actions/document-save.png)
- * @asset(qx/icon/Tango/48/actions/document-properties.png)
- * @asset(qx/icon/Tango/48/places/user-trash.png)
 */
 /**
   * Dashboard Widget showing multiple of visualization Plugins on a single page
@@ -253,7 +250,7 @@ qx.Class.define("ep.ui.DashBoard", {
             var button = this.getChildControl('button');
 
             var menuButton = this._menuButton = new qx.ui.basic.Atom().set({
-                icon   : 'ep/view-menu-black.png',
+                icon   : '@MaterialIcons/menu/16',
                 show   : 'icon',
                 cursor : 'pointer',
                 visibility: 'excluded'
@@ -288,10 +285,10 @@ qx.Class.define("ep.ui.DashBoard", {
                 backgroundColor: 'rgba(0,0,0,0.4)',
                 visibility: 'excluded'
             });
-            var moveBtn = new qx.ui.basic.Atom(null,"icon/48/actions/document-properties.png").set({
+            var moveBtn = new qx.ui.basic.Atom(null,"@MaterialIcons/settings/48").set({
                 allowGrowY: false
             });
-            var removeBtn = new qx.ui.basic.Atom(null,"icon/48/places/user-trash.png").set({
+            var removeBtn = new qx.ui.basic.Atom(null,"@MaterialIcons/delete/48").set({
                 allowGrowY: false
             });
             editBox.add(moveBtn);

@@ -20,10 +20,9 @@
     "resource": "source/resource",
     "translation": "source/translation"
   },
-  "$schema": "https://qooxdoo.org/schema/Manifest-1-0-0.json",
+  "$schema": "https://qooxdoo.org/schema/Manifest-2-0-0.json",
   "requires": {
-    "@qooxdoo/compiler": "^1.0.3",
-    "@qooxdoo/framework": "^6.0.2",
+    "@qooxdoo/framework": "^7.1.0",
     "oetiker/CanvasCell": "^1.0.4",
     "oetiker/QxD3": "^0.4.1"
   }

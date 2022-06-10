@@ -16,17 +16,12 @@ window.darkBlue = "#0066a8";
  */
 
 qx.Theme.define("ep.theme.Color", {
-    extend : qx.theme.indigo.Color,
-    colors : {
-        "table-row-background-even"     : "#f3f3f3",
-        "table-row-background-odd"      : "#fff"
-/*
-        "dark-blue"                     : window.darkBlue,
-        "table-row-background-selected" : window.lightBlue,
-        "background-selected"           : window.lightBlue,
-        "border-main"                   : window.lightBlue,
-        "tabview-unselected"            : window.darkBlue
-*/
+    extend : qx.theme.tangible.ColorEngine,
+    colors: {
+        // theme colors
+        primary: "rgb(218,41,28)",
+        secondary: "rgb(61,57,53)",
+        surface: "rgb(255,255,255)",
+        error: "rgb(218,0,0)"
     }
-
 });

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@qooxdoo/compiler": "^1.0.3"
+    "@qooxdoo/framework": "^7.1.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -5,10 +5,6 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/*
- * @asset(qx/icon/Tango/16/status/dialog-information.png)
-*/
-
 /**
  * A popup at the top edge of the display, hiding itself soon after appearing.
  * will re-appear when its label is set.
@@ -29,7 +25,7 @@ qx.Class.define("ep.ui.ShortNote", {
         this.set({
             zIndex: -10
         });
-        var note = this.__note = new qx.ui.basic.Atom('',"icon/16/status/dialog-information.png");
+        var note = this.__note = new qx.ui.basic.Atom('',"@MaterialIcons/info/16");
         note.set({
             textColor : "tooltip-text",
             backgroundColor : "tooltip",

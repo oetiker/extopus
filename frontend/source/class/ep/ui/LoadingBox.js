@@ -5,11 +5,6 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/*
- * @asset(ep/loader.gif)
- * @asset(qx/icon/Tango/64/status/dialog-information.png)
-*/
-
 /**
  * A container with the ability to overlay its prime content with either
  * a loading animation or the message No Data. Configure the widget by setting the {@link #ep.ui.LoadingBox~setViewMode}.
@@ -41,7 +36,7 @@ qx.Class.define("ep.ui.LoadingBox", {
             
 
 
-        var loader = this.__loader = new qx.ui.basic.Atom(null, "ep/loader.gif").set({
+        var loader = this.__loader = new qx.ui.basic.Atom(null, "@MaterialIcons/sync/16").set({
             visibility      : 'hidden',
             show            : 'icon',
             backgroundColor : '#ffffff',
@@ -58,7 +53,7 @@ qx.Class.define("ep.ui.LoadingBox", {
 
         this._add(loader);
 
-        var noData = this.__noData = new qx.ui.basic.Atom(this.tr("no data available"), "icon/64/status/dialog-information.png").set({
+        var noData = this.__noData = new qx.ui.basic.Atom(this.tr("no data available"), "@MaterialIcons/info/64").set({
             visibility      : 'hidden',
             gap             : 20,
             backgroundColor : '#ffffff',

@@ -15,6 +15,14 @@
       "uri": "oetiker/QxD3",
       "repo_name": "oetiker/QxD3",
       "repo_tag": "v0.4.1"
+    },
+    {
+      "library_name": "deprecated.qx.io.remote",
+      "library_version": "1.0.2",
+      "path": "qx_packages/qooxdoo_deprecated_qx_io_remote_v1_0_2",
+      "uri": "qooxdoo/deprecated.qx.io.remote",
+      "repo_name": "qooxdoo/deprecated.qx.io.remote",
+      "repo_tag": "v1.0.2"
     }
   ],
   "version": "2.1.0"

@@ -9,10 +9,10 @@
       },
       "babelOptions": {
         "targets": {
-          "chrome": "80",
-          "firefox": "74",
-          "edge": "18",
-          "safari": "13"
+          "chrome": "90",
+          "firefox": "88",
+          "edge": "90",
+          "safari": "14"
         }
       }
     },
@@ -21,10 +21,10 @@
       "outputPath": "compiled/build",
       "babelOptions": {
         "targets": {
-          "chrome": "80",
-          "firefox": "74",
-          "edge": "18",
-          "safari": "13"
+          "chrome": "90",
+          "firefox": "88",
+          "edge": "90",
+          "safari": "14"
         }
       }
     }

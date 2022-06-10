@@ -5,11 +5,6 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/*
- * @asset(qx/icon/Tango/16/actions/list-add.png)
- * @asset(ep/loading16.gif)
- */
-
 /**
  * Master Dashboard Menu, showing all Dashboards available on the server. 
  * This is a bit of a special menu as it contains a custom button already
@@ -22,14 +17,14 @@ qx.Class.define("ep.ui.DashServerMenu", {
 
     construct : function() {
         this.base(arguments);
-        var plus = new qx.ui.form.MenuButton(null,"icon/16/actions/list-add.png",this).set({
-            margin: [4,4,4,4],
+        var plus = new qx.ui.form.MenuButton(null,"@MaterialIcons/add/22",this).set({
+            //margin: [4,4,4,4],
             appearance: "menubar-button",
             center: true,
             show: 'icon' 
         });
         this._menuCache = {};
-        this._menuBusy = new qx.ui.menu.Button("Updating Dashlist","ep/loading16.gif").set({
+        this._menuBusy = new qx.ui.menu.Button("Updating Dashlist","@MaterialIcons/sync/16").set({
             enabled: false
         });
         this._noDashboards = new qx.ui.menu.Button("No Dashboards found").set({

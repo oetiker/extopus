@@ -5,10 +5,6 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/* ************************************************************************
- * @asset(qx/icon/Tango/32/actions/list-add.png)
-************************************************************************ */
-
 /**
  * place an item into dashboard config
  **/
@@ -279,8 +275,8 @@ qx.Class.define("ep.ui.DashConfig", {
         },
 
         _addGrowHandles: function(){
-            var right = this._ghRight = this._makeGrowHandle("icon/32/actions/list-add.png");
-            var bottom = this._ghBottom = this._makeGrowHandle("icon/32/actions/list-add.png");
+            var right = this._ghRight = this._makeGrowHandle("@MaterialIcons/post_add/32");
+            var bottom = this._ghBottom = this._makeGrowHandle("@MaterialIcons/post_add/32");
             var that = this;
             right.addListener('tap',function(e){
                 that.setMaxX(that.getMaxX()+1);

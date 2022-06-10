@@ -5,10 +5,6 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/*
- * @asset(ep/view-menu-black.png)
-*/
-
 /**
  * Abstract Visualization widget.
  */
@@ -33,7 +29,7 @@ qx.Class.define("ep.ui.ViewPage", {
         var button = this.getChildControl('button');
 
         var menuButton = this._menuButton = new qx.ui.basic.Atom().set({
-            icon   : 'ep/view-menu-black.png',
+            icon   : '@MaterialIcons/menu/16',
             show   : 'icon',
             cursor : 'pointer',
             visibility: 'excluded'

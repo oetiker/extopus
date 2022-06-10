@@ -6,11 +6,6 @@
 ************************************************************************ */
 
 /**
- * @asset(qx/icon/Tango/22/mimetypes/office-spreadsheet.png)
- * @asset(ep/loading22.gif)
- */
-
-/**
  * The Extopus node navigation tree with table and view areas.
  */
 qx.Class.define("ep.ui.TreeView", {
@@ -130,11 +125,11 @@ qx.Class.define("ep.ui.TreeView", {
                     converter : function(value, model) {
                         if (value == "default") {
                             if (! model.getKids) {
-                                return "icon/22/mimetypes/office-spreadsheet.png";
+                                return "@MaterialIconsOutlined/inventory_2/22";
                             }
                         }
                         else {
-                            return "ep/loading22.gif";
+                            return "@MaterialIcons/sync/22";
                         }
                     }
                 },

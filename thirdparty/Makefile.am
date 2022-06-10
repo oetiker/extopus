@@ -17,7 +17,8 @@ touch:  bin/cpanm $(CPANSNAPV)
 	$(AM_V_at)echo "** Installing Dependencies using $(CPANSNAPV)"
 	cp $(CPANSNAPV) ../cpanfile.snapshot
 	test -x carton/bin/carton || PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton Date::Parse
-	PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install
+# if ever DBD::ODBC is compiled, make sure we get the utf8 version
+	PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) DBD_ODBC_UNICODE=1 PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install
 	$(AM_V_at)rm -f ../cpanfile.snapshot
 	$(AM_V_at)touch touch
 
@@ -30,7 +31,8 @@ $(CPANSNAPV): ../cpanfile
 	$(AM_V_at)echo "** Installing Dependencies using Carton install"
 	test -f $(CPANSNAPV) && cp $(CPANSNAPV) ../cpanfile.snapshot || true
 	test -x carton/bin/carton || PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton Date::Parse
-	PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install
+# if ever DBD::ODBC is compiled, make sure we get the utf8 version
+	PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) DBD_ODBC_UNICODE=1 PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install
 	mv ../cpanfile.snapshot $(CPANSNAPV)
 	$(AM_V_at)touch touch
 
@@ -48,3 +50,6 @@ distclean-local:
 
 install-exec-hook:
 	cp -fr lib/perl5/* $(DESTDIR)$(libdir)
+	cp -f bin/cover $(DESTDIR)$(bindir)
+	$(AM_V_at)echo "** Patching cover command"
+	$(PERL) -i -p -e 's{use warnings;}{use warnings;\nuse lib qw($(libdir));}' $(DESTDIR)$(bindir)/cover

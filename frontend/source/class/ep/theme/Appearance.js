@@ -15,25 +15,70 @@
  * Qooxdoo has no apperance overrides.
  */
 qx.Theme.define("ep.theme.Appearance", {
-    extend : qx.theme.indigo.Appearance,
-    appearances : {
-        "tree-folder" :{
-            style : function(states){
-                var backgroundColor;
-                if (states.selected) {
-                    backgroundColor = "background-selected";
-                    if (states.disabled) {
-                        backgroundColor += "-disabled";
-                    }
-                }
+    extend: qx.theme.tangible.Appearance,
+    appearances: {
+        "tree-folder": {
+            style(states) {
                 return {
-                    padding : [2, 8, 2, 5],
-                    icon : states.opened ? "icon/22/places/folder-open.png" : "icon/22/places/folder.png",
-                    backgroundColor : backgroundColor,
-                    iconOpened : "icon/22/places/folder-open.png",
-                    opacity : states.drag ? 0.5 : undefined
+                    padding: [0, 8, 2, 10],
+                    icon: states.opened
+                        ? "@MaterialIconsSharp/folder_open/22"
+                        : "@MaterialIconsSharp/folder/22",
+                    backgroundColor: states.selected
+                        ? states.disables
+                            ? "primary-disabled"
+                            : "primary-selected"
+                        : "surface",
+                    textColor: states.selected
+                        ? "text-on-primary"
+                        : "text-disabled-on-primary",
+                    iconOpened: "@MaterialIconsSharp/folder_open/22",
+                    opacity: states.drag ? 0.5 : undefined
                 };
             }
-        }
+        },
+
+        "menubar-button/icon": {
+            style(states) {
+                return {
+                    textColor: states.disabled
+                        ? "text-disabled-on-surface"
+                        : (states.pressed || states.hovered)
+                            ? "text-on-primary"
+                            : "text-on-surface"
+                }
+            }
+        },
+        "table/column-button/icon": {
+            style(states) {
+                return {
+                    textColor: "text-on-surface"
+                }
+            }
+        },
+        "table/column-button": {
+            alias: "button",
+      
+            style(states) {
+              return {
+                decorator: "table-header-column-button",
+                textColor: "text-primary-on-surface",
+                backgroundColor: "surface",
+                padding: 3,
+                icon: "@MaterialIcons/menu/16"
+              };
+            }
+          },
+          "table-column-reset-button": {
+            include: "menu-button",
+            alias: "menu-button",
+            style() {
+              return {
+                decorator:  "menubar-button",
+                icon: "@MaterialIcons/sync/16"
+              };
+            }
+          },
+          "table-column-reset-button/icon": "menubar-button/icon"
     }
 });
