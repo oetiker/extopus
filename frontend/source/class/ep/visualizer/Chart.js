@@ -104,8 +104,8 @@ qx.Class.define("ep.visualizer.Chart", {
 
         var menu = new qx.ui.menu.Menu();
 
-        var pdfButton = new qx.ui.menu.Button(this.tr('Save PDF'), "icon/16/actions/document-save.png");
-        var printButton = this.__printBtn = new qx.ui.menu.Button(this.tr('Print'), "icon/16/actions/document-print.png");
+        var pdfButton = new qx.ui.menu.Button(this.tr('Save PDF'), "@MaterialIcons/save/16");
+        var printButton = this.__printBtn = new qx.ui.menu.Button(this.tr('Print'), "@MaterialIcons/print/16");
 
         // add execute listeners
         pdfButton.addListener("execute", this._downloadPdf, this);

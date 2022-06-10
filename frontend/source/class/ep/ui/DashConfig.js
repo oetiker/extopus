@@ -275,8 +275,8 @@ qx.Class.define("ep.ui.DashConfig", {
         },
 
         _addGrowHandles: function(){
-            var right = this._ghRight = this._makeGrowHandle("@MaterialIcons/post_add/32");
-            var bottom = this._ghBottom = this._makeGrowHandle("@MaterialIcons/post_add/32");
+            var right = this._ghRight = this._makeGrowHandle("@MaterialIcons/note_add/32");
+            var bottom = this._ghBottom = this._makeGrowHandle("@MaterialIcons/note_add/32");
             var that = this;
             right.addListener('tap',function(e){
                 that.setMaxX(that.getMaxX()+1);

@@ -6,12 +6,6 @@
 ************************************************************************ */
 
 /**
- * @asset(ep/date-bw.png)
- * @asset(qx/icon/Tango/22/places/folder-open.png)
- * @asset(qx/icon/Tango/22/places/folder.png)
- */
-
-/**
  * Qooxdoo has no apperance overrides.
  */
 qx.Theme.define("ep.theme.Appearance", {
@@ -74,7 +68,6 @@ qx.Theme.define("ep.theme.Appearance", {
             alias: "menu-button",
             style() {
               return {
-                decorator:  "menubar-button",
                 icon: "@MaterialIcons/sync/16"
               };
             }

@@ -27,9 +27,8 @@ qx.Class.define("ep.ui.ShortNote", {
         });
         var note = this.__note = new qx.ui.basic.Atom('',"@MaterialIcons/info/16");
         note.set({
-            textColor : "tooltip-text",
-            backgroundColor : "tooltip",
-            decorator: "main-dark",
+            textColor : "text-on-secondary",
+            backgroundColor : "secondary",
             padding : [ 1, 3, 2, 3 ]
         });
 

@@ -5,12 +5,6 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/* ***************
-#asset(qx/icon/${qx.icontheme}/16/actions/document-save.png)
-#asset(qx/icon/${qx.icontheme}/16/actions/document-print.png)
-#asset(qx/icon/${qx.icontheme}/16/apps/office-spreadsheet.png)
-#asset(qx/icon/${qx.icontheme}/16/mimetypes/office-spreadsheet.png)
-*************** */
 
 /**
  * Show Data analysis page

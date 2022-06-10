@@ -6,9 +6,7 @@
    Utf8Check:  äöü
 
 ************************************************************************ */
-/*
-#asset(qx/icon/${qx.icontheme}/16/actions/system-search.png)
-*/
+
 /**
  * Create a table widget for the Data visualizer.
  */
@@ -184,7 +182,7 @@ qx.Class.define("ep.visualizer.data.DirectDataTable", {
         },
         _ctxMenu: function (col, row, table, dataModel, contextMenu) {
               var term = String(dataModel.getValue(col,row));
-              var search = new qx.ui.menu.Button("Find '"+term+"'","icon/16/actions/system-search.png");
+              var search = new qx.ui.menu.Button("Find '"+term+"'","@FontIcons/search/16");
               contextMenu.add(search);
               search.addListener('execute',function(){
                  ep.ui.Desktop.getInstance().getSearchView().search(term);

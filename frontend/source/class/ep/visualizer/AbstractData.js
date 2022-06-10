@@ -5,13 +5,6 @@
    Utf8Check: äöü
 ************************************************************************ */
 
-/* ***************
-#asset(qx/icon/${qx.icontheme}/16/actions/document-save.png)
-#asset(qx/icon/${qx.icontheme}/16/actions/document-print.png)
-#asset(qx/icon/${qx.icontheme}/16/apps/office-spreadsheet.png)
-#asset(qx/icon/${qx.icontheme}/16/mimetypes/office-spreadsheet.png)
-*************** */
-
 /**
  * Show Data analysis page
 **/
@@ -53,9 +46,9 @@ qx.Class.define("ep.visualizer.AbstractData", {
         // create main menu and buttons
         var menu = new qx.ui.menu.Menu();
 
-        var csvButton = new qx.ui.menu.Button(this.tr('Save CSV'), "icon/16/actions/document-save.png");
-        var xlsButton = new qx.ui.menu.Button(this.tr('Save Excel 2003 XLS'), "icon/16/apps/office-spreadsheet.png");
-        var xlsxButton = new qx.ui.menu.Button(this.tr('Save Excel 2010 XLSX'), "icon/16/mimetypes/office-spreadsheet.png");
+        var csvButton = new qx.ui.menu.Button(this.tr('Save CSV'), "@MaterialIcons/description/16");
+        var xlsButton = new qx.ui.menu.Button(this.tr('Save Excel 2003 XLS'), "@MaterialIcons/description/16");
+        var xlsxButton = new qx.ui.menu.Button(this.tr('Save Excel 2010 XLSX'), "@MaterialIcons/description/16");
 
         // add execute listeners
         csvButton.addListener("execute", function() {
