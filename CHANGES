@@ -1,3 +1,7 @@
+0.9.1 2022-06-10 15:13:22 +0200 Tobias Oetiker <tobi@oetiker.ch>
+
+ - remove cover dependency
+
 0.9.0 2022-06-10 13:56:43 +0200 Tobias Oetiker <tobi@oetiker.ch>
 
  - switch to tangible theme
