@@ -24,6 +24,7 @@
   "requires": {
     "@qooxdoo/framework": "^7.1.0",
     "oetiker/CanvasCell": "^1.0.4",
-    "oetiker/QxD3": "^0.4.1"
+    "oetiker/QxD3": "^0.4.1",
+    "oposs/qx-iconfont-tabler": "^0.1.0"
   }
 }

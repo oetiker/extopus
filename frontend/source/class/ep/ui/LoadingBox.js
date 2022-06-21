@@ -36,7 +36,7 @@ qx.Class.define("ep.ui.LoadingBox", {
             
 
 
-        var loader = this.__loader = new qx.ui.basic.Atom(null, "@MaterialIcons/sync/16").set({
+        var loader = this.__loader = new qx.ui.basic.Atom(null, "@TablerIcons/refresh/16").set({
             visibility      : 'hidden',
             show            : 'icon',
             backgroundColor : '#ffffff',
@@ -53,7 +53,7 @@ qx.Class.define("ep.ui.LoadingBox", {
 
         this._add(loader);
 
-        var noData = this.__noData = new qx.ui.basic.Atom(this.tr("no data available"), "@MaterialIcons/info/64").set({
+        var noData = this.__noData = new qx.ui.basic.Atom(this.tr("no data available"), "@TablerIcons/database-off/64").set({
             visibility      : 'hidden',
             gap             : 20,
             backgroundColor : '#ffffff',

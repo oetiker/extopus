@@ -29,7 +29,7 @@ qx.Class.define("ep.ui.ViewPage", {
         var button = this.getChildControl('button');
 
         var menuButton = this._menuButton = new qx.ui.basic.Atom().set({
-            icon   : '@MaterialIcons/menu/16',
+            icon   : '@TablerIcons/dots-vertical/16',
             show   : 'icon',
             cursor : 'pointer',
             visibility: 'excluded'

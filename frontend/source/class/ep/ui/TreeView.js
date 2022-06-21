@@ -125,11 +125,11 @@ qx.Class.define("ep.ui.TreeView", {
                     converter : function(value, model) {
                         if (value == "default") {
                             if (! model.getKids) {
-                                return "@MaterialIconsOutlined/inventory_2/22";
+                                return "@TablerIcons/package/22";
                             }
                         }
                         else {
-                            return "@MaterialIcons/sync/22";
+                            return "@TablerIcons/refresh/22";
                         }
                     }
                 },

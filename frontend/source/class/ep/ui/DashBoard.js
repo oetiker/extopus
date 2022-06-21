@@ -250,7 +250,7 @@ qx.Class.define("ep.ui.DashBoard", {
             var button = this.getChildControl('button');
 
             var menuButton = this._menuButton = new qx.ui.basic.Atom().set({
-                icon   : '@MaterialIcons/menu/16',
+                icon   : '@TablerIcons/dots-vertical/16',
                 show   : 'icon',
                 cursor : 'pointer',
                 visibility: 'excluded'
@@ -285,10 +285,10 @@ qx.Class.define("ep.ui.DashBoard", {
                 backgroundColor: 'rgba(0,0,0,0.4)',
                 visibility: 'excluded'
             });
-            var moveBtn = new qx.ui.basic.Atom(null,"@MaterialIcons/settings/48").set({
+            var moveBtn = new qx.ui.basic.Atom(null,"@TablerIcons/adjustments/48").set({
                 allowGrowY: false
             });
-            var removeBtn = new qx.ui.basic.Atom(null,"@MaterialIcons/delete/48").set({
+            var removeBtn = new qx.ui.basic.Atom(null,"@TablerIcons/trash/48").set({
                 allowGrowY: false
             });
             editBox.add(moveBtn);

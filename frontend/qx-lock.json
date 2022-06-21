@@ -2,19 +2,19 @@
   "libraries": [
     {
       "library_name": "CanvasCell",
-      "library_version": "1.0.4",
-      "path": "qx_packages/oetiker_CanvasCell_v1_0_4",
+      "library_version": "1.0.5",
+      "path": "qx_packages/oetiker_CanvasCell_v1_0_5",
       "uri": "oetiker/CanvasCell",
       "repo_name": "oetiker/CanvasCell",
-      "repo_tag": "v1.0.4"
+      "repo_tag": "v1.0.5"
     },
     {
       "library_name": "QxD3",
-      "library_version": "0.4.1",
-      "path": "qx_packages/oetiker_QxD3_v0_4_1",
+      "library_version": "0.4.2",
+      "path": "qx_packages/oetiker_QxD3_v0_4_2",
       "uri": "oetiker/QxD3",
       "repo_name": "oetiker/QxD3",
-      "repo_tag": "v0.4.1"
+      "repo_tag": "v0.4.2"
     },
     {
       "library_name": "deprecated.qx.io.remote",
@@ -23,6 +23,14 @@
       "uri": "qooxdoo/deprecated.qx.io.remote",
       "repo_name": "qooxdoo/deprecated.qx.io.remote",
       "repo_tag": "v1.0.2"
+    },
+    {
+      "library_name": "qx-iconfont-tabler",
+      "library_version": "0.1.0",
+      "path": "qx_packages/oposs_qx-iconfont-tabler_0_1_0",
+      "uri": "oposs/qx-iconfont-tabler",
+      "repo_name": "oposs/qx-iconfont-tabler",
+      "repo_tag": "0.1.0"
     }
   ],
   "version": "2.1.0"

@@ -25,7 +25,7 @@ qx.Class.define("ep.ui.ShortNote", {
         this.set({
             zIndex: -10
         });
-        var note = this.__note = new qx.ui.basic.Atom('',"@MaterialIcons/info/16");
+        var note = this.__note = new qx.ui.basic.Atom('',"@TablerIcons/bulb/16");
         note.set({
             textColor : "text-on-secondary",
             backgroundColor : "secondary",

@@ -46,9 +46,9 @@ qx.Class.define("ep.visualizer.AbstractData", {
         // create main menu and buttons
         var menu = new qx.ui.menu.Menu();
 
-        var csvButton = new qx.ui.menu.Button(this.tr('Save CSV'), "@MaterialIcons/description/16");
-        var xlsButton = new qx.ui.menu.Button(this.tr('Save Excel 2003 XLS'), "@MaterialIcons/description/16");
-        var xlsxButton = new qx.ui.menu.Button(this.tr('Save Excel 2010 XLSX'), "@MaterialIcons/description/16");
+        var csvButton = new qx.ui.menu.Button(this.tr('Save CSV'), "@TablerIcons/download/16");
+        var xlsButton = new qx.ui.menu.Button(this.tr('Save Excel 2003 XLS'), "@TablerIcons/download/16");
+        var xlsxButton = new qx.ui.menu.Button(this.tr('Save Excel 2010 XLSX'), "@TablerIcons/download/16");
 
         // add execute listeners
         csvButton.addListener("execute", function() {

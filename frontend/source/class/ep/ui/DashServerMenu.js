@@ -17,17 +17,17 @@ qx.Class.define("ep.ui.DashServerMenu", {
 
     construct : function() {
         this.base(arguments);
-        var plus = new qx.ui.form.MenuButton(null,"@MaterialIcons/add/22",this).set({
+        var plus = new qx.ui.form.MenuButton(null,"@TablerIcons/plus/22",this).set({
             //margin: [4,4,4,4],
             appearance: "menubar-button",
             center: true,
             show: 'icon' 
         });
         this._menuCache = {};
-        this._menuBusy = new qx.ui.menu.Button("Updating Dashlist","@MaterialIcons/sync/16").set({
+        this._menuBusy = new qx.ui.menu.Button("Updating Dashlist","@TablerIcons/refresh/16").set({
             enabled: false
         });
-        this._noDashboards = new qx.ui.menu.Button("No Dashboards found").set({
+        this._noDashboards = new qx.ui.menu.Button("No Dashboards found","@TablerIcons/ban/22").set({
             enabled: false
         });
         this.addListener('changeVisibility',function(e){
@@ -102,13 +102,13 @@ qx.Class.define("ep.ui.DashServerMenu", {
                     }
                     if (!libMenu ){
                         libMenu = new qx.ui.menu.Menu;
-                        libMenuButton = new qx.ui.menu.Button(menu.tr("Library"),null,null,libMenu);
+                        libMenuButton = new qx.ui.menu.Button(menu.tr("Library"),"@TablerIcons/users/22",null,libMenu);
                     }
                     if (!loginMenus[item.login]){
                         loginMenus[item.login] = new qx.ui.menu.Menu;
                         libMenu.add(
                             new qx.ui.menu.Button(
-                                item.login,null, null,loginMenus[item.login]
+                                item.login,"@TablerIcons/user/22", null,loginMenus[item.login]
                             )
                         );
                     }
@@ -137,7 +137,7 @@ qx.Class.define("ep.ui.DashServerMenu", {
         },
         _makeButton: function(menu,item){
             var dashMgr = ep.ui.DashManager.getInstance();
-            var button = new qx.ui.menu.Button(item.lb).set({
+            var button = new qx.ui.menu.Button(item.lb,"@TablerIcons/layout-dashboard/22").set({
                 label: item.lb,
                 enabled: !dashMgr.isBoardOpen(item.id) 
             });

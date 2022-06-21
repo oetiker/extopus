@@ -16,8 +16,8 @@ qx.Theme.define("ep.theme.Appearance", {
                 return {
                     padding: [0, 8, 2, 10],
                     icon: states.opened
-                        ? "@MaterialIconsSharp/folder_open/22"
-                        : "@MaterialIconsSharp/folder/22",
+                        ? "@TablerIcons/folder/22"
+                        : "@TablerIcons/folder/22",
                     backgroundColor: states.selected
                         ? states.disables
                             ? "primary-disabled"
@@ -26,7 +26,7 @@ qx.Theme.define("ep.theme.Appearance", {
                     textColor: states.selected
                         ? "text-on-primary"
                         : "text-disabled-on-primary",
-                    iconOpened: "@MaterialIconsSharp/folder_open/22",
+                    iconOpened: "@TablerIcons/folder/22",
                     opacity: states.drag ? 0.5 : undefined
                 };
             }
@@ -59,7 +59,7 @@ qx.Theme.define("ep.theme.Appearance", {
                 textColor: "text-primary-on-surface",
                 backgroundColor: "surface",
                 padding: 3,
-                icon: "@MaterialIcons/menu/16"
+                icon: "@TablerIcons/dots-vertical/16"
               };
             }
           },
@@ -68,7 +68,7 @@ qx.Theme.define("ep.theme.Appearance", {
             alias: "menu-button",
             style() {
               return {
-                icon: "@MaterialIcons/sync/16"
+                icon: "@TablerIcons/refresh/16"
               };
             }
           },

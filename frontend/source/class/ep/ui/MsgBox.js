@@ -52,7 +52,7 @@ qx.Class.define("ep.ui.MsgBox", {
 
         var that = this;
 
-        var btn_cnl = this.__mk_btn(this.tr("Cancel"), "@MaterialIcons/cancel/16");
+        var btn_cnl = this.__mk_btn(this.tr("Cancel"), "@TablerIcons/x/16");
         this.__btn_cnl = btn_cnl;
 
         btn_cnl.addListener("execute", function(e) {
@@ -65,7 +65,7 @@ qx.Class.define("ep.ui.MsgBox", {
             btn_cnl.focus();
         }, this);
 
-        var btn_app = this.__mk_btn(this.tr("Apply"), "@MaterialIcons/done/16");
+        var btn_app = this.__mk_btn(this.tr("Apply"), "@TablerIcons/check/16");
         this.__btn_app = btn_app;
 
         btn_app.addListener("execute", function(e) {
@@ -74,7 +74,7 @@ qx.Class.define("ep.ui.MsgBox", {
 
         box.add(btn_app);
 
-        var btn_ok = this.__mk_btn(this.tr("OK"), "@MaterialIcons/done/16");
+        var btn_ok = this.__mk_btn(this.tr("OK"), "@TablerIcons/check/16");
         this.__btn_ok = btn_ok;
 
         btn_ok.addListener("execute", function(e) {
@@ -139,8 +139,8 @@ qx.Class.define("ep.ui.MsgBox", {
          * @return {void} 
          */
         error : function(titel, text) {
-            this.__body.setIcon("@MaterialIcons/error_outline/32");
-            this.setIcon("@MaterialIcons/error_outline/16");
+            this.__body.setIcon("@TablerIcons/alert-triangle/32");
+            this.setIcon("@TablerIcons/alert-triangle/16");
             this.__btn_ok.setVisibility('visible');
             this.__btn_app.setVisibility('excluded');
             this.__btn_cnl.setVisibility('excluded');
@@ -156,8 +156,8 @@ qx.Class.define("ep.ui.MsgBox", {
          * @return {void} 
          */
         exc : function(exc) {
-            this.__body.setIcon("@MaterialIcons/error_outline/32");
-            this.setIcon("@MaterialIcons/error_outline/16");
+            this.__body.setIcon("@TablerIcons/alert-triangle/32");
+            this.setIcon("@TablerIcons/alert-triangle/16");
             this.__btn_ok.setVisibility('visible');
             this.__btn_app.setVisibility('excluded');
             this.__btn_cnl.setVisibility('excluded');
@@ -179,8 +179,8 @@ qx.Class.define("ep.ui.MsgBox", {
          * @return {void} 
          */
         info : function(titel, text) {
-            this.__body.setIcon("@MaterialIcons/info/32");
-            this.setIcon("@MaterialIcons/info/16");
+            this.__body.setIcon("@TablerIcons/info-circle/32");
+            this.setIcon("@TablerIcons/info-circle/16");
             this.__btn_ok.setVisibility('visible');
             this.__btn_app.setVisibility('excluded');
             this.__btn_cnl.setVisibility('excluded');
@@ -198,8 +198,8 @@ qx.Class.define("ep.ui.MsgBox", {
          * @return {void} 
          */
         warn : function(titel, text, exec_action) {
-            this.__body.setIcon("@MaterialIcons/warning_amber/32");
-            this.setIcon("@MaterialIcons/warning_amber/16");
+            this.__body.setIcon("@TablerIcons/traffic-cone/32");
+            this.setIcon("@TablerIcons/traffic-cone/16");
             if (exec_action){
                 this.__btn_ok.setVisibility('excluded');
                 this.__btn_cnl.setVisibility('visible');
