@@ -13,12 +13,12 @@
  * no special fonts for extopus
  */
 qx.Theme.define("ep.theme.Font", {
-    extend: qx.theme.tangible.Font,
+    extend: qx.theme.indigo.Font,
     fonts: {
         default: {
             size: 14,
             family: ["sans-serif"],
-            color: "text-primary-on-surface",
+            color: "text-on-surface",
             sources: [
                 {
                     family: "AvenirNext",
@@ -34,7 +34,7 @@ qx.Theme.define("ep.theme.Font", {
             size: 14,
             family: ["sans-serif"],
             bold: true,
-            color: "text-primary-on-surface",
+            color: "text-on-surface",
             sources: [
                 {
                     family: "AvenirNext",
@@ -49,7 +49,7 @@ qx.Theme.define("ep.theme.Font", {
         headline: {
             size: 24,
             family: ["sans-serif"],
-            color: "text-primary-on-surface",
+            color: "text-on-surface",
             sources: [
                 {
                     family: "AvenirNext",
@@ -63,7 +63,7 @@ qx.Theme.define("ep.theme.Font", {
         small: {
             size: 12,
             family: ["sans-serif"],
-            color: "text-primary-on-surface",
+            color: "text-on-surface",
             sources: [
                 {
                     family: "AvenirNext",

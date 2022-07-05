@@ -9,7 +9,7 @@
  * Using the standard decoration configuration
  */
 qx.Theme.define("ep.theme.Decoration", {
-    extend      : qx.theme.tangible.Decoration,
+    extend      : qx.theme.indigo.Decoration,
     decorations : {
     }
 });
