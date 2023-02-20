@@ -34,6 +34,8 @@ use EP::RpcService;
 use EP::Config;
 use EP::DocPlugin;
 use EP::Visualizer;
+use EP::Controller::OpenId;
+
 use Mojo::Base 'Mojolicious';
 
 =head2 cfg
@@ -80,7 +82,6 @@ Mojolicious calls the startup method at initialization time.
 
 sub startup {
     my $app = shift;
-
     @{$app->commands->namespaces} = (__PACKAGE__.'::Command');
 
     my $gcfg = $app->cfg->{GENERAL};
@@ -135,7 +136,18 @@ sub startup {
             $self->redirect_to('/'.$app->prefix);
         });
     }
-
+    if ($gcfg->{openid_url}) {
+        # load openid config
+        EP::Controller::OpenId::loadConfig($app);
+        $routes->get('/openid/auth')->to(
+            controller => 'OpenId',
+            action => 'auth',
+        );
+        $routes->get('/openid/callback')->to(
+            controller => 'OpenId',
+            action => 'callback',
+        );
+    }
     $routes->get('/' => sub { shift->redirect_to('/'.$app->prefix)});
 
     $app->plugin('EP::DocPlugin', {

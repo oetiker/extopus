@@ -5,6 +5,12 @@ mojo_secret = d0duj3mfjfviasasdfasdf
 log_file = /scratch/extopus-demo/extopus-full.log
 default_user = admin
 update_interval = 5
+openid_url = http://keycloak.example.com
+openid_realm = extopus-realm
+openid_client_id = extopus-client
+openid_client_secret = 1234567890
+openid_callback = http://extopus.example.com/openid/callback
+openid_epuser_attribute = ep_user
 
 *** FRONTEND ***
 #logo_large = http://www.upc-cablecom.biz/en/cablecom_logo_b2b.jpg
