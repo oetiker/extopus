@@ -1,3 +1,19 @@
+0.10.0 2023-02-20 17:23:34 +0100 Tobias Oetiker <tobi@oetiker.ch>
+
+ - add openid authentication
+
+   add new openid_* config options to cfg file (see cfg.dist)
+   start with /openid/auth
+
+
+0.9.4 2022-07-05 15:44:11 +0200 Tobias Oetiker <tobi@oetiker.ch>
+
+ - switch back to indigo theme but change colors to sunrise scheme
+
+0.9.3 2022-06-21 09:37:07 +0200 Tobias Oetiker <tobi@oetiker.ch>
+
+ - switch to tabler icon-theme
+
 0.9.4 2022-07-05 15:44:11 +0200 Tobias Oetiker <tobi@oetiker.ch>
 
  - switch back to indigo theme but change colors to sunrise scheme
