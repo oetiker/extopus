@@ -1,3 +1,7 @@
+0.10.2 2023-02-28 16:13:17 +0100 Tobias Oetiker <tobi@oetiker.ch>
+
+ - block rpc calls if there is no session
+
 0.10.1 2023-02-28 15:30:30 +0100 Tobias Oetiker <tobi@oetiker.ch>
 
  - if openid_url is configured, redirect to openid/auth

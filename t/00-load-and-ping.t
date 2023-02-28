@@ -19,6 +19,6 @@ $t->post_ok('/app/jsonrpc', json => {
 })
   ->status_is(200)
   ->content_type_is('application/json; charset=utf-8')
-  ->json_is('/error/message' => 'rpc access to method ping denied');
+  ->json_is('/error/message' => 'Your session has expired. Please re-connect.');
 
 done_testing();

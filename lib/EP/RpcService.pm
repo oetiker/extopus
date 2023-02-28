@@ -70,11 +70,11 @@ has 'log' => sub { shift->app->log };
 sub allow_rpc_access {
     my $self = shift;
     my $method = shift;
-
-    die mkerror(3993,q{Your session has expired. Please re-connect.}) unless defined $self->user;
+    if (not defined $self->user or ($self->cfg->{GENERAL}{openid_url} and not $self->session('epUser'))) {
+       die mkerror(3993,q{Your session has expired. Please re-connect.});
+    }
     return $allow{$method}; 
 }
-   
 
 =head2 getConfig()
 
