@@ -130,7 +130,7 @@ sub callback ($self) {
     }
     $self->session->{epUser} = $user;
     $self->session->{epLogin} =$login;
-    $self->redirect_to('/'.$self->app->prefix);
+    $self->redirect_to('../../'.$self->app->prefix);
 }
 
 1;

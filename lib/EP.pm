@@ -148,7 +148,13 @@ sub startup {
             action => 'callback',
         );
     }
-    $routes->get('/' => sub { shift->redirect_to('/'.$app->prefix)});
+    $routes->get('/' => sub { 
+        my $self = shift;
+        if ($gcfg->{openid_url} and not $self->session->{epUser}){
+            return $self->redirect_to('./openid/auth');
+        }        
+        return $self->redirect_to('./'.$app->prefix); 
+    });
 
     $app->plugin('EP::DocPlugin', {
         root => '/doc',
