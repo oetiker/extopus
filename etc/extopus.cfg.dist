@@ -11,6 +11,7 @@ openid_client_id = extopus-client
 openid_client_secret = 1234567890
 openid_callback = http://extopus.example.com/openid/callback
 openid_epuser_attribute = ep_user
+openid_default_user_role = EP-USERS
 
 *** FRONTEND ***
 #logo_large = http://www.upc-cablecom.biz/en/cablecom_logo_b2b.jpg

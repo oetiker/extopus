@@ -27,7 +27,7 @@ use warnings;
 # load the two modules to have perl check them
 use Mojolicious::Plugin::Qooxdoo;
 use Mojo::URL;
-use Mojo::Util qw(hmac_sha1_sum);
+use Mojo::Util qw(hmac_sha1_sum dumper);
 use Mojo::File;
 
 use EP::RpcService;
@@ -36,7 +36,7 @@ use EP::DocPlugin;
 use EP::Visualizer;
 use EP::Controller::OpenId;
 
-use Mojo::Base 'Mojolicious';
+use Mojo::Base 'Mojolicious', -signatures;
 
 =head2 cfg
 
@@ -99,13 +99,7 @@ sub startup {
     # is for later )
     $app->visualizer(EP::Visualizer->new(app=>$app));
 
-    $app->hook( before_dispatch => sub {
-        my $self = shift;
-        my $uri = $self->req->env->{SCRIPT_URI} || $self->req->env->{REQUEST_URI};
-        my $path_info = $self->req->env->{PATH_INFO};
-        $uri =~ s|/?${path_info}$|/| if $path_info and $uri;
-        $self->req->url->base(Mojo::URL->new($uri)) if $uri;
-    });
+    
     
 
     # session is valid for 1 day
@@ -114,8 +108,26 @@ sub startup {
     $app->sessions->cookie_name('EP_'.hmac_sha1_sum(Mojo::File->new($app->cfg_file)->slurp));
 
     my $routes = $app->routes;
-
-    if ($gcfg->{default_user}){
+    if ($gcfg->{openid_url}) {
+        $app->log->debug("OpenID enabled");
+        EP::Controller::OpenId::loadConfig($app) 
+            or die "Could not load OpenID configuration";
+        $app->hook( before_dispatch => sub ($c) {
+            $c->redirect_to('openid/auth') 
+                if not $c->session->{epUser} 
+                    and not $c->req->url->path->contains('/openid');
+        });
+        # load openid config
+        $routes->get('/openid/auth')->to(
+            controller => 'OpenId',
+            action => 'auth',
+        );
+        $routes->get('/openid/callback')->to(
+            controller => 'OpenId',
+            action => 'callback',
+        );
+    }
+    elsif ($gcfg->{default_user}){
         # since the user is fix, just set the login for the dashboards
         # if no login is given, the word 'base' is assumed;
         $routes->get('/setLogin/#login' => sub {
@@ -136,23 +148,9 @@ sub startup {
             $self->redirect_to('/'.$app->prefix);
         });
     }
-    if ($gcfg->{openid_url}) {
-        # load openid config
-        EP::Controller::OpenId::loadConfig($app);
-        $routes->get('/openid/auth')->to(
-            controller => 'OpenId',
-            action => 'auth',
-        );
-        $routes->get('/openid/callback')->to(
-            controller => 'OpenId',
-            action => 'callback',
-        );
-    }
+    
     $routes->get('/' => sub { 
         my $self = shift;
-        if ($gcfg->{openid_url} and not $self->session->{epUser}){
-            return $self->redirect_to('openid/auth');
-        }        
         return $self->redirect_to('/'.$app->prefix); 
     });
 

@@ -1,3 +1,12 @@
+0.10.3 2023-03-07 11:15:27 +0100 Tobias Oetiker <tobi@oetiker.ch>
+
+ - if default_user is set and openid_url, only accept users
+   who have the role stored in openid_default_user_role
+
+ - when not authenticated, directly send users to keycloak
+
+ - do not start of the keycloak config can not be retreived
+
 0.10.2 2023-02-28 16:13:17 +0100 Tobias Oetiker <tobi@oetiker.ch>
 
  - block rpc calls if there is no session

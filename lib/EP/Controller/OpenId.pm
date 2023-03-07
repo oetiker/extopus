@@ -74,6 +74,7 @@ sub loadConfig ($app) {
     }
     # $self->log->debug($cfg->to_string);
     $openIdCfg = $cfg->json;
+    return 1;
 };
 
 =head2 auth
@@ -122,15 +123,30 @@ sub callback ($self) {
         $self->log->error($userInfo->to_string);
         return $self->render(text => 'userinfo error', code => 403);
     }
-    $self->log->debug(dumper $userInfo->json);
-    my ($user,$login) = split /:/, ($userInfo->json->{$gcfg->{openid_epuser_attribute}} // '');
+    my $ui = $userInfo->json;
+
+    $self->log->debug(dumper $ui);
+
+
+    if (my $du = $gcfg->{default_user}){
+        my $role = $gcfg->{openid_default_user_role};
+        my $user = $ui->{preferred_username};
+        return $self->render(text => qq{$user does not have $role assigned}, code => 403)
+            if not grep { $_ eq $role } $ui->{roles}->@*;
+        $self->session->{epUser} = $du;
+        $self->session->{epLogin} = $user;
+        $self->redirect_to('../'.$self->app->prefix);
+        return;
+    }
+
+    my ($user,$login) = split /:/, ($ui->{$gcfg->{openid_epuser_attribute}} // '');
     if (not $user) {
         $self->log->error("no $gcfg->{openid_epuser_attribute} attribute found in userinfo (".dumper($userInfo->json).")");
         return $self->render(text => 'userinfo not found', code => 403);
     }
     $self->session->{epUser} = $user;
     $self->session->{epLogin} =$login;
-    $self->redirect_to('../../'.$self->app->prefix);
+    $self->redirect_to('../'.$self->app->prefix);
 }
 
 1;

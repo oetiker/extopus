@@ -126,6 +126,7 @@ ${E}head1 SYNOPSIS
  openid_client_secret = 1234567890
  openid_callback = http://extopus.example.com/openid/callback
  openid_epuser_attribute = ep_user
+ # openid_default_user_role = EP-USERS
 
  *** FRONTEND ***
  logo_large = http://www.upc-cablecom.biz/en/cablecom_logo_b2b.jpg
@@ -247,7 +248,7 @@ sub _make_parser {
         _mandatory => [qw(GENERAL FRONTEND ATTRIBUTES TABLES)],
         GENERAL => {
             _doc => 'Global configuration settings for Extopus',
-            _vars => [ qw(cache_dir mojo_secret log_file log_level default_user update_interval localguide auto_update openid_url openid_realm openid_client_id openid_client_secret openid_callback openid_epuser_attribute) ],
+            _vars => [ qw(cache_dir mojo_secret log_file log_level default_user update_interval localguide auto_update openid_url openid_realm openid_client_id openid_client_secret openid_callback openid_epuser_attribute openid_default_user_role) ],
             _mandatory => [ qw(cache_dir mojo_secret log_file) ],
             cache_dir => { _doc => 'directory to cache information gathered via the inventory plugins',
                 _sub => sub {
@@ -272,6 +273,7 @@ sub _make_parser {
             openid_client_secret => { _doc => 'client secret for openid authentication' },
             openid_callback => { _doc => 'callback url for openid authentication' },
             openid_epuser_attribute => { _doc => 'attribute to use for the user name' },
+            openid_default_user_role => { _doc => 'role required for default_user setups when authenticated via openid' },
             auto_update => { _doc => 'automatically update the inventory when the app starts' },
         },
         FRONTEND => {
