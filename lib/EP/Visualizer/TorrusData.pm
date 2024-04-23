@@ -137,7 +137,7 @@ sub denan {
     my $nan = 0.0+"NaN";
     no warnings; # don't get your undies in a twist when we look at a text bit
     return [
-        map { defined $nan <=> $_ ? $_ : undef } @$in
+        map { $_ == 1 || defined $nan <=> $_ ? $_ : undef } @$in
     ]
 }
 

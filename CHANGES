@@ -1,3 +1,7 @@
+0.10.4 2024-04-23 14:53:48 +0200 Tobias Oetiker <tobi@oetiker.ch>
+
+ - denan should properly handle 1 and strings starting with 1 RT#57346
+
 0.10.3 2023-03-07 11:15:27 +0100 Tobias Oetiker <tobi@oetiker.ch>
 
  - if default_user is set and openid_url, only accept users

@@ -22,7 +22,7 @@
   },
   "$schema": "https://qooxdoo.org/schema/Manifest-2-0-0.json",
   "requires": {
-    "@qooxdoo/framework": "^7.1.0",
+    "@qooxdoo/framework": "^7.7.0",
     "oetiker/CanvasCell": "^1.0.4",
     "oetiker/QxD3": "^0.4.1",
     "oposs/qx-iconfont-tabler": "^0.1.0"

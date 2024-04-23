@@ -6,6 +6,7 @@ requires 'JSON::XS';
 requires 'YAML';
 requires 'Params::Validate';
 requires 'SIAM';
+requires 'DBI';
 requires 'DBD::SQLite';
 requires 'Excel::Writer::XLSX';
 requires 'Spreadsheet::WriteExcel';
